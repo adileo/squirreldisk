@@ -4,6 +4,9 @@ import DiskItem from "./DiskItem";
 import { invoke } from "@tauri-apps/api/tauri";
 
 import { getVersion } from "@tauri-apps/api/app";
+import { platform } from '@tauri-apps/api/os';
+
+
 
 declare global {
   interface Window {
@@ -28,7 +31,22 @@ export const DiskList = () => {
     const syncDisks = async () => {
       const disksString: string = await invoke("get_disks");
       const disks = JSON.parse(disksString);
-      setDisks(disks);
+      platform().then((plat) => {
+        let filtered = disks.filter((disk: any) => {
+          if(plat === 'darwin' && disk.sMountPoint === '/'){
+            return false; // Since it will be used /System/Volumes/Data
+          }
+          if(plat === 'linux' && disk.sMountPoint === '/var/snap/firefox/common/host-hunspell'){
+            return false;
+          }
+          if(plat === 'linux' && disk.sMountPoint === '/boot/efi'){
+            return false;
+          }
+          return true;
+        })
+        setDisks(filtered);
+      })
+      
     };
     const handle = setInterval(() => {
       syncDisks();
