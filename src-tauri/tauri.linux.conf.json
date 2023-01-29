@@ -2,8 +2,15 @@
     "tauri": {
       "windows": [
         {
-          "transparent": false
-        }
+            "fullscreen": false,
+            "height": 600,
+            "resizable": true,
+            "title": "SquirrelDisk",
+            "width": 1100,
+            "decorations": false,
+            "transparent": true,
+            "center": true
+          }
       ]
     }
   }
