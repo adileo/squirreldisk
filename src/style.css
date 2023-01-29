@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  height: 100%;
+  background: transparent;
+}
+body {
+  background: #0a1125af;
+  border-radius: 100px;
+  height: 100%;
+  -webkit-user-select: none;
+}
+
+.titlebar {
+  -webkit-app-region: drag;
+}
+.titlebar .navi {
+  -webkit-app-region: no-drag;
+}
+.titlebar button {
+  -webkit-app-region: no-drag;
+}
+
+#root {
+  height: 100%;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-thumb:vertical {
+  margin: 5px;
+  background-color: #999;
+  -webkit-border-radius: 5px;
+}
+
+::-webkit-scrollbar-button:start:decrement,
+::-webkit-scrollbar-button:end:increment {
+  height: 5px;
+  display: block;
+}
+
+.HW_badge_cont {
+  width: 24px !important;
+  height: 20px !important;
+}
