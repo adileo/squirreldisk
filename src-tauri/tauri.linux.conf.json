@@ -1,0 +1,9 @@
+{
+    "tauri": {
+      "windows": [
+        {
+          "transparent": false
+        }
+      ]
+    }
+  }
