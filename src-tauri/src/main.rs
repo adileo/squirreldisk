@@ -11,7 +11,6 @@ use parallel_disk_usage::visualizer::{BarAlignment, ColumnWidthDistribution, Dir
 use parallel_disk_usage::{self, reporter::ProgressReport, size::Size};
 use regex::Regex;
 use serde::Serialize;
-use window_vibrancy::NSVisualEffectMaterial;
 use std::borrow::Borrow;
 use std::cell::RefCell;
 use std::fmt::{Display, Error, Formatter, Write};
@@ -27,6 +26,7 @@ use sysinfo::{DiskExt, System, SystemExt};
 use tauri::api::process::{Command as TauriCommand, CommandChild, CommandEvent};
 use tauri::Manager;
 use walkdir::WalkDir;
+use window_vibrancy::NSVisualEffectMaterial;
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
