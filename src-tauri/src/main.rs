@@ -11,6 +11,7 @@ use parallel_disk_usage::visualizer::{BarAlignment, ColumnWidthDistribution, Dir
 use parallel_disk_usage::{self, reporter::ProgressReport, size::Size};
 use regex::Regex;
 use serde::Serialize;
+use window_vibrancy::NSVisualEffectMaterial;
 use std::borrow::Borrow;
 use std::cell::RefCell;
 use std::fmt::{Display, Error, Formatter, Write};

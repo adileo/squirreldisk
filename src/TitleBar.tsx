@@ -4,7 +4,28 @@ import { Link, useLocation } from "react-router-dom";
 import { Platform, platform } from "@tauri-apps/api/os";
 import { useEffect, useState } from "react";
 import { appWindow } from "@tauri-apps/api/window";
-
+const CloseButton = () => {
+  return <button
+  onClick={() => {
+    appWindow.close();
+  }}
+>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="h-6 w-6"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M6 18L18 6M6 6l12 12"
+    />
+  </svg>
+</button>
+}
 const TitleBar = () => {
   let { state, pathname } = useLocation() as any;
   const [plf, setPlf] = useState<Platform | undefined>();
@@ -20,7 +41,7 @@ const TitleBar = () => {
       {plf !== "darwin" ? (
         <img src={Logo} className="h-6 w-6"></img>
       ) : (
-        <div></div>
+        <CloseButton></CloseButton>
       )}
       <div className="font-bold">
         <nav className="flex navi" aria-label="Breadcrumb">
@@ -84,28 +105,9 @@ const TitleBar = () => {
       </div>
       <div className="flex">
         {plf !== "darwin" ? (
-          <button
-            onClick={() => {
-              appWindow.close();
-            }}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
+          <CloseButton></CloseButton>
         ) : (
-          <div></div>
+          <img src={Logo} className="h-6 w-6"></img>
         )}
       </div>
     </div>

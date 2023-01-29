@@ -35,7 +35,7 @@ pub fn set_window_styles(window: impl raw_window_handle::HasRawWindowHandle) -> 
             use objc::runtime::{NO, YES};
 
             unsafe {
-                (handle.ns_window as id).setHasShadow_(if enable { YES } else { NO });
+                (handle.ns_window as id).setHasShadow_(YES);
             }
 
             Ok(())
