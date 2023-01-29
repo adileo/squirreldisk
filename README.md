@@ -26,7 +26,7 @@ Currently I'm still facing permissions issue in the sidecar binary embedding of 
 After installing the .deb file make sure to `sudo chmod 777 /usr/bin/pdu` and run squirreldisk with sudo 'sudo squirrel-disk'. 
 
 ### MacOS
-Install the app from the .dmg, then `sudo chmod 777 /Applications/SquirrelDisk.app/Contents/MacOS`, then you can open the app with right click > Open.
+Install the app from the .dmg, then `sudo chmod 777 /Applications/SquirrelDisk.app/Contents/MacOS/pdu`, then you can open the app with right click > Open.
 
 
 ## Disclaimer
