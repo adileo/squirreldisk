@@ -13,6 +13,10 @@ body {
   -webkit-user-select: none;
 }
 
+.linuxbg{
+  background: #0a1125;
+}
+
 .titlebar {
   -webkit-app-region: drag;
 }
