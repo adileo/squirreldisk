@@ -17,6 +17,18 @@
 
 The easiest app you will ever use to detect huge files. Built with Rust + React (Tauri).
 
+## Installation
+### Windows
+Just install with the .msi
+
+Currently I'm still facing permissions issue in the sidecar binary embedding of PDU (parallel disk usage) for Linux/MacOS. Will try to fix soon in the meanwhile:
+### Ubuntu
+After installing the .deb file make sure to `sudo chmod 777 /usr/bin/pdu` and run squirreldisk with sudo 'sudo squirrel-disk'. 
+
+### MacOS
+Install the app from the .dmg, then `sudo chmod 777 /Applications/SquirrelDisk.app/Contents/MacOS`, then you can open the app with right click > Open.
+
+
 ## Disclaimer
 
 This app was a project from 2 years ago built in Electron in 2 days, I decided to port it to Tauri to achieve better performances and to make it Open Source. Yay.
