@@ -29,16 +29,16 @@ Please note that the current version is not stable yet, and you may encounter va
 ### Windows
 Just install the .msi from the release page and it should work :)
 
-### Ubuntu [1]
+### Ubuntu <sup>[1]</sup>
 After installing the .deb file make sure to `sudo chmod 777 /usr/bin/pdu` and run squirreldisk with sudo 'sudo squirrel-disk'. 
 
-### MacOS [1]
+### MacOS <sup>[1]</sup>
 Install the app from the .dmg, then `sudo chmod 777 /Applications/SquirrelDisk.app/Contents/MacOS/pdu`, then you can open the app with right click > Open.
 
 ## Known Issues
 
-[1] Currently I'm still facing permissions issue with the sidecar binary embedding of ./PDU (parallel disk usage) for Linux and MacOS. I will try to fix it soon.
-[2] Linux and MacOS disks displayed and bytes amounts to be fixed, since they work slightly different from Windows.
+- [1] Currently I'm still facing permissions issue with the sidecar binary embedding of ./PDU (parallel disk usage) for Linux and MacOS. I will try to fix it soon.
+- [2] Linux and MacOS disks displayed and bytes amounts to be fixed, since they work slightly different from Windows.
 
 ## Disclaimer
 
