@@ -29,13 +29,20 @@ The easiest app you will ever use to detect huge files. Built with Rust + React 
 Please note that the current version is not stable yet, and you may encounter various bugs, especially on Linux and MacOS.
 
 ### Windows
-Just install the .msi from the release page and it should work :)
+1. Download the installer from the [release page](https://github.com/adileo/squirreldisk/releases)
+2. The binary is not signed so Windows could open a popup window warning you that the file is unsecure, just click on "More Information" > "Run Anyway"
+
+__[Why the binary isn't Codesigned and marked as unsafe?](https://news.ycombinator.com/item?id=19330062)__
 
 ### Ubuntu <sup>[1]</sup>
-After installing the .deb file make sure to `sudo chmod 777 /usr/bin/pdu` and run squirreldisk with sudo 'sudo squirrel-disk'. 
+1. Download the .deb package from the [release page](https://github.com/adileo/squirreldisk/releases)
+2. After installing the .deb file make sure to `sudo chmod 777 /usr/bin/pdu` and run squirreldisk with sudo 'sudo squirrel-disk'. 
 
 ### MacOS <sup>[1]</sup>
-Install the app from the .dmg, then `sudo chmod 777 /Applications/SquirrelDisk.app/Contents/MacOS/pdu`, then you can open the app with right click > Open.
+1. Download the .dmg from the [release page](https://github.com/adileo/squirreldisk/releases)
+2. Install the app from the .dmg
+3. Allow execution of the pdu binary `sudo chmod 777 /Applications/SquirrelDisk.app/Contents/MacOS/pdu`
+4. First time you open the App: Right click > Open. (Since the binaries are not signed an alert will appear)
 
 ## Known Issues
 
