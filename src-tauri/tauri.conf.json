@@ -67,7 +67,12 @@
       "csp": null
     },
     "updater": {
-      "active": false
+      "active": true,
+      "endpoints": [
+        "https://www.squirreldisk.com/api/updates/{{target}}/{{current_version}}"
+      ],
+      "dialog": true,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDk3QjIwNUJBRkM0MDE0OTUKUldTVkZFRDh1Z1d5bHdSbS85UmovVUdiOHk1dy9zTnZzb2xtb0ppbGIzS3E3NUdHUnB1QldjRVAK"
     },
     "macOSPrivateApi": true,
     "windows": [
