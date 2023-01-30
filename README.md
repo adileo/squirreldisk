@@ -32,7 +32,7 @@ Please note that the current version is not stable yet, and you may encounter va
 1. Download the installer from the [release page](https://github.com/adileo/squirreldisk/releases)
 2. The binary is not signed so Windows could open a popup window warning you that the file is unsecure, just click on "More Information" > "Run Anyway"
 
-__[Why the binary isn't Codesigned and marked as unsafe?](https://news.ycombinator.com/item?id=19330062)__
+[Why the binary isn't Codesigned and marked as unsafe?](https://news.ycombinator.com/item?id=19330062)
 
 ### Ubuntu <sup>[1]</sup>
 1. Download the .deb package from the [release page](https://github.com/adileo/squirreldisk/releases)
