@@ -52,7 +52,7 @@ If you find any bugs, please report it by submitting an issue on our [issue page
 
 ## Feature Request
 
-You can also submit a feature request on our [issue page](https://github.com/adileo/squirreldisk/issues) or [discussions]((https://github.com/adileo/squirreldisk/discussions) and we will try to implement it as soon as possible.
+You can also submit a feature request on our [issue page](https://github.com/adileo/squirreldisk/issues) or [discussions](https://github.com/adileo/squirreldisk/discussions) and we will try to implement it as soon as possible.
 
 ## Contributions
 
