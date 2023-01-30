@@ -17,7 +17,7 @@
 
 </div>
 
-![Screenshot](https://www.squirreldisk.com/images/demo2.gif)
+![Screenshot](/public/squirrel-demo.gif)
 
 ## What's taking your hard disk space?
 
