@@ -49,7 +49,7 @@ export const FileLine = ({
           ref={provided.innerRef}
         >
           <img
-            className="h-6 w-6 basis-1/12 mr-3"
+            className="h-4 w-4 basis-1/12 mr-3"
             src={
               item.data.isDirectory
                 ? "/fileicons/" + getIconForFolder(item.data.name)
@@ -57,10 +57,10 @@ export const FileLine = ({
                   (getIconForFile(item.data.name) || "default_file.svg")
             }
           />
-          <div className="truncate basis-8/12 flex-1 shrink text-sm">
+          <div className="truncate basis-8/12 flex-1 shrink text-xs">
             {item.data.name}
           </div>
-          <div className="flex-1 basis-3/12 text-right">
+          <div className="flex-1 basis-3/12 text-right text-xs">
             {/* {JSON.stringify(item.data)} */}
             {item &&
               item.data &&

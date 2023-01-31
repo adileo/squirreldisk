@@ -34,13 +34,13 @@ export const ParentFolder = ({
           ></img>
         )} */}
       </div>
-      <div className="truncate pr-6 flex-1">
+      <div className="truncate pr-6 flex-1 text-xs">
         {focusedDirectory &&
           buildFullPath(focusedDirectory)
             .replace("\\/", "/")
             .replace("\\", "/")}
       </div>
-      <div>
+      <div className="text-xs">
         {focusedDirectory &&
           (focusedDirectory.data.value! / 1024 / 1024 / 1024).toFixed(0)}{" "}
         GB
