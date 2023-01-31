@@ -22,7 +22,7 @@ function App() {
     <Router>
       <div
         className={"flex flex-col justify-items-stretch	items-stretch min-h-full"+(isLinux ? " linuxbg":"")}
-        style={{ borderRadius: 20 }}
+   
       >
         <TitleBar></TitleBar>
         <Routes>
