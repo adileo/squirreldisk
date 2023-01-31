@@ -7,7 +7,7 @@
   },
   "package": {
     "productName": "SquirrelDisk",
-    "version": "v1.1.2-alpha.1"
+    "version": "v1.1.2-alpha.2"
   },
   "tauri": {
     "allowlist": {
