@@ -39,15 +39,15 @@ jobs:
 
       - name: Install app dependencies and build web
         # Remove `&& yarn build` if you build your frontend in `beforeBuildCommand`
-        run: npm i && npm run build # Change this to npm, yarn or pnpm.
-
-      - name: Build the app
-        uses: tauri-apps/tauri-action@v0
-
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+        run: npm i && npm run build # Change this to npm, yarn or pnpm.
+          
+      - name: Build the app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{ github.ref_name }} # This only works if your workflow triggers on new tags.
           releaseName: 'App Name v__VERSION__' # tauri-action replaces \_\_VERSION\_\_ with the app version.
