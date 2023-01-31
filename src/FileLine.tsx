@@ -12,7 +12,7 @@ interface FileLineProps {
   index: number;
   deleteMap: Map<string, boolean>;
 }
-
+const mul = window.OS_TYPE === "Windows_NT" ? 1024 : 1000;
 export const FileLine = ({
   item,
   hoveredItem,
@@ -20,6 +20,7 @@ export const FileLine = ({
   index,
   deleteMap,
 }: FileLineProps) => {
+
   return (
     <Draggable draggableId={item.data.id} index={index}>
       {(provided) => (
@@ -64,7 +65,7 @@ export const FileLine = ({
             {/* {JSON.stringify(item.data)} */}
             {item &&
               item.data &&
-              (item.data.data / 1024 / 1024 / 1024).toFixed(2)}{" "}
+              (item.data.data / mul / mul / mul).toFixed(2)}{" "}
             GB
           </div>
         </div>

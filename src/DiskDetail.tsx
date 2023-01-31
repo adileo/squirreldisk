@@ -131,6 +131,8 @@ const Scanning = () => {
       });
     }
   }, [view]);
+  // Avoid progress bar going to the star due to undetectable fs hardlinks
+  const cappedTotal = Math.min(status ? status.total : 0, used)
   return (
     <>
       {view == "loading" && status && (
@@ -138,7 +140,7 @@ const Scanning = () => {
           <img src={diskIcon} className="w-16 h-16"></img>
           <div className="w-2/3">
             <div className="mt-5 mb-1 text-base text-center font-medium text-white">
-              Scanning {disk} {((status.total / used) * 100).toFixed(2)}
+              Scanning {disk} {((cappedTotal / used) * 100).toFixed(2)}
               %
               <br />
               {/* <span className="text-sm">{itemPath}</span> */}
@@ -147,7 +149,7 @@ const Scanning = () => {
               <div
                 className="bg-blue-600 h-2.5 rounded-full"
                 style={{
-                  width: ((status.total / used) * 100).toFixed(2) + "%",
+                  width: ((cappedTotal / used) * 100).toFixed(2) + "%",
                 }}
               ></div>
             </div>

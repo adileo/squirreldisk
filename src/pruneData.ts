@@ -4,7 +4,17 @@ import { v4 as uuidv4 } from "uuid";
 
 let genId = 0;
 export const itemMap = (obj: any, parent: any = null) => {
-  obj.id = parent ? parent.id + "/" + obj.name : obj.name;
+
+  if(obj.name === "(total)"){
+    obj.id = "/"
+    obj.name = "/"
+  }else if(parent && parent.id === "/"){
+    obj.id = obj.name;
+    obj.name = obj.name.substring(1); // remove the slash for 1st level dirs /folder
+  }else{
+    obj.id = parent ? (parent.id + "/" + obj.name) : obj.name;
+  }
+
   if (obj.hasOwnProperty("children")) {
     //recursive call to scan property
     if (obj["children"].length > 0) {

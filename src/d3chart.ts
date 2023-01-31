@@ -211,6 +211,8 @@ const updateData = (
   // console.log({filtered})
   // Data deve essere
   // console.log({fd: focused.descendants().slice(1, 50)})
+  const mul = window.OS_TYPE === "Windows_NT" ? 1024 : 1000;
+
   let path = innerG
     .selectAll<SVGPathElement, D3HierarchyDiskItem>("path")
     .data(filtered, (d) => d.data.id)
@@ -236,7 +238,7 @@ const updateData = (
               .ancestors()
               .map((d) => d.data.name)
               .reverse()
-              .join("/")}\n${prettyBytes(d.value || 0)}`
+              .join("/")}\n${((d.data.data || 0) / mul / mul / mul).toFixed(2)} GB`
         );
         return xx;
       },

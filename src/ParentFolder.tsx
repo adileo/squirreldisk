@@ -11,6 +11,7 @@ export const ParentFolder = ({
   focusedDirectory,
   d3Chart,
 }: ParentFolderProps) => {
+  const mul = window.OS_TYPE === "Windows_NT" ? 1024 : 1000;
   return (
     <div
       className="bg-gray-800 p-2 text-white flex justify-between rounded-md cursor-pointer"
@@ -42,7 +43,7 @@ export const ParentFolder = ({
       </div>
       <div className="text-xs">
         {focusedDirectory &&
-          (focusedDirectory.data.value! / 1024 / 1024 / 1024).toFixed(0)}{" "}
+          (focusedDirectory.data.value! / mul / mul / mul).toFixed(2)}{" "}
         GB
       </div>
     </div>

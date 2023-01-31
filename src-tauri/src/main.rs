@@ -18,6 +18,7 @@ use std::fs;
 use std::fs::metadata;
 use std::io::Bytes;
 use std::num::NonZeroUsize;
+use std::ops::Not;
 use std::process::Command;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -59,7 +60,7 @@ fn show_in_folder(path: String) {
 
     #[cfg(target_os = "linux")]
     {
-        if path.contains(",") {
+        // if path.contains(",") {
             // see https://gitlab.freedesktop.org/dbus/dbus/-/issues/76
             let new_path = match metadata(&path).unwrap().is_dir() {
                 true => path,
@@ -70,20 +71,20 @@ fn show_in_folder(path: String) {
                 }
             };
             Command::new("xdg-open").arg(&new_path).spawn().unwrap();
-        } else {
-            Command::new("dbus-send")
-                .args([
-                    "--session",
-                    "--dest=org.freedesktop.FileManager1",
-                    "--type=method_call",
-                    "/org/freedesktop/FileManager1",
-                    "org.freedesktop.FileManager1.ShowItems",
-                    format!("array:string:\"file://{path}\"").as_str(),
-                    "string:\"\"",
-                ])
-                .spawn()
-                .unwrap();
-        }
+        // } else {
+        //     Command::new("dbus-send")
+        //         .args([
+        //             "--session",
+        //             "--dest=org.freedesktop.FileManager1",
+        //             "--type=method_call",
+        //             "/org/freedesktop/FileManager1",
+        //             "org.freedesktop.FileManager1.ShowItems",
+        //             format!("array:string:\"file://{path}\"").as_str(),
+        //             "string:\"\"",
+        //         ])
+        //         .spawn()
+        //         .unwrap();
+        // }
     }
 
     #[cfg(target_os = "macos")]
@@ -120,9 +121,32 @@ fn start_scanning(
 ) -> Result<(), ()> {
     println!("Start Scanning {}", path);
     let ratio = ["--min-ratio=", ratio.as_str()].join("");
+
+    let mut paths_to_scan: Vec<String> = Vec::new();
+    paths_to_scan.push("--json-output".to_string());
+    paths_to_scan.push("--progress".to_string());
+    paths_to_scan.push(ratio);
+
+    if path.eq("/"){
+        let paths = fs::read_dir("/").unwrap();
+        let banned = ["/dev", "/mnt", "/cdrom", "/proc", "/media", "/Volumes"];
+        
+
+        for scan_path in paths {
+            let scan_path_str = scan_path.unwrap().path();
+            if banned.contains(&(scan_path_str.to_str().unwrap())).not() {
+                paths_to_scan.push(scan_path_str.display().to_string());
+            }
+        }
+    }else{
+
+       
+        paths_to_scan.push(path);
+    }
+    
     let (mut rx, child) = TauriCommand::new_sidecar("pdu")
         .expect("failed to create `my-sidecar` binary command")
-        .args(["--json-output", "--progress", ratio.as_str(), path.as_str()])
+        .args(paths_to_scan)
         .spawn()
         .expect("Failed to spawn sidecar");
     //
@@ -149,7 +173,7 @@ fn start_scanning(
         while let Some(event) = rx.recv().await {
             match event {
                 CommandEvent::Stdout(line) => {
-                    // println!("Stdout:{}", &line);
+                    //println!("Stdout:{}", &line);
                     app_handle.emit_all("scan_completed", line);
                 }
                 CommandEvent::Stderr(msg) => {
