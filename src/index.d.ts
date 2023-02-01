@@ -1,4 +1,6 @@
 declare module "mongoid-js";
+declare module "shade-blend-color";
+
 interface DiskItem {
   id: string;
   name: string;

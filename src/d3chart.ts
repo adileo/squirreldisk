@@ -3,7 +3,7 @@ import prettyBytes from "pretty-bytes";
 import { v4 as uuidv4 } from "uuid";
 import pSBC from "shade-blend-color";
 
-const depthmap = {
+const depthmap: any = {
   0: 0,
   1: -0.2,
   2: -0.35,
