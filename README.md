@@ -23,7 +23,7 @@
 
 ## What's taking your hard disk space?
 
-The easiest app you will ever use to detect huge files. Built with Rust + React (Tauri).
+The easiest open source app you will ever use to detect huge files. Built with Rust + React (Tauri).
 
 ## Installation
 Please note that the current version is not stable yet, and you may encounter various bugs, especially on Linux and MacOS.
@@ -36,18 +36,12 @@ Please note that the current version is not stable yet, and you may encounter va
 
 ### Ubuntu <sup>[1]</sup>
 1. Download the .deb package from the [release page](https://github.com/adileo/squirreldisk/releases)
-2. After installing the .deb file make sure to `sudo chmod 777 /usr/bin/pdu` and run squirreldisk with sudo 'sudo squirrel-disk'. 
+2. Install
 
 ### MacOS <sup>[1]</sup>
 1. Download the .dmg from the [release page](https://github.com/adileo/squirreldisk/releases)
 2. Install the app from the .dmg
-3. Allow execution of the pdu binary `sudo chmod 777 /Applications/SquirrelDisk.app/Contents/MacOS/pdu`
-4. First time you open the App: Right click > Open. (Since the binaries are not signed an alert will appear)
-
-## Known Issues
-
-- [1] Currently I'm still facing permissions issue with the sidecar binary embedding of ./PDU (parallel disk usage) for Linux and MacOS. I will try to fix it soon.
-- [2] Linux and MacOS disks displayed and bytes amounts to be fixed, since they work slightly different from Windows.
+4. First time you open the App: `Right click > Open` once (it won't run, since the binaries are not signed an alert will appear), then do it again `Right click > Open` to bypass the issue, it won't happen again after the first time.
 
 ## Disclaimer
 
@@ -71,3 +65,7 @@ You can also submit a feature request on our [issue page](https://github.com/adi
 
 - [parallel-disk-usage](https://github.com/KSXGitHub/parallel-disk-usage)
 - [tauri](https://github.com/tauri-apps/tauri)
+
+## Alternatives
+
+Squirreldisk is an open source alternative to softwares like: WinDirStat, WizTree, TreeSize and DaisyDisk.
