@@ -24,6 +24,7 @@
 ## What's taking your hard disk space?
 
 The easiest open source app you will ever use to detect huge files. Built with Rust + React (Tauri).
+Squirreldisk is an open source alternative to softwares like: WinDirStat, WizTree, TreeSize and DaisyDisk.
 
 ## Installation
 Please note that the current version is not stable yet, and you may encounter various bugs, especially on Linux and MacOS.
@@ -65,7 +66,3 @@ You can also submit a feature request on our [issue page](https://github.com/adi
 
 - [parallel-disk-usage](https://github.com/KSXGitHub/parallel-disk-usage)
 - [tauri](https://github.com/tauri-apps/tauri)
-
-## Alternatives
-
-Squirreldisk is an open source alternative to softwares like: WinDirStat, WizTree, TreeSize and DaisyDisk.
