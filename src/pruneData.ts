@@ -4,15 +4,14 @@ import { v4 as uuidv4 } from "uuid";
 
 let genId = 0;
 export const itemMap = (obj: any, parent: any = null) => {
-
-  if(obj.name === "(total)"){
-    obj.id = "/"
-    obj.name = "/"
-  }else if(parent && parent.id === "/"){
+  if (obj.name === "(total)") {
+    obj.id = "/";
+    obj.name = "/";
+  } else if (parent && parent.id === "/") {
     obj.id = obj.name;
     obj.name = obj.name.substring(1); // remove the slash for 1st level dirs /folder
-  }else{
-    obj.id = parent ? (parent.id + "/" + obj.name) : obj.name;
+  } else {
+    obj.id = parent ? parent.id + "/" + obj.name : obj.name;
   }
 
   if (obj.hasOwnProperty("children")) {
@@ -29,13 +28,23 @@ export const itemMap = (obj: any, parent: any = null) => {
 };
 
 const partition = (data: DiskItem) => {
-  const root = d3
+  const hierarchy = d3
     .hierarchy(data)
+    .sum(function (d) {
+      return !d.children || d.children.length === 0 ? d.data : 0;
+    })
+
     // .sum(d => d.value)
-    .sum((d: DiskItem) => (d.children ? d.data : d.data))
+    // .sum((d: DiskItem) => (d.children ? d.data : d.data))
     // .sum(d => d.data ? 0 : d.value)
     .sort((a: any, b: any) => (b.data || 0) - (a.data || 0));
-  return d3.partition<DiskItem>().size([2 * Math.PI, root.height + 1])(root);
+  // debugger;
+  const partition = d3
+    .partition<DiskItem>()
+    .size([2 * Math.PI, hierarchy.height + 1])(hierarchy);
+  console.log({ partition });
+  // debugger;
+  return partition;
 };
 
 export function diskItemToD3Hierarchy(baseData: DiskItem) {
