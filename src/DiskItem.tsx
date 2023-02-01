@@ -16,6 +16,7 @@ const DiskItem = ({ disk }: any) => {
   const xy: any = x.find((e) => perc > e.from && perc <= e.to);
 
   const icona = disk.isRemovable ? removableDriver : diskIcon;
+  const mul = window.OS_TYPE === "Windows_NT" ? 1024 : 1000;
 
   return (
     <div
@@ -48,14 +49,14 @@ const DiskItem = ({ disk }: any) => {
             <span className="text-xs">({disk.sMountPoint})</span>
             <br />
             <span className=" text-sm font-medium mr-2 px-2.5 py-0.5 rounded bg-gray-700 text-gray-300">
-              {(disk.totalSpace / 1024 / 1024 / 1024).toFixed(1)} GB
+              {(disk.totalSpace / mul / mul / mul).toFixed(1)} GB
             </span>
             {/* <span className="opacity-60"></span> */}
           </span>
           <span className="text-sm font-medium text-right text-white">
             {(perc * 100).toFixed(0)}%<br />
             <span className="opacity-60">
-              {(disk.availableSpace / 1024 / 1024 / 1024).toFixed(1)} GB Free
+              {(disk.availableSpace / mul / mul / mul).toFixed(1)} GB Free
             </span>
           </span>
         </div>

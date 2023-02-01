@@ -17,6 +17,7 @@ declare global {
     licver: any;
   }
 }
+
 export const DiskList = () => {
   const [disks, setDisks] = useState([]);
   const [appVersion, setAppVersion] = useState("1.0.0");
@@ -26,6 +27,7 @@ export const DiskList = () => {
     //   window.electron.app
     // setAppVersion(window.electron.appInfo().version)
   }, []);
+
   useEffect(() => {
     // window.electron.diskUtils.killDiskSizeWorker();
 
@@ -34,7 +36,7 @@ export const DiskList = () => {
       const disks = JSON.parse(disksString);
       platform().then((plat) => {
         let filtered = disks.filter((disk: any) => {
-          if (plat === "darwin" && disk.sMountPoint === "/") {
+          if (plat === "darwin" && disk.sMountPoint === "/System/Volumes/Data") {
             return false; // Since it will be used /System/Volumes/Data
           }
           if (

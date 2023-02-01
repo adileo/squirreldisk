@@ -129,7 +129,7 @@ fn start_scanning(
 
     if path.eq("/"){
         let paths = fs::read_dir("/").unwrap();
-        let banned = ["/dev", "/mnt", "/cdrom", "/proc", "/media", "/Volumes"];
+        let banned = ["/dev", "/mnt", "/cdrom", "/proc", "/media", "/Volumes", "/System"];
         
 
         for scan_path in paths {
