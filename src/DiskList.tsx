@@ -66,7 +66,7 @@ export const DiskList = () => {
       selector: ".inject_here",
       account: "xYZ8B7",
     };
-    window.Headway.init(config);
+    if (window.Headway) {window.Headway.init(config)}
   }, []);
   return (
     <div className="flex-1 flex flex-col">
