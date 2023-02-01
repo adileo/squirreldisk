@@ -26,6 +26,16 @@
 The easiest open source app you will ever use to detect huge files. Built with Rust + React (Tauri).
 Squirreldisk is an open source alternative to softwares like: WinDirStat, WizTree, TreeSize and DaisyDisk.
 
+Some features:
+* Fast scan and deep directory scanning
+* Disk scanning or pick a directory
+* External disks real-time detection
+* A sunburst chart to quickly visualize the disk usage
+* Drag and drop: collect all items to be deleted
+* Right click on a folder/file to open the file explorer
+* Cross-Platform MacOS, Windows, Linux
+* Auto-updater: get notified when there is a new update (only on app launch - no notfication spamming thanks)
+
 ## Installation
 Please note that the current version is not stable yet, and you may encounter various bugs, especially on Linux and MacOS.
 
