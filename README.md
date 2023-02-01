@@ -38,7 +38,7 @@ Some features:
 * Auto-updater: get notified when there is a new update (only on app launch - no notfication spamming thanks)
 
 ## Installation
-Please note that the current version is not stable yet, and you may encounter various bugs, especially on Linux and MacOS.
+Please note that the current version is not 100% stable yet, and you may encounter bugs.
 
 ### Windows
 1. Download the installer from the [release page](https://github.com/adileo/squirreldisk/releases)
