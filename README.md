@@ -19,7 +19,7 @@
 
 </div>
 
-![Screenshot](/public/squirrel-demo.gif)
+![Screenshot](/public/squirrel-demo-2.gif)
 
 ## What's taking your hard disk space?
 
@@ -28,32 +28,37 @@ The easiest open source app you will ever use to detect huge files. Built with R
 Squirreldisk is an open source alternative to softwares like: WinDirStat, WizTree, TreeSize and DaisyDisk.
 
 Some features:
-* Fast scan and deep directory scanning
-* Disk scanning or pick a directory
-* External disks real-time detection
-* A sunburst chart to quickly visualize the disk usage
-* Drag and drop: collect all items to be deleted
-* Right click on a folder/file to open the file explorer
-* Cross-Platform MacOS, Windows, Linux
-* Auto-updater: get notified when there is a new update (only on app launch - no notfication spamming thanks)
+
+- Fast scan and deep directory scanning
+- Disk scanning or pick a directory
+- External disks real-time detection
+- A sunburst chart to quickly visualize the disk usage
+- Drag and drop: collect all items to be deleted
+- Right click on a folder/file to open the file explorer
+- Cross-Platform MacOS, Windows, Linux
+- Auto-updater: get notified when there is a new update (only on app launch - no notfication spamming thanks)
 
 ## Installation
+
 Please note that the current version is not 100% stable yet, and you may encounter bugs.
 
 ### Windows
+
 1. Download the installer from the [release page](https://github.com/adileo/squirreldisk/releases)
 2. The binary is not signed so Windows could open a popup window warning you that the file is unsecure, just click on "More Information" > "Run Anyway"
 
 [Why the binary isn't Codesigned and marked as unsafe?](https://news.ycombinator.com/item?id=19330062)
 
 ### Ubuntu
+
 1. Download the .deb package from the [release page](https://github.com/adileo/squirreldisk/releases)
 2. Install
 
 ### MacOS
+
 1. Download the .dmg from the [release page](https://github.com/adileo/squirreldisk/releases)
 2. Install the app from the .dmg
-4. First time you open the App: `Right click > Open` once (it won't run, since the binaries are not signed an alert will appear), then do it again `Right click > Open` to bypass the issue, it won't happen again after the first time.
+3. First time you open the App: `Right click > Open` once (it won't run, since the binaries are not signed an alert will appear), then do it again `Right click > Open` to bypass the issue, it won't happen again after the first time.
 
 ## Disclaimer
 
