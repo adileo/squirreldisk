@@ -35,11 +35,11 @@ Please note that the current version is not stable yet, and you may encounter va
 
 [Why the binary isn't Codesigned and marked as unsafe?](https://news.ycombinator.com/item?id=19330062)
 
-### Ubuntu <sup>[1]</sup>
+### Ubuntu
 1. Download the .deb package from the [release page](https://github.com/adileo/squirreldisk/releases)
 2. Install
 
-### MacOS <sup>[1]</sup>
+### MacOS
 1. Download the .dmg from the [release page](https://github.com/adileo/squirreldisk/releases)
 2. Install the app from the .dmg
 4. First time you open the App: `Right click > Open` once (it won't run, since the binaries are not signed an alert will appear), then do it again `Right click > Open` to bypass the issue, it won't happen again after the first time.
