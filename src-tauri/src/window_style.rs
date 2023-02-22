@@ -32,7 +32,7 @@ pub fn set_window_styles(window: impl raw_window_handle::HasRawWindowHandle) -> 
         #[cfg(target_os = "macos")]
         raw_window_handle::RawWindowHandle::AppKit(handle) => {
             use cocoa::{appkit::NSWindow, base::id};
-            use objc::runtime::{NO, YES};
+            use objc::runtime::YES;
 
             unsafe {
                 (handle.ns_window as id).setHasShadow_(YES);
