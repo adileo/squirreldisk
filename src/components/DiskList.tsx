@@ -6,7 +6,7 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { getVersion } from "@tauri-apps/api/app";
 import { platform } from "@tauri-apps/api/os";
 import { open } from "@tauri-apps/api/dialog";
-import folderIcon from "./assets/folder.png";
+import folderIcon from "../assets/folder.png";
 import { useNavigate } from "react-router-dom";
 
 declare global {
@@ -18,7 +18,7 @@ declare global {
   }
 }
 
-export const DiskList = () => {
+const DiskList = () => {
   const [disks, setDisks] = useState([]);
   const [appVersion, setAppVersion] = useState("1.0.0");
   const navigate = useNavigate();
@@ -30,13 +30,15 @@ export const DiskList = () => {
 
   useEffect(() => {
     // window.electron.diskUtils.killDiskSizeWorker();
-
     const syncDisks = async () => {
       const disksString: string = await invoke("get_disks");
       const disks = JSON.parse(disksString);
       platform().then((plat) => {
         let filtered = disks.filter((disk: any) => {
-          if (plat === "darwin" && disk.sMountPoint === "/System/Volumes/Data") {
+          if (
+            plat === "darwin" &&
+            disk.sMountPoint === "/System/Volumes/Data"
+          ) {
             return false; // Since it will be used /System/Volumes/Data
           }
           if (
@@ -53,20 +55,21 @@ export const DiskList = () => {
         setDisks(filtered);
       });
     };
-    const handle = setInterval(() => {
-      syncDisks();
-    }, 2000);
+    const handle = setInterval(syncDisks, 2000);
     syncDisks();
     return () => {
       clearInterval(handle);
     };
   }, []);
+
   useEffect(() => {
     var config = {
       selector: ".inject_here",
       account: "xYZ8B7",
     };
-    if (window.Headway) {window.Headway.init(config)}
+    if (window.Headway) {
+      window.Headway.init(config);
+    }
   }, []);
   return (
     <div className="flex-1 flex flex-col">
@@ -116,3 +119,5 @@ export const DiskList = () => {
     </div>
   );
 };
+
+export default DiskList;

@@ -1,5 +1,5 @@
 import prettyBytes from "pretty-bytes";
-import { buildFullPath } from "./pruneData";
+import { buildFullPath } from "../pruneData";
 import { getIconForFile, getIconForFolder } from "vscode-icons-js";
 // import { iconImages } from "./iconImages";
 import { Draggable } from "react-beautiful-dnd";

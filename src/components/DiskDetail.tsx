@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import diskIcon from "./assets/harddisk.png";
-import { getChart } from "./d3chart";
+import diskIcon from "../assets/harddisk.png";
+import { getChart } from "../d3chart";
 import * as d3 from "d3";
 import {
   buildPath,
@@ -10,7 +10,7 @@ import {
   buildFullPath,
   diskItemToD3Hierarchy,
   itemMap,
-} from "./pruneData";
+} from "../pruneData";
 import { FileLine } from "./FileLine";
 import { ParentFolder } from "./ParentFolder";
 import { DragDropContext, Droppable } from "react-beautiful-dnd";

@@ -40,28 +40,28 @@ const arcVisible = (d: D3HierarchyDiskItemArc) => {
   return d.y1 <= 4 && d.y0 >= 1 && d.x1 > d.x0;
 };
 
+// const setTargetAngles = (
+//   root: D3HierarchyDiskItem,
+//   focusedNode: D3HierarchyDiskItem
+// ) => {
+//   // Focus on current slice
+//   root.each((d: any) => {
+//     const focusedSegmentRadians = focusedNode.x1 - focusedNode.x0;
+//     const arcDeltaFrom = d.x0 - focusedNode.x0;
+//     const arcDeltaTo = d.x1 - focusedNode.x0;
+//     const fromPercentage = arcDeltaFrom / focusedSegmentRadians;
+//     const toPercentage = arcDeltaTo / focusedSegmentRadians;
+
+//     d.target = {
+//       x0: Math.max(0, Math.min(1, fromPercentage)) * 2 * Math.PI, // Start Angle, radians, 0 starting from 12 oclock
+//       x1: Math.max(0, Math.min(1, toPercentage)) * 2 * Math.PI, // End Angle, radians, 0 starting from 12 oclock
+//       y0: Math.max(0, d.y0 - focusedNode.depth), // Inner Radius
+//       y1: Math.max(0, d.y1 - focusedNode.depth), // Outer Radius
+//     };
+//   });
+// };
+
 const setTargetAngles = (
-  root: D3HierarchyDiskItem,
-  focusedNode: D3HierarchyDiskItem
-) => {
-  // Focus on current slice
-  root.each((d: any) => {
-    const focusedSegmentRadians = focusedNode.x1 - focusedNode.x0;
-    const arcDeltaFrom = d.x0 - focusedNode.x0;
-    const arcDeltaTo = d.x1 - focusedNode.x0;
-    const fromPercentage = arcDeltaFrom / focusedSegmentRadians;
-    const toPercentage = arcDeltaTo / focusedSegmentRadians;
-
-    d.target = {
-      x0: Math.max(0, Math.min(1, fromPercentage)) * 2 * Math.PI, // Start Angle, radians, 0 starting from 12 oclock
-      x1: Math.max(0, Math.min(1, toPercentage)) * 2 * Math.PI, // End Angle, radians, 0 starting from 12 oclock
-      y0: Math.max(0, d.y0 - focusedNode.depth), // Inner Radius
-      y1: Math.max(0, d.y1 - focusedNode.depth), // Outer Radius
-    };
-  });
-};
-
-const setTargetAnglesNew = (
   filtered: Array<D3HierarchyDiskItem>,
   focusedNode: D3HierarchyDiskItem
 ) => {
@@ -179,8 +179,8 @@ const updateData = (
       // Accumulo item piccoli
       if (accumulator) {
         skipMap[item.data.id] = true;
-        accumulator.data.value! += item.value ? item.value : 0;
-        (accumulator as any).value += item.value ? item.value : 0;
+        accumulator.data.value! += item.value ?? 0;
+        (accumulator as any).value += item.value ?? 0;
 
         (accumulator as any).current.x1 = item.current.x1;
         (accumulator as any).x1 = item.x1;
@@ -195,17 +195,10 @@ const updateData = (
           children: [],
         };
         accumulator = d3.hierarchy(v) as D3HierarchyDiskItem;
-        accumulator.parent = item.parent;
-        (accumulator as any).value = item.value || 0;
-        (accumulator as any).x0 = item.x0;
-        (accumulator as any).x1 = item.x1;
-        (accumulator as any).y0 = item.y0;
-        (accumulator as any).y1 = item.y1;
-
-        (accumulator as any).current = { ...item.current };
-        (accumulator as any).height = item.height;
-        (accumulator as any).depth = item.depth;
         accumulatorLastParent = item.parent;
+        accumulator.parent = item.parent;
+
+        Object.assign((accumulator as any), item)
       }
     }
   }
@@ -215,7 +208,7 @@ const updateData = (
       d3.quantize(d3.interpolateRainbow, colorCounter + 2)
     );
   }
-  setTargetAnglesNew(filtered, focused);
+  setTargetAngles(filtered, focused);
   // console.log({filtered})
   // console.log({filtered})
   // setTargetAngles(focused, focused);

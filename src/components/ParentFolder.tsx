@@ -2,7 +2,7 @@ import { invoke } from "@tauri-apps/api/tauri";
 import prettyBytes from "pretty-bytes";
 import { getIconForFolder } from "vscode-icons-js";
 // import { iconImages } from "./iconImages";
-import { buildFullPath } from "./pruneData";
+import { buildFullPath } from "../pruneData";
 interface ParentFolderProps {
   focusedDirectory: D3HierarchyDiskItem;
   d3Chart: any;

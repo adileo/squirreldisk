@@ -1,5 +1,5 @@
-import Logo from "./assets/squirrel.png";
-import Close from "./assets/Close.svg";
+import Logo from "../assets/squirrel.png";
+import Close from "../assets/Close.svg";
 import { Link, useLocation } from "react-router-dom";
 import { Platform, platform } from "@tauri-apps/api/os";
 import { useEffect, useState } from "react";

@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
-import diskIcon from "./assets/harddisk.png";
-import removableDriver from "./assets/removable-drive.png";
+import diskIcon from "../assets/harddisk.png";
+import removableDriver from "../assets/removable-drive.png";
 
 import { useNavigate } from "react-router-dom";
 
