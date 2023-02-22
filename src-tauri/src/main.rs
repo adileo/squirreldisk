@@ -5,6 +5,7 @@
 mod scan;
 mod window_style;
 
+use regex::Regex;
 use serde::Serialize;
 use std::process::Command;
 use std::sync::Mutex;
