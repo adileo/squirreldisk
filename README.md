@@ -36,7 +36,7 @@ Some features:
 - Drag and drop: collect all items to be deleted
 - Right click on a folder/file to open the file explorer
 - Cross-Platform MacOS, Windows, Linux
-- Auto-updater: get notified when there is a new update (only on app launch - no notfication spamming thanks)
+- Auto-updater: get notified when there is a new update (only on app launch - no notification spamming thanks)
 
 ## Installation
 
