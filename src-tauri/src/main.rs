@@ -7,17 +7,17 @@ mod window_style;
 
 use regex::Regex;
 use serde::Serialize;
-
 use std::process::Command;
 use std::sync::Mutex;
-use std::{path::PathBuf, thread};
 use sysinfo::{DiskExt, System, SystemExt};
 use tauri::api::process::CommandChild;
 use tauri::Manager;
+
+#[cfg(target_os = "macos")]
 use window_vibrancy::NSVisualEffectMaterial;
 
 #[cfg(target_os = "linux")]
-use {std::fs::metadata, std::PathBuf};
+use {std::fs::metadata, std::path::PathBuf};
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
