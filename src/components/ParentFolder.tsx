@@ -3,6 +3,7 @@ import prettyBytes from "pretty-bytes";
 import { getIconForFolder } from "vscode-icons-js";
 // import { iconImages } from "./iconImages";
 import { buildFullPath } from "../pruneData";
+import { formatBytes } from "../formatBytes";
 interface ParentFolderProps {
   focusedDirectory: D3HierarchyDiskItem;
   d3Chart: any;
@@ -11,7 +12,6 @@ export const ParentFolder = ({
   focusedDirectory,
   d3Chart,
 }: ParentFolderProps) => {
-  const mul = window.OS_TYPE === "Windows_NT" ? 1024 : 1000;
   return (
     <div
       className="bg-gray-800 p-2 text-white flex justify-between rounded-md cursor-pointer"
@@ -41,11 +41,7 @@ export const ParentFolder = ({
             .replace("\\/", "/")
             .replace("\\", "/")}
       </div>
-      <div className="text-xs">
-        {focusedDirectory &&
-          (focusedDirectory.data.value! / mul / mul / mul).toFixed(2)}{" "}
-        GB
-      </div>
+      <div className="text-xs">{formatBytes(focusedDirectory?.data.value)}</div>
     </div>
   );
 };

@@ -6,6 +6,7 @@ html {
   height: 100%;
   background: transparent;
 }
+
 body {
   background: #0a1125af;
 
@@ -13,16 +14,18 @@ body {
   -webkit-user-select: none;
 }
 
-.linuxbg{
+.linuxbg {
   background: #0a1125;
 }
 
 .titlebar {
   -webkit-app-region: drag;
 }
+
 .titlebar .navi {
   -webkit-app-region: no-drag;
 }
+
 .titlebar button {
   -webkit-app-region: no-drag;
 }

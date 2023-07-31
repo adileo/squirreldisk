@@ -1,9 +1,9 @@
 import * as d3 from "d3";
-import prettyBytes from "pretty-bytes";
 import { v4 as uuidv4 } from "uuid";
 import pSBC from "shade-blend-color";
+import { formatBytes } from "./formatBytes";
 
-const depthmap: any = {
+const depthmap: Record<number, number> = {
   0: 0,
   1: -0.2,
   2: -0.35,
@@ -109,7 +109,7 @@ const animateToTarget = (
         return (d.current = interpol);
       };
     })
-    .filter(function (d: any) {
+    .filter(function (d) {
       // Hide non relevant arcs
       // console.log(d.target)
       return !!(+this.getAttribute("fill-opacity")! || arcVisible(d.target));
@@ -248,9 +248,7 @@ const updateData = (
               .ancestors()
               .map((d) => d.data.name)
               .reverse()
-              .join("/")}\n${((d.data.data || 0) / mul / mul / mul).toFixed(
-              2
-            )} GB`
+              .join("/")}\n${formatBytes(d.data.data)}`
         );
         return xx;
       },
