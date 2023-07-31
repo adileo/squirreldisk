@@ -1,93 +1,93 @@
 {
-    "build": {
-        "beforeDevCommand": "npm run dev",
-        "beforeBuildCommand": "npm run build",
-        "devPath": "http://localhost:1420",
-        "distDir": "../dist"
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devPath": "http://localhost:1420",
+    "distDir": "../dist"
+  },
+  "package": {
+    "productName": "SquirrelDisk",
+    "version": "0.3.4"
+  },
+  "tauri": {
+    "allowlist": {
+      "all": true,
+      "fs": {
+        "all": false,
+        "copyFile": false,
+        "createDir": false,
+        "exists": false,
+        "readDir": false,
+        "readFile": false,
+        "removeDir": true,
+        "removeFile": true,
+        "renameFile": false,
+        "scope": [
+          "**"
+        ],
+        "writeFile": false
+      }
     },
-    "package": {
-        "productName": "SquirrelDisk",
-        "version": "0.3.4"
+    "bundle": {
+      "active": true,
+      "category": "DeveloperTool",
+      "copyright": "",
+      "deb": {
+        "depends": []
+      },
+      "externalBin": [
+        "bin/pdu"
+      ],
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/256x256.png",
+        "icons/icon.icns",
+        "icons/icon.ico"
+      ],
+      "identifier": "com.squirreldisk.dev",
+      "longDescription": "",
+      "macOS": {
+        "entitlements": null,
+        "exceptionDomain": "",
+        "frameworks": [],
+        "providerShortName": null,
+        "signingIdentity": null
+      },
+      "resources": [],
+      "shortDescription": "",
+      "targets": "all",
+      "windows": {
+        "certificateThumbprint": null,
+        "digestAlgorithm": "sha256",
+        "timestampUrl": ""
+      }
     },
-    "tauri": {
-        "allowlist": {
-            "all": true,
-            "fs": {
-                "all": false,
-                "copyFile": false,
-                "createDir": false,
-                "exists": false,
-                "readDir": false,
-                "readFile": false,
-                "removeDir": true,
-                "removeFile": true,
-                "renameFile": false,
-                "scope": [
-                    "**"
-                ],
-                "writeFile": false
-            }
-        },
-        "bundle": {
-            "active": true,
-            "category": "DeveloperTool",
-            "copyright": "",
-            "deb": {
-                "depends": []
-            },
-            "externalBin": [
-                "bin/pdu"
-            ],
-            "icon": [
-                "icons/32x32.png",
-                "icons/128x128.png",
-                "icons/256x256.png",
-                "icons/icon.icns",
-                "icons/icon.ico"
-            ],
-            "identifier": "com.squirreldisk.dev",
-            "longDescription": "",
-            "macOS": {
-                "entitlements": null,
-                "exceptionDomain": "",
-                "frameworks": [],
-                "providerShortName": null,
-                "signingIdentity": null
-            },
-            "resources": [],
-            "shortDescription": "",
-            "targets": "all",
-            "windows": {
-                "certificateThumbprint": null,
-                "digestAlgorithm": "sha256",
-                "timestampUrl": ""
-            }
-        },
-        "security": {
-            "csp": null
-        },
-        "updater": {
-            "active": true,
-            "endpoints": [
-                "https://www.squirreldisk.com/api/updates/{{target}}/{{current_version}}"
-            ],
-            "dialog": true,
-            "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDk3QjIwNUJBRkM0MDE0OTUKUldTVkZFRDh1Z1d5bHdSbS85UmovVUdiOHk1dy9zTnZzb2xtb0ppbGIzS3E3NUdHUnB1QldjRVAK"
-        },
-        "macOSPrivateApi": true,
-        "windows": [
-            {
-                "fullscreen": false,
-                "height": 600,
-                "minHeight": 240,
-                "minWidth": 440,
-                "resizable": true,
-                "title": "SquirrelDisk",
-                "width": 1100,
-                "decorations": false,
-                "transparent": true,
-                "center": true
-            }
-        ]
-    }
+    "security": {
+      "csp": null
+    },
+    "updater": {
+      "active": true,
+      "endpoints": [
+        "https://www.squirreldisk.com/api/updates/{{target}}/{{current_version}}"
+      ],
+      "dialog": true,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDk3QjIwNUJBRkM0MDE0OTUKUldTVkZFRDh1Z1d5bHdSbS85UmovVUdiOHk1dy9zTnZzb2xtb0ppbGIzS3E3NUdHUnB1QldjRVAK"
+    },
+    "macOSPrivateApi": true,
+    "windows": [
+      {
+        "fullscreen": false,
+        "height": 600,
+        "minHeight": 240,
+        "minWidth": 440,
+        "resizable": true,
+        "title": "SquirrelDisk",
+        "width": 1100,
+        "decorations": false,
+        "transparent": true,
+        "center": true
+      }
+    ]
+  }
 }
