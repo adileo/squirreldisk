@@ -1,4 +1,4 @@
-function formatBytes(bytes: number, decimals = 2) {
+export function formatBytes(bytes: number, decimals = 2) {
     if (bytes < 1) return '0 B'
 
     const div = window.OS_TYPE === "Windows_NT" ? 1024 : 1000;
