@@ -139,9 +139,10 @@ const Scanning = () => {
         <div className="flex-1 flex flex-col justify-center items-center justify-items-center">
           <img src={diskIcon} className="w-16 h-16"></img>
           <div className="w-2/3">
-            <div className="mt-5 mb-1 text-base text-center font-medium text-white">
-              Scanning {disk} {((cappedTotal / used) * 100).toFixed(2)}
-              %
+            <div className="mt-5 mb-1 text-base text-center font-medium text-gray-400">
+              <span>Scanning {disk} </span>
+              <br />
+              <span className="text-lg text-gray-100 font-bold">{((cappedTotal / used) * 100).toFixed(2)}%</span>
               <br />
               {/* <span className="text-sm">{itemPath}</span> */}
             </div>

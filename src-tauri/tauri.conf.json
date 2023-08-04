@@ -79,6 +79,8 @@
       {
         "fullscreen": false,
         "height": 600,
+        "minHeight": 240,
+        "minWidth": 440,
         "resizable": true,
         "title": "SquirrelDisk",
         "width": 1100,

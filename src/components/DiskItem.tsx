@@ -1,8 +1,8 @@
-import { Link } from "react-router-dom";
 import diskIcon from "../assets/harddisk.png";
 import removableDriver from "../assets/removable-drive.png";
 
 import { useNavigate } from "react-router-dom";
+import { formatBytes } from "../formatBytes";
 
 const DiskItem = ({ disk }: any) => {
   const navigate = useNavigate();
@@ -49,7 +49,7 @@ const DiskItem = ({ disk }: any) => {
             <span className="text-xs">({disk.sMountPoint})</span>
             <br />
             <span className=" text-sm font-medium mr-2 px-2.5 py-0.5 rounded bg-gray-700 text-gray-300">
-              {(disk.totalSpace / mul / mul / mul).toFixed(1)} GB
+              {formatBytes(disk.totalSpace, 1)}
             </span>
             {/* <span className="opacity-60"></span> */}
           </span>
