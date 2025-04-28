@@ -191,7 +191,7 @@ const updateData = (
           isDirectory: false,
           name: "Smaller Items",
           value: item.value || 0,
-          data: item.value || 0,
+          size: item.value || 0,
           children: [],
         };
         accumulator = d3.hierarchy(v) as D3HierarchyDiskItem;
@@ -248,7 +248,7 @@ const updateData = (
               .ancestors()
               .map((d) => d.data.name)
               .reverse()
-              .join("/")}\n${((d.data.data || 0) / mul / mul / mul).toFixed(
+              .join("/")}\n${((d.data.size || 0) / mul / mul / mul).toFixed(
               2
             )} GB`
         );
