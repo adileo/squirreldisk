@@ -14,9 +14,9 @@ import {
 import { FileLine } from "./FileLine";
 import { ParentFolder } from "./ParentFolder";
 import { DragDropContext, Droppable } from "react-beautiful-dnd";
-import { invoke } from "@tauri-apps/api/tauri";
+import { invoke } from "@tauri-apps/api/core";
 import { emit, listen } from "@tauri-apps/api/event";
-import { removeFile, removeDir } from "@tauri-apps/api/fs";
+import { remove } from "@tauri-apps/plugin-fs";
 
 (window as any).LockDNDEdgeScrolling = () => true;
 
@@ -124,7 +124,7 @@ const Scanning = () => {
           const vn = getViewNode(baseData.current!, curNodePath);
 
           setFocusedDirectory(
-            getViewNodeGraph(baseDataD3Hierarchy.current!, curNodePath)
+            getViewNodeGraph(baseDataD3Hierarchy.current!, curNodePath),
           );
           return vn;
         },
@@ -132,7 +132,7 @@ const Scanning = () => {
     }
   }, [view]);
   // Avoid progress bar going to the star due to undetectable fs hardlinks
-  const cappedTotal = Math.min(status ? status.total : 0, used)
+  const cappedTotal = Math.min(status ? status.total : 0, used);
   return (
     <>
       {view == "loading" && status && (
@@ -173,7 +173,7 @@ const Scanning = () => {
                 return;
               }
               const item = focusedDirectory!.children!.find(
-                (i) => i.data.id === result.draggableId
+                (i) => i.data.id === result.draggableId,
               );
               setDeleteList((val) => {
                 if (!val.find((e) => e.data.id === item!.data.id)) {
@@ -280,12 +280,12 @@ const Scanning = () => {
                                   //     node.children.length > 0
                                   //   ) {
                                   // Workaroound: Since sometimes if the tree has some trimmed leafs a folder has no children
-                                  removeDir(nodePath, {
+                                  remove(nodePath, {
                                     recursive: true,
                                   }).catch((err) =>
-                                    removeFile(nodePath).catch((err2) =>
-                                      console.error(err, err2)
-                                    )
+                                    remove(nodePath).catch((err2) =>
+                                      console.error(err, err2),
+                                    ),
                                   );
                                   //   } else {
                                   //     removeFile(nodePath).catch((err) => console.error(err));

@@ -1,4 +1,4 @@
-import { invoke } from "@tauri-apps/api/tauri";
+import { invoke } from "@tauri-apps/api/core";
 import prettyBytes from "pretty-bytes";
 import { getIconForFolder } from "vscode-icons-js";
 // import { iconImages } from "./iconImages";
@@ -11,7 +11,7 @@ export const ParentFolder = ({
   focusedDirectory,
   d3Chart,
 }: ParentFolderProps) => {
-  const mul = window.OS_TYPE === "Windows_NT" ? 1024 : 1000;
+  const mul = window.OS_TYPE === "windows" ? 1024 : 1000;
   return (
     <div
       className="bg-gray-800 p-2 text-white flex justify-between rounded-md cursor-pointer"

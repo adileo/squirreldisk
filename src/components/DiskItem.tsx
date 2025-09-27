@@ -16,7 +16,7 @@ const DiskItem = ({ disk }: any) => {
   const xy: any = x.find((e) => perc > e.from && perc <= e.to);
 
   const icona = disk.isRemovable ? removableDriver : diskIcon;
-  const mul = window.OS_TYPE === "Windows_NT" ? 1024 : 1000;
+  const mul = window.OS_TYPE === "windows" ? 1024 : 1000;
 
   return (
     <div

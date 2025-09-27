@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 
 import DiskItem from "./DiskItem";
-import { invoke } from "@tauri-apps/api/tauri";
+import { invoke } from "@tauri-apps/api/core";
 
 import { getVersion } from "@tauri-apps/api/app";
-import { platform } from "@tauri-apps/api/os";
-import { open } from "@tauri-apps/api/dialog";
+import { platform } from "@tauri-apps/plugin-os";
+import { open } from "@tauri-apps/plugin-dialog";
 import folderIcon from "../assets/folder.png";
 import { useNavigate } from "react-router-dom";
 
@@ -33,27 +33,23 @@ const DiskList = () => {
     const syncDisks = async () => {
       const disksString: string = await invoke("get_disks");
       const disks = JSON.parse(disksString);
-      platform().then((plat) => {
-        let filtered = disks.filter((disk: any) => {
-          if (
-            plat === "darwin" &&
-            disk.sMountPoint === "/System/Volumes/Data"
-          ) {
-            return false; // Since it will be used /System/Volumes/Data
-          }
-          if (
-            plat === "linux" &&
-            disk.sMountPoint === "/var/snap/firefox/common/host-hunspell"
-          ) {
-            return false;
-          }
-          if (plat === "linux" && disk.sMountPoint === "/boot/efi") {
-            return false;
-          }
-          return true;
-        });
-        setDisks(filtered);
+      const plat = platform();
+      let filtered = disks.filter((disk: any) => {
+        if (plat === "macos" && disk.sMountPoint === "/System/Volumes/Data") {
+          return false; // Since it will be used /System/Volumes/Data
+        }
+        if (
+          plat === "linux" &&
+          disk.sMountPoint === "/var/snap/firefox/common/host-hunspell"
+        ) {
+          return false;
+        }
+        if (plat === "linux" && disk.sMountPoint === "/boot/efi") {
+          return false;
+        }
+        return true;
       });
+      setDisks(filtered);
     };
     const handle = setInterval(syncDisks, 2000);
     syncDisks();

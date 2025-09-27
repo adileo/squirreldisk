@@ -215,7 +215,7 @@ const updateData = (
   // console.log({filtered})
   // Data deve essere
   // console.log({fd: focused.descendants().slice(1, 50)})
-  const mul = window.OS_TYPE === "Windows_NT" ? 1024 : 1000;
+  const mul = window.OS_TYPE === "windows" ? 1024 : 1000;
 
   let path = innerG
     .selectAll<SVGPathElement, D3HierarchyDiskItem>("path")

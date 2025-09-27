@@ -3,7 +3,7 @@ import { buildFullPath } from "../pruneData";
 import { getIconForFile, getIconForFolder } from "vscode-icons-js";
 // import { iconImages } from "./iconImages";
 import { Draggable } from "react-beautiful-dnd";
-import { invoke } from "@tauri-apps/api/tauri";
+import { invoke } from "@tauri-apps/api/core";
 
 interface FileLineProps {
   item: D3HierarchyDiskItem;
@@ -12,7 +12,8 @@ interface FileLineProps {
   index: number;
   deleteMap: Map<string, boolean>;
 }
-const mul = window.OS_TYPE === "Windows_NT" ? 1024 : 1000;
+
+const mul = window.OS_TYPE === "windows" ? 1024 : 1000;
 export const FileLine = ({
   item,
   hoveredItem,
@@ -20,7 +21,6 @@ export const FileLine = ({
   index,
   deleteMap,
 }: FileLineProps) => {
-
   return (
     <Draggable draggableId={item.data.id} index={index}>
       {(provided) => (
@@ -41,7 +41,7 @@ export const FileLine = ({
           onClick={() => {
             item.children
               ? d3Chart.current.focusDirectory(
-                  item
+                  item,
                 ) /*window.electron.diskUtils.showItemInFolder(buildFullPath(c))*/
               : invoke("show_in_folder", { path: buildFullPath(item) });
           }}
