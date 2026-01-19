@@ -10,22 +10,39 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [macos-latest, ubuntu-20.04, windows-latest]
+        include:
+          # macOS Apple Silicon (arm64)
+          - platform: 'macos-latest'
+            args: '--target aarch64-apple-darwin'
+            target: 'aarch64-apple-darwin'
+          # macOS Intel (x86_64)
+          - platform: 'macos-13'
+            args: '--target x86_64-apple-darwin'
+            target: 'x86_64-apple-darwin'
+          # Linux
+          - platform: 'ubuntu-20.04'
+            args: ''
+            target: ''
+          # Windows
+          - platform: 'windows-latest'
+            args: ''
+            target: ''
     runs-on: ${{ matrix.platform }}
     environment: Prod
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-20.04'
-        # You can remove libayatana-appindicator3-dev if you don't use the system tray feature.
         run: |
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libayatana-appindicator3-dev librsvg2-dev
 
       - name: Rust setup
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
@@ -33,15 +50,14 @@ jobs:
           workspaces: './src-tauri -> target'
 
       - name: Sync node version and setup cache
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
-          cache: 'npm' # Set this to npm, yarn or pnpm.
+          cache: 'npm'
 
       - name: Install app dependencies and build web
-        # Remove `&& yarn build` if you build your frontend in `beforeBuildCommand`
-        run: npm i && npm run build # Change this to npm, yarn or pnpm.
-          
+        run: npm ci && npm run build
+
       - name: Build the app
         uses: tauri-apps/tauri-action@v0
         env:
@@ -49,8 +65,9 @@ jobs:
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
         with:
-          tagName: ${{ github.ref_name }} # This only works if your workflow triggers on new tags.
-          releaseName: 'App Name v__VERSION__' # tauri-action replaces \_\_VERSION\_\_ with the app version.
+          tagName: ${{ github.ref_name }}
+          releaseName: 'SquirrelDisk v__VERSION__'
           releaseBody: 'See the assets to download and install this version.'
           releaseDraft: true
           prerelease: false
+          args: ${{ matrix.args }}
