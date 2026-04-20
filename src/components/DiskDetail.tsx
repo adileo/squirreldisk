@@ -65,6 +65,8 @@ const Scanning = () => {
     });
 
     const unlisten2 = listen("scan_completed", (event: any) => {
+      // event.event is the event name (useful if you want to use a single callback fn for multiple event types)
+      // event.payload is the payload object
       console.log("[scan_completed] payload bytes:", event.payload?.length, "at", new Date().toISOString());
       try {
         const t0 = performance.now();
