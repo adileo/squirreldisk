@@ -5,7 +5,7 @@ interface DiskItem {
   id: string;
   name: string;
   value: number;
-  data: number;
+  size: number;
   isDirectory: boolean;
   children: Array<DiskItem>;
 }

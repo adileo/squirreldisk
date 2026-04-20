@@ -1,9 +1,17 @@
-## Windows
+## Updating binaries
 
-PDU Version: 0.8.4
-Using the GNU toolchain build for .exe (Window) renamed as "pdu-x86_64-pc-windows-msvc.exe" (and not pdu-x86_64-pc-windows-gnu.exe), in this way there is no dependency on Visual C++ Redistributable.
+Run `scripts/update-pdu.sh [version]` from the repo root. It downloads pre-built
+binaries from the GitHub release and builds `aarch64-apple-darwin` natively.
 
-## Mac
+## PDU Version: 0.23.0
 
-PDU Version: 0.8.4
-Cloning the "pdu-x86_64-apple-darwin" to "pdu-aarch64-apple-darwin" since there is no ARM build up to now of PDU.
+### Windows
+
+Using the GNU toolchain build renamed as `pdu-x86_64-pc-windows-msvc.exe` (no
+dependency on Visual C++ Redistributable).
+
+### Mac / Linux
+
+`x86_64-apple-darwin` and `x86_64-unknown-linux-gnu` are downloaded from the
+GitHub release. `aarch64-apple-darwin` is built natively from source via
+`cargo install`.
