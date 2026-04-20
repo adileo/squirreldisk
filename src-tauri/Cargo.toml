@@ -21,8 +21,6 @@ sysinfo = "0.27.7"
 window-vibrancy = "0.3.2"
 window-shadows = { git = "https://github.com/adileo/window-shadows" }
 raw-window-handle = "0.5.0"
-walkdir = "2"
-parallel-disk-usage = "0.8.3"
 regex = "1"
 
 [target."cfg(target_os = \"windows\")".dependencies]
