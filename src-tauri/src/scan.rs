@@ -28,6 +28,7 @@ pub fn start(
     let mut paths_to_scan: Vec<String> = Vec::new();
     paths_to_scan.push("--json-output".to_string());
     paths_to_scan.push("--progress".to_string());
+    paths_to_scan.push("--deduplicate-hardlinks".to_string());
     paths_to_scan.push(ratio);
 
     if path.eq("/") {
@@ -58,14 +59,15 @@ pub fn start(
     // unlisten to the event using the `id` returned on the `listen_global` function
     // an `once_global` API is also exposed on the `App` struct
 
-    let re = Regex::new(r"\(scanned ([0-9]*), total ([0-9]*)(?:, erred ([0-9]*))?\)").unwrap();
+    let re = Regex::new(r"\(scanned ([0-9]+), total ([0-9]+)(?:, linked [0-9]+, shared [0-9]+)?(?:, erred ([0-9]+))?\)").unwrap();
 
     tauri::async_runtime::spawn(async move {
         while let Some(event) = rx.recv().await {
             match event {
                 CommandEvent::Stdout(line) => {
-                    //println!("Stdout:{}", &line);
-                    app_handle.emit_all("scan_completed", line).ok();
+                    println!("[scan] stdout received: {} bytes", line.len());
+                    let emit_result = app_handle.emit_all("scan_completed", line);
+                    println!("[scan] emit_all scan_completed result: {:?}", emit_result);
                 }
                 CommandEvent::Stderr(msg) => {
                     // println!("Stderr:{}", &msg);
