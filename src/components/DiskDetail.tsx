@@ -65,12 +65,18 @@ const Scanning = () => {
     });
 
     const unlisten2 = listen("scan_completed", (event: any) => {
-      // event.event is the event name (useful if you want to use a single callback fn for multiple event types)
-      // event.payload is the payload object
-      baseData.current = JSON.parse(event.payload).tree;
-      const mapped = itemMap(baseData.current);
-      baseDataD3Hierarchy.current = diskItemToD3Hierarchy(mapped as any);
-      setView("disk");
+      console.log("[scan_completed] payload bytes:", event.payload?.length, "at", new Date().toISOString());
+      try {
+        const t0 = performance.now();
+        const parsed = JSON.parse(event.payload);
+        console.log("[scan_completed] JSON.parse took", (performance.now() - t0).toFixed(1), "ms, has .tree:", !!parsed.tree);
+        baseData.current = parsed.tree;
+        const mapped = itemMap(baseData.current);
+        baseDataD3Hierarchy.current = diskItemToD3Hierarchy(mapped as any);
+        setView("disk");
+      } catch (e) {
+        console.error("[scan_completed] JSON.parse failed:", e, "payload snippet:", String(event.payload).slice(0, 200));
+      }
     });
 
     invoke("start_scanning", { path: disk, ratio: fullscan ? "0" : "0.001" });
@@ -131,8 +137,7 @@ const Scanning = () => {
       });
     }
   }, [view]);
-  // Avoid progress bar going to the star due to undetectable fs hardlinks
-  const cappedTotal = Math.min(status ? status.total : 0, used)
+  const mul = window.OS_TYPE === "Windows_NT" ? 1024 : 1000;
   return (
     <>
       {view == "loading" && status && (
@@ -140,18 +145,13 @@ const Scanning = () => {
           <img src={diskIcon} className="w-16 h-16"></img>
           <div className="w-2/3">
             <div className="mt-5 mb-1 text-base text-center font-medium text-white">
-              Scanning {disk} {((cappedTotal / used) * 100).toFixed(2)}
-              %
-              <br />
-              {/* <span className="text-sm">{itemPath}</span> */}
+              Scanning {disk}
             </div>
-            <div className="mt-4 w-full bg-gray-200 rounded-full h-2.5">
-              <div
-                className="bg-blue-600 h-2.5 rounded-full"
-                style={{
-                  width: ((cappedTotal / used) * 100).toFixed(2) + "%",
-                }}
-              ></div>
+            <div className="mt-1 mb-3 text-sm text-center text-gray-400">
+              {status.items.toLocaleString()} files &mdash; {(status.total / mul / mul / mul).toFixed(2)} GB
+            </div>
+            <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
+              <div className="bg-blue-600 h-3 rounded-full w-full progress-shimmer" />
             </div>
           </div>
           <button
