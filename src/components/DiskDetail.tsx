@@ -13,6 +13,7 @@ import {
 } from "../pruneData";
 import { FileLine } from "./FileLine";
 import { ParentFolder } from "./ParentFolder";
+import GrowthReport from "./GrowthReport";
 import { DragDropContext, Droppable } from "react-beautiful-dnd";
 import { invoke } from "@tauri-apps/api/tauri";
 import { emit, listen } from "@tauri-apps/api/event";
@@ -44,6 +45,9 @@ const Scanning = () => {
   const [view, setView] = useState("loading");
   const [bytesProcessed, setByteProcessed] = useState(0);
   const [status, setStatus]: any = useState();
+  const [historyReport, setHistoryReport] = useState<ScanHistoryReport | null>(
+    null
+  );
   const [deleteState, setDeleteState] = useState({
     isDeleting: false,
     total: 0,
@@ -67,7 +71,16 @@ const Scanning = () => {
     const unlisten2 = listen("scan_completed", (event: any) => {
       // event.event is the event name (useful if you want to use a single callback fn for multiple event types)
       // event.payload is the payload object
-      baseData.current = JSON.parse(event.payload).tree;
+      const parsed = JSON.parse(event.payload);
+      baseData.current = parsed.tree;
+      invoke<ScanHistoryReport>("save_scan_history_snapshot", {
+        rootPath: disk,
+        tree: parsed.tree,
+      })
+        .then(setHistoryReport)
+        .catch((error) =>
+          console.warn("Could not save scan history snapshot", error)
+        );
       const mapped = itemMap(baseData.current);
       baseDataD3Hierarchy.current = diskItemToD3Hierarchy(mapped as any);
       setView("disk");
@@ -196,6 +209,7 @@ const Scanning = () => {
               </div>
 
               <div className="bg-gray-900 w-1/3 p-2 flex flex-col">
+                <GrowthReport report={historyReport} />
                 {focusedDirectory && (
                   <ParentFolder
                     focusedDirectory={focusedDirectory}
