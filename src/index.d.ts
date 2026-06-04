@@ -31,3 +31,22 @@ interface D3HierarchyDiskItem extends d3.HierarchyRectangularNode<DiskItem> {
   //   y0: number;
   //   y1: number;
 }
+
+interface ScanGrowthEntry {
+  path: string;
+  size: number;
+  previousSize: number;
+  delta: number;
+  percentChange?: number | null;
+  dailyRate?: number | null;
+}
+
+interface ScanHistoryReport {
+  rootPath: string;
+  snapshotCount: number;
+  currentTimestamp: number;
+  previousTimestamp?: number | null;
+  totalSize: number;
+  totalDelta?: number | null;
+  topGrowth: Array<ScanGrowthEntry>;
+}

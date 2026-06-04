@@ -2,6 +2,7 @@
     all(not(debug_assertions), target_os = "windows"),
     windows_subsystem = "windows"
 )]
+mod history;
 mod scan;
 mod window_style;
 
@@ -56,7 +57,8 @@ fn main() {
             get_disks,
             start_scanning,
             stop_scanning,
-            show_in_folder
+            show_in_folder,
+            save_scan_history_snapshot
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -148,4 +150,13 @@ fn stop_scanning(
 ) -> Result<(), ()> {
     scan::stop(state);
     Ok(())
+}
+
+#[tauri::command]
+fn save_scan_history_snapshot(
+    app_handle: tauri::AppHandle,
+    root_path: String,
+    tree: serde_json::Value,
+) -> Result<history::HistoryReport, String> {
+    history::save_snapshot(app_handle, root_path, tree)
 }
