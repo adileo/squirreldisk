@@ -20,9 +20,7 @@ body {
 .titlebar {
   -webkit-app-region: drag;
 }
-.titlebar .navi {
-  -webkit-app-region: no-drag;
-}
+.titlebar a,
 .titlebar button {
   -webkit-app-region: no-drag;
 }

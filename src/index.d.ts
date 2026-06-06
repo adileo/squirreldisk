@@ -1,13 +1,22 @@
 declare module "mongoid-js";
-declare module "shade-blend-color";
 
 interface DiskItem {
   id: string;
   name: string;
   value: number;
-  data: number;
+  size: number;
   isDirectory: boolean;
   children: Array<DiskItem>;
+  restricted?: boolean;
+  restrictedPath?: string;
+  restrictedReason?: string;
+  synthetic?: boolean;
+}
+
+interface RestrictedPath {
+  path: string;
+  operation?: string;
+  message?: string;
 }
 
 interface D3HierarchyDiskItemArc {

@@ -1,18 +1,22 @@
 import { useEffect, useState } from "react";
 
 import DiskItem from "./DiskItem";
-import { invoke } from "@tauri-apps/api/tauri";
+import { invoke } from "@tauri-apps/api/core";
 
 import { getVersion } from "@tauri-apps/api/app";
-import { platform } from "@tauri-apps/api/os";
-import { open } from "@tauri-apps/api/dialog";
+import { platform } from "@tauri-apps/plugin-os";
+import { open } from "@tauri-apps/plugin-dialog";
 import folderIcon from "../assets/folder.png";
 import { useNavigate } from "react-router-dom";
+import {
+  hasCachedScan,
+  listScanSnapshots,
+  type ScanSnapshotSummary,
+} from "../scanCache";
 
 declare global {
   interface Window {
     electron: any;
-    analytics: any;
     configStore: any;
     licver: any;
   }
@@ -21,9 +25,27 @@ declare global {
 const DiskList = () => {
   const [disks, setDisks] = useState([]);
   const [appVersion, setAppVersion] = useState("1.0.0");
+  const [snapshotByPath, setSnapshotByPath] = useState<
+    Map<string, ScanSnapshotSummary>
+  >(new Map());
+  const [, setCacheRevision] = useState(0);
   const navigate = useNavigate();
+  const handleCacheChange = () => {
+    setCacheRevision((revision) => revision + 1);
+    refreshSnapshotPaths();
+  };
+  const refreshSnapshotPaths = () => {
+    listScanSnapshots()
+      .then((snapshots) =>
+        setSnapshotByPath(
+          new Map(snapshots.map((snapshot) => [snapshot.path, snapshot]))
+        )
+      )
+      .catch(console.error);
+  };
   useEffect(() => {
     getVersion().then((v) => setAppVersion(v));
+    refreshSnapshotPaths();
     //   window.electron.app
     // setAppVersion(window.electron.appInfo().version)
   }, []);
@@ -31,14 +53,12 @@ const DiskList = () => {
   useEffect(() => {
     // window.electron.diskUtils.killDiskSizeWorker();
     const syncDisks = async () => {
-      const disksString: string = await invoke("get_disks");
-      const disks = JSON.parse(disksString);
-      platform().then((plat) => {
+      try {
+        const disksString: string = await invoke("get_disks");
+        const disks = JSON.parse(disksString);
+        const plat = platform();
         let filtered = disks.filter((disk: any) => {
-          if (
-            plat === "darwin" &&
-            disk.sMountPoint === "/System/Volumes/Data"
-          ) {
+          if (plat === "macos" && disk.sMountPoint === "/System/Volumes/Data") {
             return false; // Since it will be used /System/Volumes/Data
           }
           if (
@@ -53,7 +73,9 @@ const DiskList = () => {
           return true;
         });
         setDisks(filtered);
-      });
+      } catch (error) {
+        console.error("Failed to sync disks:", error);
+      }
     };
     const handle = setInterval(syncDisks, 2000);
     syncDisks();
@@ -62,21 +84,21 @@ const DiskList = () => {
     };
   }, []);
 
-  useEffect(() => {
-    var config = {
-      selector: ".inject_here",
-      account: "xYZ8B7",
-    };
-    if (window.Headway) {
-      window.Headway.init(config);
-    }
-  }, []);
   return (
     <div className="flex-1 flex flex-col">
       <div className="text-white flex-1">
-        {disks.map((disk: any) => (
-          <DiskItem key={disk.sMountPoint} disk={disk}></DiskItem>
-        ))}
+        {disks.map((disk: any) => {
+          const snapshot = snapshotByPath.get(disk.sMountPoint);
+          return (
+            <DiskItem
+              key={disk.sMountPoint}
+              disk={disk}
+              hasScan={hasCachedScan(disk.sMountPoint) || !!snapshot}
+              scanSnapshot={snapshot}
+              onCacheChange={handleCacheChange}
+            ></DiskItem>
+          );
+        })}
         <div
           className="text-white p-4 flex gap-4 items-center hover:bg-gray-800 cursor-pointer"
           onClick={() => {
@@ -89,7 +111,6 @@ const DiskList = () => {
                   state: {
                     disk: (directory as string).replace(/\\/g, "/"),
                     used: 0,
-                    fullscan: false,
                     isDirectory: true,
                   },
                 });
@@ -110,11 +131,8 @@ const DiskList = () => {
           </div>
         </div>
       </div>
-      <div className="p-4 text-white justify-between opacity-20 w-full flex">
-        <div>Tip: Right Click for a full disk scan (slower)</div>
-        <div>
-          <div className="inline-block inject_here"></div> v. {appVersion}
-        </div>
+      <div className="p-4 text-white justify-end opacity-20 w-full flex">
+        <div>v. {appVersion}</div>
       </div>
     </div>
   );

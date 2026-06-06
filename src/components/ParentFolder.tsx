@@ -1,17 +1,16 @@
-import { invoke } from "@tauri-apps/api/tauri";
-import prettyBytes from "pretty-bytes";
-import { getIconForFolder } from "vscode-icons-js";
-// import { iconImages } from "./iconImages";
+import { invoke } from "@tauri-apps/api/core";
 import { buildFullPath } from "../pruneData";
 interface ParentFolderProps {
   focusedDirectory: D3HierarchyDiskItem;
-  d3Chart: any;
+  isPreview?: boolean;
+  onFocusDirectory: (node: D3HierarchyDiskItem) => void;
 }
 export const ParentFolder = ({
   focusedDirectory,
-  d3Chart,
+  isPreview = false,
+  onFocusDirectory,
 }: ParentFolderProps) => {
-  const mul = window.OS_TYPE === "Windows_NT" ? 1024 : 1000;
+  const mul = window.OS_TYPE === "windows" ? 1024 : 1000;
   return (
     <div
       className="bg-gray-800 p-2 text-white flex justify-between rounded-md cursor-pointer"
@@ -20,31 +19,32 @@ export const ParentFolder = ({
         invoke("show_in_folder", { path: buildFullPath(focusedDirectory) });
       }}
       onClick={() => {
-        if (focusedDirectory.parent)
-          d3Chart.current.backToParent(focusedDirectory.parent);
+        if (isPreview) {
+          onFocusDirectory(focusedDirectory);
+        } else if (focusedDirectory.parent) {
+          onFocusDirectory(focusedDirectory.parent);
+        }
         /*window.electron.diskUtils.openPath(buildFullPath(focusedDirectory));*/
       }}
+      data-testid="sidebar-directory"
+      data-directory-id={focusedDirectory.data.id}
+      data-preview={isPreview ? "true" : "false"}
     >
-      <div className="">
-        {/* {focusedDirectory && (
-          <img
-            src={
-              iconImages[getIconForFolder(focusedDirectory.data.name)].default
-            }
-            className="h-6 w-6 mr-3"
-          ></img>
-        )} */}
-      </div>
       <div className="truncate pr-6 flex-1 text-xs">
         {focusedDirectory &&
           buildFullPath(focusedDirectory)
             .replace("\\/", "/")
             .replace("\\", "/")}
       </div>
-      <div className="text-xs">
-        {focusedDirectory &&
-          (focusedDirectory.data.value! / mul / mul / mul).toFixed(2)}{" "}
-        GB
+      <div className="shrink-0 text-right text-xs">
+        <div className="text-[10px] uppercase tracking-wide text-gray-500">
+          Allocated
+        </div>
+        <div>
+          {focusedDirectory &&
+            (focusedDirectory.data.value! / mul / mul / mul).toFixed(2)}{" "}
+          GB
+        </div>
       </div>
     </div>
   );

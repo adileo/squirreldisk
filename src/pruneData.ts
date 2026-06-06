@@ -1,15 +1,267 @@
 import * as d3 from "d3";
 // const pLimit = require('p-limit')
-import { v4 as uuidv4 } from "uuid";
 
 let genId = 0;
+
+const pathParts = (name: string) =>
+  name
+    .replace(/\\/g, "/")
+    .split("/")
+    .filter(Boolean);
+
+const cloneNode = (node: any): any => ({
+  ...node,
+  children: Array.isArray(node.children) ? node.children.map(cloneNode) : [],
+});
+
+const cloneWithName = (node: any, name: string) => ({
+  ...cloneNode(node),
+  name,
+});
+
+const makeGroupNode = (name: string) => ({
+  name,
+  value: 0,
+  size: 0,
+  isDirectory: true,
+  children: [],
+});
+
+const isDirectoryLike = (node: any) =>
+  !!node?.isDirectory ||
+  (Array.isArray(node?.children) && node.children.length > 0);
+
+const canMergeNodes = (left: any, right: any) =>
+  left?.name === right?.name && isDirectoryLike(left) === isDirectoryLike(right);
+
+const mergeNodeInto = (target: any, source: any) => {
+  const sourceSize = source.size || 0;
+  target.size = (target.size || 0) + sourceSize;
+  target.value = target.size;
+  target.isDirectory = isDirectoryLike(target) || isDirectoryLike(source);
+
+  if (source.restricted) {
+    target.restricted = true;
+    target.restrictedPath = source.restrictedPath;
+    target.restrictedReason = source.restrictedReason;
+  }
+
+  if (!Array.isArray(source.children) || source.children.length === 0) {
+    return;
+  }
+
+  if (!Array.isArray(target.children)) {
+    target.children = [];
+  }
+
+  source.children.forEach((sourceChild: any) => {
+    const child = cloneNode(sourceChild);
+    const existing = target.children.find((entry: any) =>
+      canMergeNodes(entry, child)
+    );
+
+    if (existing) {
+      mergeNodeInto(existing, child);
+    } else {
+      target.children.push(child);
+    }
+  });
+};
+
+const mergeChildIntoParent = (parent: any, child: any) => {
+  parent.children = parent.children || [];
+  const existing = parent.children.find((entry: any) =>
+    canMergeNodes(entry, child)
+  );
+
+  if (existing) {
+    mergeNodeInto(existing, child);
+  } else {
+    parent.children.push(child);
+  }
+};
+
+const addSizeToParent = (parent: any, size: number) => {
+  parent.size = (parent.size || 0) + size;
+  parent.value = parent.size;
+};
+
+const startsWithParts = (parts: Array<string>, prefix: Array<string>) =>
+  prefix.every((part, index) => parts[index] === part);
+
+const normalizeAbsolutePath = (path: string) => {
+  const normalized = path.replace(/\\/g, "/").replace(/\/+$/, "");
+  return normalized.startsWith("/") ? normalized || "/" : `/${normalized}`;
+};
+
+const insertAbsoluteChild = (parent: any, parts: Array<string>, node: any) => {
+  if (parts.length === 0) {
+    return;
+  }
+
+  const [part, ...rest] = parts;
+  if (rest.length === 0) {
+    mergeChildIntoParent(parent, cloneWithName(node, part));
+    addSizeToParent(parent, node.size || 0);
+    return;
+  }
+
+  let group = parent.children.find(
+    (child: any) => child.name === part && isDirectoryLike(child)
+  );
+  if (!group) {
+    group = makeGroupNode(part);
+    parent.children.push(group);
+  }
+
+  insertAbsoluteChild(group, rest, node);
+  addSizeToParent(parent, node.size || 0);
+};
+
+const sortTreeChildren = (node: any) => {
+  if (!Array.isArray(node.children)) {
+    return;
+  }
+
+  node.children.sort((a: any, b: any) => {
+    if (!!a.restricted !== !!b.restricted) {
+      return a.restricted ? 1 : -1;
+    }
+
+    const sizeDifference = (b.size || 0) - (a.size || 0);
+    return sizeDifference || String(a.name).localeCompare(String(b.name));
+  });
+  node.children.forEach(sortTreeChildren);
+};
+
+const insertRestrictedPath = (
+  parent: any,
+  parts: Array<string>,
+  restrictedPath: RestrictedPath
+) => {
+  if (parts.length === 0) {
+    return;
+  }
+
+  const [part, ...rest] = parts;
+  let child = parent.children?.find(
+    (entry: any) => entry.name === part && isDirectoryLike(entry)
+  );
+
+  if (rest.length === 0) {
+    if (child) {
+      child.restricted = true;
+      child.restrictedPath = restrictedPath.path;
+      child.restrictedReason = restrictedPath.message;
+      return;
+    }
+
+    parent.children = parent.children || [];
+    parent.children.push({
+      id: "",
+      name: part,
+      value: 0,
+      size: 0,
+      isDirectory: true,
+      children: [],
+      restricted: true,
+      restrictedPath: restrictedPath.path,
+      restrictedReason: restrictedPath.message,
+    });
+    return;
+  }
+
+  if (!child) {
+    child = makeGroupNode(part);
+    parent.children = parent.children || [];
+    parent.children.push(child);
+  }
+
+  insertRestrictedPath(child, rest, restrictedPath);
+};
+
+export const addRestrictedPathsToTree = (
+  root: any,
+  basePath: string,
+  restrictedPaths: Array<RestrictedPath> = []
+) => {
+  if (!root || !Array.isArray(root.children) || restrictedPaths.length === 0) {
+    return root;
+  }
+
+  const baseParts = pathParts(normalizeAbsolutePath(basePath || root.name || "/"));
+  const seen = new Set<string>();
+
+  restrictedPaths.forEach((restrictedPath) => {
+    const fullPath = normalizeAbsolutePath(restrictedPath.path);
+    if (seen.has(fullPath)) {
+      return;
+    }
+    seen.add(fullPath);
+
+    const fullParts = pathParts(fullPath);
+    const relativeParts = startsWithParts(fullParts, baseParts)
+      ? fullParts.slice(baseParts.length)
+      : fullParts;
+
+    insertRestrictedPath(root, relativeParts, {
+      ...restrictedPath,
+      path: fullPath,
+    });
+  });
+
+  sortTreeChildren(root);
+  return root;
+};
+
+export const groupChildrenByBasePath = (root: any, basePath = "/") => {
+  if (!root || !Array.isArray(root.children)) {
+    return root;
+  }
+
+  const baseParts = pathParts(basePath);
+  const groupedRoot: any = {
+    ...root,
+    name: basePath || root.name,
+    size: 0,
+    value: 0,
+    children: [],
+  };
+
+  root.children.forEach((child: any) => {
+    const childParts = pathParts(child.name || "");
+    const relativeParts = startsWithParts(childParts, baseParts)
+      ? childParts.slice(baseParts.length)
+      : childParts;
+    const parts = relativeParts.length > 0 ? relativeParts : childParts;
+
+    if (parts.length <= 1) {
+      mergeChildIntoParent(
+        groupedRoot,
+        cloneWithName(child, parts[0] || child.name)
+      );
+      addSizeToParent(groupedRoot, child.size || 0);
+      return;
+    }
+
+    insertAbsoluteChild(groupedRoot, parts, child);
+  });
+
+  sortTreeChildren(groupedRoot);
+  return groupedRoot;
+};
+
+export const groupRootChildrenByTopLevelPath = (root: any) =>
+  groupChildrenByBasePath(root, "/");
+
 export const itemMap = (obj: any, parent: any = null) => {
   if (obj.name === "(total)") {
     obj.id = "/";
     obj.name = "/";
   } else if (parent && parent.id === "/") {
-    obj.id = obj.name;
-    obj.name = obj.name.substring(1); // remove the slash for 1st level dirs /folder
+    const hasLeadingSlash = obj.name.startsWith("/");
+    obj.id = hasLeadingSlash ? obj.name : `/${obj.name}`;
+    obj.name = hasLeadingSlash ? obj.name.substring(1) : obj.name;
   } else {
     obj.id = parent ? parent.id + "/" + obj.name : obj.name;
   }
@@ -18,7 +270,7 @@ export const itemMap = (obj: any, parent: any = null) => {
     //recursive call to scan property
     if (obj["children"].length > 0) {
       obj.isDirectory = true;
-      obj.value = obj.data;
+      obj.value = obj.size;
       obj["children"].forEach((element: any) => {
         itemMap(element, obj);
       });
@@ -31,13 +283,13 @@ const partition = (data: DiskItem) => {
   const hierarchy = d3
     .hierarchy(data)
     .sum(function (d) {
-      return !d.children || d.children.length === 0 ? d.data : 0;
+      return !d.children || d.children.length === 0 ? d.size : 0;
     })
 
     // .sum(d => d.value)
     // .sum((d: DiskItem) => (d.children ? d.data : d.data))
     // .sum(d => d.data ? 0 : d.value)
-    .sort((a: any, b: any) => (b.data || 0) - (a.data || 0));
+    .sort((a: any, b: any) => (b.size || 0) - (a.size || 0));
   // debugger;
   const partition = d3
     .partition<DiskItem>()

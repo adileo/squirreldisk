@@ -1,25 +1,6 @@
 # SquirrelDisk
 
-<br>
-
-<p align="center">
-    <a href="https://github.com/adileo/squirreldisk"><img src="https://img.shields.io/github/v/release/adileo/squirreldisk?color=%23ff00a0&include_prereleases&label=version&sort=semver&style=flat-square"></a>
-     &nbsp;
-      <a href="https://github.com/adileo/squirreldisk"><img src="https://shields.io/badge/-ALPHA-orange?color=%23ff00a0&include_prereleases&label=status&sort=semver&style=flat-square"></a>
-    &nbsp;
-    <a href="https://github.com/adileo/squirreldisk"><img src="https://img.shields.io/badge/built_with-Rust-dca282.svg?style=flat-square"></a>
-     &nbsp;
-     <a href="https://discord.gg/Xp8QtMM65w"><img src="https://img.shields.io/badge/Discord-%235865F2.svg?style=flat-square&logo=discord&logoColor=white"></a>
-   
-</p>
-
-<div align="center">
-
-[![Windows Support](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/adileo/squirreldisk/releases) [![Ubuntu Support](https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)](https://github.com/adileo/squirreldisk/releases) [![Windows Support](https://img.shields.io/badge/MACOS-adb8c5?style=for-the-badge&logo=macos&logoColor=white)](https://github.com/adileo/squirreldisk/releases)
-
-</div>
-
-![Screenshot](/public/squirrel-demo-2.gif)
+![SquirrelDisk screenshot](public/squirreldisk.png)
 
 ## What's taking your hard disk space?
 
@@ -35,8 +16,13 @@ Some features:
 - A sunburst chart to quickly visualize the disk usage
 - Drag and drop: collect all items to be deleted
 - Right click on a folder/file to open the file explorer
-- Cross-Platform MacOS, Windows, Linux
-- Auto-updater: get notified when there is a new update (only on app launch - no notification spamming thanks)
+- Cross-platform macOS, Windows, Linux
+
+## Source
+
+- Main repository: [git.iris.to](https://git.iris.to/#/npub1xdhnr9mrv47kkrn95k6cwecearydeh8e895990n3acntwvmgk2dsdeeycm/squirreldisk)
+- GitHub mirror: [mmalmi/squirreldisk](https://github.com/mmalmi/squirreldisk)
+- [Releases](https://git.iris.to/#/npub1xdhnr9mrv47kkrn95k6cwecearydeh8e895990n3acntwvmgk2dsdeeycm/squirreldisk?tab=releases)
 
 ## Installation
 
@@ -44,21 +30,21 @@ Please note that the current version is not 100% stable yet, and you may encount
 
 ### Windows
 
-1. Download the installer from the [release page](https://github.com/adileo/squirreldisk/releases)
+1. Download the installer from the [release page](https://git.iris.to/#/npub1xdhnr9mrv47kkrn95k6cwecearydeh8e895990n3acntwvmgk2dsdeeycm/squirreldisk?tab=releases)
 2. The binary is not signed so Windows could open a popup window warning you that the file is unsecure, just click on "More Information" > "Run Anyway"
 
 [Why the binary isn't Codesigned and marked as unsafe?](https://news.ycombinator.com/item?id=19330062)
 
-### Ubuntu
+### Linux
 
-1. Download the .deb package from the [release page](https://github.com/adileo/squirreldisk/releases)
+1. Download the AppImage or .deb package from the [release page](https://git.iris.to/#/npub1xdhnr9mrv47kkrn95k6cwecearydeh8e895990n3acntwvmgk2dsdeeycm/squirreldisk?tab=releases)
 2. Install
 
-### MacOS
+### macOS
 
-1. Download the .dmg from the [release page](https://github.com/adileo/squirreldisk/releases)
+1. Download the .dmg from the [release page](https://git.iris.to/#/npub1xdhnr9mrv47kkrn95k6cwecearydeh8e895990n3acntwvmgk2dsdeeycm/squirreldisk?tab=releases)
 2. Install the app from the .dmg
-3. First time you open the App: `Right click > Open` once (it won't run, since the binaries are not signed an alert will appear), then do it again `Right click > Open` to bypass the issue, it won't happen again after the first time.
+3. Published macOS releases are signed and notarized.
 
 ## Disclaimer
 
@@ -68,11 +54,11 @@ The code is still spaghetti and needs a lot of refactoring.
 
 ## Bug Reporting
 
-If you find any bugs, please report it by submitting an issue on our [issue page](https://github.com/adileo/squirreldisk/issues) with a detailed explanation. Giving some screenshots would also be very helpful.
+If you find any bugs, please report it by submitting an issue on our [issue page](https://git.iris.to/#/npub1xdhnr9mrv47kkrn95k6cwecearydeh8e895990n3acntwvmgk2dsdeeycm/squirreldisk?tab=issues) with a detailed explanation. Giving some screenshots would also be very helpful.
 
 ## Feature Request
 
-You can also submit a feature request on our [issue page](https://github.com/adileo/squirreldisk/issues) or [discussions](https://github.com/adileo/squirreldisk/discussions) and we will try to implement it as soon as possible.
+You can also submit a feature request on our [issue page](https://git.iris.to/#/npub1xdhnr9mrv47kkrn95k6cwecearydeh8e895990n3acntwvmgk2dsdeeycm/squirreldisk?tab=issues) and we will try to implement it as soon as possible.
 
 ## Contributions
 

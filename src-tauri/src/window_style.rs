@@ -13,11 +13,11 @@
 //! # Example
 //!
 //! ```no_run
-//! use window_shadows::set_shadow;
+//! use window_style::set_window_styles;
 //!
-//! # let window: &dyn raw_window_handle::HasRawWindowHandle = unsafe { std::mem::zeroed() };
+//! # let window: &dyn raw_window_handle::HasWindowHandle = unsafe { std::mem::zeroed() };
 //! #[cfg(any(windows, target_os = "macos"))]
-//! set_shadow(&window, true).unwrap();
+//! set_window_styles(&window).unwrap();
 //! ```
 
 /// Enables or disables the shadows for a window.
@@ -27,15 +27,22 @@
 /// - **Windows**: On Windows 11, the window will also have rounded corners.
 /// - **macOS**: Shadows are always disabled for transparent windows.
 /// - **Linux**: Unsupported, Shadows are controlled by the compositor installed on the end-user system.
-pub fn set_window_styles(window: impl raw_window_handle::HasRawWindowHandle) -> Result<(), Error> {
-    match window.raw_window_handle() {
+pub fn set_window_styles(window: impl raw_window_handle::HasWindowHandle) -> Result<(), Error> {
+    match window
+        .window_handle()
+        .map_err(|_| Error::UnsupportedPlatform)?
+        .as_raw()
+    {
         #[cfg(target_os = "macos")]
         raw_window_handle::RawWindowHandle::AppKit(handle) => {
             use cocoa::{appkit::NSWindow, base::id};
-            use objc::runtime::YES;
+            use objc::{msg_send, runtime::YES, sel, sel_impl};
 
             unsafe {
-                (handle.ns_window as id).setHasShadow_(YES);
+                let view = handle.ns_view.as_ptr() as id;
+                #[allow(unexpected_cfgs)]
+                let window: id = msg_send![view, window];
+                window.setHasShadow_(YES);
             }
 
             Ok(())
@@ -52,7 +59,7 @@ pub fn set_window_styles(window: impl raw_window_handle::HasRawWindowHandle) -> 
                 // DwmExtendFrameIntoClientArea(handle.hwnd as _, &margins);
 
                 DwmSetWindowAttribute(
-                    handle.hwnd as _,
+                    handle.hwnd.get() as _,
                     DWMWA_WINDOW_CORNER_PREFERENCE,
                     &DWMWCP_ROUND as *const i32 as *const _,
                     std::mem::size_of::<i32>() as _,
@@ -60,7 +67,7 @@ pub fn set_window_styles(window: impl raw_window_handle::HasRawWindowHandle) -> 
 
                 let dark_color: COLORREF = 0x280606;
                 DwmSetWindowAttribute(
-                    handle.hwnd as _,
+                    handle.hwnd.get() as _,
                     DWMWA_BORDER_COLOR,
                     &dark_color as *const COLORREF as *const _,
                     std::mem::size_of::<COLORREF>() as _,
