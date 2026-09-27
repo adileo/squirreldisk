@@ -167,7 +167,6 @@ impl App {
             let tile = Rect::from_min_size(r.min + Vec2::new(14.0, 16.0), Vec2::splat(44.0));
             let tc = if v.is_boot { theme.accent } else if v.removable { theme.warn } else { theme.accent2 };
             p.rect_filled(tile, cr(8.0), tc);
-            p.rect_filled(Rect::from_min_max(tile.min, Pos2::new(tile.max.x, tile.center().y)), egui::CornerRadius { nw: 8, ne: 8, sw: 0, se: 0 }, with_alpha(Color32::WHITE, 0.14));
             widgets::draw_icon(p, if v.removable { Icon::External } else { Icon::Disk }, tile.shrink(10.0), Color32::WHITE);
             // texts
             p.text(Pos2::new(tile.right() + 14.0, r.top() + 26.0), Align2::LEFT_CENTER, &v.name, bold(15.0), theme.text);

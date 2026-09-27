@@ -44,18 +44,6 @@ pub fn vgradient(painter: &Painter, rect: Rect, top: Color32, bottom: Color32) {
     painter.add(Shape::mesh(mesh));
 }
 
-/// Horizontal gradient rectangle.
-pub fn hgradient(painter: &Painter, rect: Rect, left: Color32, right: Color32) {
-    let mut mesh = Mesh::default();
-    mesh.colored_vertex(rect.left_top(), left);
-    mesh.colored_vertex(rect.right_top(), right);
-    mesh.colored_vertex(rect.left_bottom(), left);
-    mesh.colored_vertex(rect.right_bottom(), right);
-    mesh.add_triangle(0, 1, 2);
-    mesh.add_triangle(1, 3, 2);
-    painter.add(Shape::mesh(mesh));
-}
-
 /// Soft radial glow (a disc fading to transparent).
 pub fn glow(painter: &Painter, center: Pos2, radius: f32, color: Color32) {
     let mut mesh = Mesh::default();
@@ -71,14 +59,34 @@ pub fn glow(painter: &Painter, center: Pos2, radius: f32, color: Color32) {
     painter.add(Shape::mesh(mesh));
 }
 
-/// Rounded rectangle with a subtle top sheen.
-pub fn pill(painter: &Painter, rect: Rect, radius: f32, fill: Color32, sheen: f32) {
-    painter.rect_filled(rect, cr(radius), fill);
-    if sheen > 0.0 {
-        let top = Rect::from_min_max(rect.min, Pos2::new(rect.max.x, rect.center().y));
-        let r = radius.round().min(255.0) as u8;
-        painter.rect_filled(top.shrink2(Vec2::new(1.0, 0.0)), CornerRadius { nw: r, ne: r, sw: 0, se: 0 }, with_alpha(Color32::WHITE, sheen));
+/// Rounded rectangle with a horizontal colour gradient that also covers the
+/// rounded ends (built as one convex mesh, so the caps match the gradient).
+pub fn rounded_hgradient(painter: &Painter, rect: Rect, radius: f32, left: Color32, right: Color32) {
+    let r = radius.min(rect.height() / 2.0).min(rect.width() / 2.0);
+    let mut pts: Vec<Pos2> = Vec::new();
+    let corners = [
+        (Pos2::new(rect.right() - r, rect.top() + r), -PI / 2.0),
+        (Pos2::new(rect.right() - r, rect.bottom() - r), 0.0),
+        (Pos2::new(rect.left() + r, rect.bottom() - r), PI / 2.0),
+        (Pos2::new(rect.left() + r, rect.top() + r), PI),
+    ];
+    for (c, start) in corners {
+        for i in 0..=8 {
+            let a = start + (PI / 2.0) * i as f32 / 8.0;
+            pts.push(c + Vec2::angled(a) * r);
+        }
     }
+    let color_at = |x: f32| lerp_color(left, right, ((x - rect.left()) / rect.width().max(1.0)).clamp(0.0, 1.0));
+    let mut mesh = Mesh::default();
+    mesh.colored_vertex(rect.center(), color_at(rect.center().x));
+    for p in &pts {
+        mesh.colored_vertex(*p, color_at(p.x));
+    }
+    let n = pts.len() as u32;
+    for i in 0..n {
+        mesh.add_triangle(0, 1 + i, 1 + (i + 1) % n);
+    }
+    painter.add(Shape::mesh(mesh));
 }
 
 #[derive(Clone, Copy, PartialEq)]
@@ -118,7 +126,7 @@ pub fn button_ex(ui: &mut Ui, rect: Rect, id: Id, label: &str, icon: Option<Icon
         let s = Shadow { offset: [0, 1], blur: 3, spread: 0, color: glow_c };
         painter.add(s.as_shape(r, cr(radius)));
     }
-    pill(painter, r, radius, fill, if matches!(style, BtnStyle::Ghost) { 0.0 } else { 0.035 });
+    painter.rect_filled(r, cr(radius), fill);
     if matches!(style, BtnStyle::Subtle | BtnStyle::Ghost) {
         painter.rect_stroke(r, cr(radius), Stroke::new(1.0, with_alpha(theme.stroke, 0.6 + 0.4 * h)), StrokeKind::Inside);
     }
@@ -185,10 +193,10 @@ pub fn progress_bar(painter: &Painter, rect: Rect, frac: Option<f32>, theme: &Th
             if f > 0.0 {
                 let w = (rect.width() * f).max(rect.height());
                 let fill = Rect::from_min_size(rect.min, Vec2::new(w, rect.height()));
-                painter.rect_filled(fill, cr(radius), a);
-                // gradient + moving shine, clipped to the filled part
-                let p = painter.with_clip_rect(fill.shrink2(Vec2::new(radius * 0.6, 0.0)).intersect(painter.clip_rect()));
-                hgradient(&p, fill, a, b);
+                // gradient spans the whole bar, so the end reflects the fill level
+                let end = lerp_color(a, b, f);
+                rounded_hgradient(painter, fill, radius, a, end);
+                let p = painter.with_clip_rect(fill.shrink2(Vec2::new(radius, 0.0)).intersect(painter.clip_rect()));
                 let shine_x = fill.left() + ((time * 0.7).fract() as f32) * (fill.width() + 120.0) - 60.0;
                 let shine = Rect::from_center_size(Pos2::new(shine_x, fill.center().y), Vec2::new(60.0, rect.height()));
                 let mut m = Mesh::default();

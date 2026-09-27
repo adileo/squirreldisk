@@ -151,21 +151,12 @@ fn ease(t: f64) -> f32 {
     (if t < 0.5 { 4.0 * t * t * t } else { 1.0 - (-2.0 * t + 2.0).powi(3) / 2.0 }) as f32
 }
 
-/// Downscales 2× (retina) and writes a PNG.
+/// Writes a frame as PNG at native resolution (ffmpeg scales it later).
 fn write_frame(path: &str, img: &egui::ColorImage) -> Result<(), String> {
-    let (w, h) = (img.size[0] / 2, img.size[1] / 2);
+    let (w, h) = (img.size[0], img.size[1]);
     let mut data = Vec::with_capacity(w * h * 4);
-    for y in 0..h {
-        for x in 0..w {
-            let mut acc = [0u32; 3];
-            for (dx, dy) in [(0, 0), (1, 0), (0, 1), (1, 1)] {
-                let p = img.pixels[(y * 2 + dy) * img.size[0] + x * 2 + dx];
-                acc[0] += p.r() as u32;
-                acc[1] += p.g() as u32;
-                acc[2] += p.b() as u32;
-            }
-            data.extend_from_slice(&[(acc[0] / 4) as u8, (acc[1] / 4) as u8, (acc[2] / 4) as u8, 255]);
-        }
+    for p in &img.pixels {
+        data.extend_from_slice(&[p.r(), p.g(), p.b(), 255]);
     }
     let size = tiny_skia::IntSize::from_wh(w as u32, h as u32).ok_or("size")?;
     let pm = tiny_skia::Pixmap::from_vec(data, size).ok_or("pixmap")?;
