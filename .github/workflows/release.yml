@@ -1,0 +1,104 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  macos:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+      - run: cargo test --release
+      - name: Build app (both architectures)
+        run: |
+          cargo build --release --target aarch64-apple-darwin
+          cargo build --release --target x86_64-apple-darwin
+          lipo -create -output squirreldisk-universal \
+            target/aarch64-apple-darwin/release/squirreldisk \
+            target/x86_64-apple-darwin/release/squirreldisk
+      - name: Bundle and package
+        run: |
+          scripts/bundle-macos.sh squirreldisk-universal dist
+          codesign --force --deep -s - dist/SquirrelDisk.app
+          ln -s /Applications dist/Applications
+          hdiutil create -volname SquirrelDisk -srcfolder dist -ov -format UDZO SquirrelDisk-macOS.dmg
+          # raw binaries used by the in-app updater
+          cp target/aarch64-apple-darwin/release/squirreldisk squirreldisk-aarch64-apple-darwin
+          cp target/x86_64-apple-darwin/release/squirreldisk squirreldisk-x86_64-apple-darwin
+      - name: Build agents
+        run: |
+          cargo build --release --no-default-features --target aarch64-apple-darwin
+          cp target/aarch64-apple-darwin/release/squirreldisk squirreldisk-agent-aarch64-apple-darwin
+          cargo build --release --no-default-features --target x86_64-apple-darwin
+          cp target/x86_64-apple-darwin/release/squirreldisk squirreldisk-agent-x86_64-apple-darwin
+      - uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          body_path: .github/release-notes.md
+          files: |
+            SquirrelDisk-macOS.dmg
+            squirreldisk-aarch64-apple-darwin
+            squirreldisk-x86_64-apple-darwin
+            squirreldisk-agent-aarch64-apple-darwin
+            squirreldisk-agent-x86_64-apple-darwin
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo test --release
+      - run: cargo build --release
+      - run: copy target\release\squirreldisk.exe squirreldisk-x86_64-pc-windows-msvc.exe
+      - uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          body_path: .github/release-notes.md
+          files: squirreldisk-x86_64-pc-windows-msvc.exe
+
+  linux:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-musl,aarch64-unknown-linux-musl
+      - run: sudo apt-get update && sudo apt-get install -y libasound2-dev libxkbcommon-dev libwayland-dev libx11-dev
+      - run: cargo test --release
+      - name: Build and package app
+        run: |
+          cargo build --release
+          cp target/release/squirreldisk squirreldisk-x86_64-unknown-linux-gnu
+          mkdir -p pkg/SquirrelDisk
+          cp target/release/squirreldisk pkg/SquirrelDisk/
+          cp packaging/linux/squirreldisk.desktop pkg/SquirrelDisk/
+          cp assets/icon/icon-256.png pkg/SquirrelDisk/squirreldisk.png
+          tar -C pkg -czf SquirrelDisk-Linux-x86_64.tar.gz SquirrelDisk
+      - name: Build agents (static, musl)
+        run: |
+          pip install ziglang
+          cargo install cargo-zigbuild --locked
+          for t in x86_64-unknown-linux-musl aarch64-unknown-linux-musl; do
+            cargo zigbuild --release --no-default-features --target $t
+            cp target/$t/release/squirreldisk squirreldisk-agent-$t
+          done
+      - uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          body_path: .github/release-notes.md
+          files: |
+            SquirrelDisk-Linux-x86_64.tar.gz
+            squirreldisk-x86_64-unknown-linux-gnu
+            squirreldisk-agent-x86_64-unknown-linux-musl
+            squirreldisk-agent-aarch64-unknown-linux-musl

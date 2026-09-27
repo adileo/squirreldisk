@@ -1,84 +1,104 @@
-# SquirrelDisk
-
-<br>
-
 <p align="center">
-    <a href="https://github.com/adileo/squirreldisk"><img src="https://img.shields.io/github/v/release/adileo/squirreldisk?color=%23ff00a0&include_prereleases&label=version&sort=semver&style=flat-square"></a>
-     &nbsp;
-      <a href="https://github.com/adileo/squirreldisk"><img src="https://shields.io/badge/-ALPHA-orange?color=%23ff00a0&include_prereleases&label=status&sort=semver&style=flat-square"></a>
-    &nbsp;
-    <a href="https://github.com/adileo/squirreldisk"><img src="https://img.shields.io/badge/built_with-Rust-dca282.svg?style=flat-square"></a>
-     &nbsp;
-     <a href="https://discord.gg/Xp8QtMM65w"><img src="https://img.shields.io/badge/Discord-%235865F2.svg?style=flat-square&logo=discord&logoColor=white"></a>
-   
+  <img src="assets/icon/icon-256.png" width="128" alt="SquirrelDisk logo">
 </p>
 
-<div align="center">
+<h1 align="center">SquirrelDisk</h1>
 
-[![Windows Support](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/adileo/squirreldisk/releases) [![Ubuntu Support](https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)](https://github.com/adileo/squirreldisk/releases) [![Windows Support](https://img.shields.io/badge/MACOS-adb8c5?style=for-the-badge&logo=macos&logoColor=white)](https://github.com/adileo/squirreldisk/releases)
+<p align="center">
+  See what's using your disk space, and clean it up safely.<br>
+  For macOS, Windows and Linux. Free.
+</p>
 
-</div>
+<p align="center">
+  <a href="https://github.com/adileo/squirreldisk/releases/latest"><img src="https://img.shields.io/github/v/release/adileo/squirreldisk?color=%238e6bff&label=version&style=flat-square"></a>
+  <a href="https://github.com/adileo/squirreldisk/releases"><img src="https://img.shields.io/github/downloads/adileo/squirreldisk/total?color=%23ff7ec8&style=flat-square"></a>
+  <img src="https://img.shields.io/badge/built_with-Rust-dca282.svg?style=flat-square">
+  <a href="https://discord.gg/Xp8QtMM65w"><img src="https://img.shields.io/badge/Discord-%235865F2.svg?style=flat-square&logo=discord&logoColor=white"></a>
+</p>
 
-![Screenshot](/public/squirrel-demo-2.gif)
+> [!NOTE]
+> **SquirrelDisk 2 is here.** After a few quiet years, SquirrelDisk is back, rebuilt from the ground up: faster, better looking, and with many long-standing bugs fixed on every platform. Completely free.
 
-## What's taking your hard disk space?
+<p align="center">
+  <img src="screenshots/hero.gif" alt="Scanning a disk and exploring the chart" width="860">
+</p>
 
-The easiest open source app you will ever use to detect huge files. Built with Rust + React (Tauri).
+## Download
 
-Squirreldisk is an open source alternative to softwares like: WinDirStat, WizTree, TreeSize and DaisyDisk.
+| Platform | Download |
+|----------|----------|
+| macOS (Apple silicon and Intel) | [SquirrelDisk-macOS.dmg](https://github.com/adileo/squirreldisk/releases/latest/download/SquirrelDisk-macOS.dmg) |
+| Windows 10 / 11 | [SquirrelDisk-Windows.exe](https://github.com/adileo/squirreldisk/releases/latest/download/squirreldisk-x86_64-pc-windows-msvc.exe) |
+| Linux (x86_64) | [SquirrelDisk-Linux.tar.gz](https://github.com/adileo/squirreldisk/releases/latest/download/SquirrelDisk-Linux-x86_64.tar.gz) |
 
-Some features:
+All builds are on the [releases page](https://github.com/adileo/squirreldisk/releases). SquirrelDisk updates itself when a new version comes out.
 
-- Fast scan and deep directory scanning
-- Disk scanning or pick a directory
-- External disks real-time detection
-- A sunburst chart to quickly visualize the disk usage
-- Drag and drop: collect all items to be deleted
-- Right click on a folder/file to open the file explorer
-- Cross-Platform MacOS, Windows, Linux
-- Auto-updater: get notified when there is a new update (only on app launch - no notification spamming thanks)
+<details>
+<summary>First launch on macOS</summary>
 
-## Installation
+SquirrelDisk is distributed outside the App Store, so macOS asks for confirmation the first time: right-click SquirrelDisk in Applications and choose **Open**. If macOS reports the app as damaged, run:
 
-Please note that the current version is not 100% stable yet, and you may encounter bugs.
+```bash
+xattr -dr com.apple.quarantine /Applications/SquirrelDisk.app
+```
+</details>
 
-### Windows
+## Features
 
-1. Download the installer from the [release page](https://github.com/adileo/squirreldisk/releases)
-2. The binary is not signed so Windows could open a popup window warning you that the file is unsecure, just click on "More Information" > "Run Anyway"
+**The whole disk at a glance.** Every folder becomes a slice of a colourful sunburst, sized by the space it takes. The chart builds up live while the scan runs, so the big offenders show up in seconds.
 
-[Why the binary isn't Codesigned and marked as unsafe?](https://news.ycombinator.com/item?id=19330062)
+**Explore by clicking.** Click a slice to zoom in, click the centre to go back. Hover any slice and the side list shows what's inside, biggest first. Tiny files are grouped so the chart stays readable, and you can open any group to see everything in it.
 
-### Ubuntu
+<p align="center"><img src="screenshots/explore.png" alt="Exploring a folder" width="820"></p>
 
-1. Download the .deb package from the [release page](https://github.com/adileo/squirreldisk/releases)
-2. Install
+**Collect, then clean up.** Drag slices or list rows into the collector at the bottom. When you're ready, move everything to the Trash, delete it for good, or copy it to an external drive or to the cloud first. A progress view keeps you posted, with a little celebration at the end.
 
-### MacOS
+<p align="center"><img src="screenshots/collect.gif" alt="Dragging folders into the collector and deleting them" width="860"></p>
 
-1. Download the .dmg from the [release page](https://github.com/adileo/squirreldisk/releases)
-2. Install the app from the .dmg
-3. First time you open the App: `Right click > Open` once (it won't run, since the binaries are not signed an alert will appear), then do it again `Right click > Open` to bypass the issue, it won't happen again after the first time.
+**Safe by design.** System folders, your home folder, whole drives and other essential locations are protected. App and settings folders ask for an extra confirmation before anything happens.
 
-## Disclaimer
+**Accurate numbers.** SquirrelDisk shows the space files really take on disk. Files that live only in the cloud (iCloud, Dropbox, Google Drive, OneDrive) count as zero, and linked folders are counted once.
 
-This app was a project from 2 years ago built in Electron in 2 days, I decided to port it to Tauri to achieve better performances and to make it Open Source. Yay.
+**Always up to date.** Delete something in Finder, Explorer or your file manager and the chart updates on its own.
 
-The code is still spaghetti and needs a lot of refactoring.
+**Servers and cloud storage too.** Scan any machine you can reach over SSH, or S3 buckets, Google Drive, Dropbox, FTP and many more cloud services through [rclone](https://rclone.org).
 
-## Bug Reporting
+**Light on your machine.** The app is about 8 MB, starts instantly, and maps millions of files with a small amount of memory. It runs smoothly on older computers too.
 
-If you find any bugs, please report it by submitting an issue on our [issue page](https://github.com/adileo/squirreldisk/issues) with a detailed explanation. Giving some screenshots would also be very helpful.
+**Make it yours.** Seven colour themes, optional sound effects, and an adjustable chart depth.
 
-## Feature Request
+<p align="center"><img src="screenshots/themes.gif" alt="Switching colour themes" width="860"></p>
 
-You can also submit a feature request on our [issue page](https://github.com/adileo/squirreldisk/issues) or [discussions](https://github.com/adileo/squirreldisk/discussions) and we will try to implement it as soon as possible.
+## Screenshots
 
-## Contributions
+<p align="center">
+  <img src="screenshots/home.png" alt="Home screen" width="420">
+  <img src="screenshots/overview.png" alt="Disk overview" width="420">
+  <img src="screenshots/delete.png" alt="Delete confirmation" width="420">
+  <img src="screenshots/theme-sunset.png" alt="Sunset theme" width="420">
+</p>
 
-- [Join our Discord Server](https://discord.gg/Xp8QtMM65w)
+## Sponsors
 
-## Credits
+SquirrelDisk is free, and sponsors help keep it that way. Sponsors appear in a small banner inside the app. The banner is chosen on each user's computer, so personal data stays private.
 
-- [parallel-disk-usage](https://github.com/KSXGitHub/parallel-disk-usage)
-- [tauri](https://github.com/tauri-apps/tauri)
+Interested? Head to [squirreldisk.com/sponsors](https://squirreldisk.com/sponsors).
+
+## Community
+
+- Chat with us on [Discord](https://discord.gg/Xp8QtMM65w)
+- Report bugs and suggest ideas in [issues](https://github.com/adileo/squirreldisk/issues)
+
+## Build from source
+
+With [Rust](https://rustup.rs) installed:
+
+```bash
+cargo run --release
+```
+
+On Linux you also need the ALSA, X11 and Wayland development packages (`libasound2-dev libxkbcommon-dev libwayland-dev libx11-dev` on Debian and Ubuntu).
+
+## License
+
+[AGPL-3.0](LICENSE)

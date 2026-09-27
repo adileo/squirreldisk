@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=SquirrelDisk
+Comment=See what's using your disk space and clean it up
+Exec=squirreldisk
+Icon=squirreldisk
+Categories=Utility;System;FileTools;
+Terminal=false

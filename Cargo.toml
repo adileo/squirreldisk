@@ -1,0 +1,51 @@
+[package]
+name = "squirreldisk"
+version = "2.0.0"
+edition = "2021"
+description = "Fast, fun, cross-platform disk usage analyzer with an animated sunburst"
+license = "AGPL-3.0-only"
+repository = "https://github.com/adileo/squirreldisk"
+
+[features]
+default = ["gui"]
+# Everything needed for the desktop app. Build with --no-default-features
+# to get the tiny headless agent used on remote servers.
+gui = ["dep:eframe", "dep:egui_glow", "dep:notify", "dep:sysinfo", "dep:rodio", "dep:ureq", "dep:self-replace", "dep:rfd", "dep:tiny-skia"]
+
+[dependencies]
+eframe = { optional = true, version = "0.36", default-features = false, features = ["glow", "default_fonts", "wayland", "x11"] }
+egui_glow = { version = "0.36", optional = true }
+notify = { optional = true, version = "8", default-features = false, features = ["macos_fsevent"] }
+trash = "5"
+sysinfo = { optional = true, version = "0.39", default-features = false, features = ["disk"] }
+rodio = { optional = true, version = "0.22", default-features = false, features = ["playback"] }
+ureq = { optional = true, version = "3", default-features = false, features = ["rustls", "json"] }
+self-replace = { version = "1.5", optional = true }
+rfd = { optional = true, version = "0.17", default-features = false, features = ["xdg-portal"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tiny-skia = { version = "0.12", optional = true, default-features = false, features = ["std", "simd", "png-format"] }
+
+[target.'cfg(windows)'.build-dependencies]
+embed-resource = "3"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_Storage_FileSystem", "Win32_Foundation"] }
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+strip = true
+
+[profile.dev.package."*"]
+opt-level = 2
+
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2 = "0.6"
+objc2-app-kit = { version = "0.3", default-features = false, features = ["std", "NSWindow", "NSView", "NSButton", "NSControl", "NSResponder", "NSApplication", "NSImage"] }
+objc2-foundation = { version = "0.3", default-features = false, features = ["std", "NSGeometry", "NSData"] }
+raw-window-handle = "0.6"
