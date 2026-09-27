@@ -194,5 +194,9 @@
   "inside {path}: apps or system components may stop working": "dentro de {path}: apps o componentes del sistema podrían dejar de funcionar",
   "this is the root of a disk": "esta es la raíz de un disco",
   "this is a mounted volume": "este es un volumen montado",
-  "hidden configuration folder": "carpeta de configuración oculta"
+  "hidden configuration folder": "carpeta de configuración oculta",
+  "Install updates automatically": "Instalar actualizaciones automáticamente",
+  "Download new versions in the background and apply them on restart": "Descargar nuevas versiones en segundo plano y aplicarlas al reiniciar",
+  "Restart to update": "Reiniciar para actualizar",
+  "{version} is ready — restart to update": "{version} está lista — reinicie para actualizar"
 }

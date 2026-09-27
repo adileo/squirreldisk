@@ -227,11 +227,12 @@ impl App {
                 }
                 y += 50.0;
 
-                let rows: [(&str, &str, u8); 6] = [
+                let rows: [(&str, &str, u8); 7] = [
                     (tr("Sound effects"), tr("Plops, crunches and a little fanfare"), 0),
                     (tr("Shader effects"), tr("GPU-rendered, anti-aliased segments (turn off on very old GPUs)"), 1),
                     (tr("Watch for changes"), tr("Update the chart when files change on disk"), 2),
                     (tr("Check for updates"), tr("Look for new releases on GitHub at launch"), 3),
+                (tr("Install updates automatically"), tr("Download new versions in the background and apply them on restart"), 6),
                     (tr("Personalized sponsors"), tr("Picked on this computer from disk categories; nothing about you is sent"), 4),
                     (tr("Anonymous sponsor stats"), tr("Daily view totals and click counts, with no ID of any kind"), 5),
                 ];
@@ -247,6 +248,7 @@ impl App {
                         2 => &mut s.watch_fs,
                         3 => &mut s.auto_update,
                         4 => &mut s.personalized_sponsors,
+                    6 => &mut s.auto_install,
                         _ => &mut s.sponsor_measurement,
                     };
                     widgets::toggle(ui, tgl, Id::new(("set-toggle", k)), v, &theme);
@@ -306,7 +308,7 @@ impl App {
                 UpState::UpToDate => tr("You're up to date").to_string(),
                 UpState::Available(r) => trf("Version {version} is available", &[("version", &r.version)]),
                 UpState::Downloading => tr("Downloading update…").to_string(),
-                UpState::Ready(v) => trf("{version} installed — restart to use it", &[("version", v)]),
+                UpState::Ready(v) => trf("{version} is ready — restart to update", &[("version", v)]),
                 UpState::Failed(e) => trf("Update check failed: {error}", &[("error", e)]),
             };
             let mut line = format!("SquirrelDisk {}  ·  {}", env!("CARGO_PKG_VERSION"), status);

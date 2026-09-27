@@ -102,6 +102,8 @@ pub struct Director {
     next_frame: f64,
     frame_no: usize,
     writer: Option<Sender<(usize, std::sync::Arc<egui::ColorImage>)>>,
+    /// Frames sent to the writers and not yet on disk.
+    pending: std::sync::Arc<std::sync::atomic::AtomicUsize>,
     finished_at: Option<f64>,
 }
 
@@ -115,14 +117,21 @@ impl Director {
         if steps.is_empty() {
             return None;
         }
+        let pending = std::sync::Arc::new(std::sync::atomic::AtomicUsize::new(0));
         let writer = std::env::var("MARKETING_DEMO_RECORD").ok().map(|dir| {
             let _ = std::fs::create_dir_all(&dir);
             let (tx, rx) = std::sync::mpsc::channel::<(usize, std::sync::Arc<egui::ColorImage>)>();
-            std::thread::spawn(move || {
-                for (n, img) in rx {
+            // PNG encoding of retina frames is slow: use a few writer threads.
+            let rx = std::sync::Arc::new(std::sync::Mutex::new(rx));
+            for _ in 0..6 {
+                let (rx, dir, pending) = (rx.clone(), dir.clone(), pending.clone());
+                std::thread::spawn(move || loop {
+                    let next = rx.lock().unwrap().recv();
+                    let Ok((n, img)) = next else { break };
                     let _ = write_frame(&format!("{dir}/frame-{n:05}.png"), &img);
-                }
-            });
+                    pending.fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
+                });
+            }
             tx
         });
         Some(Director {
@@ -137,6 +146,7 @@ impl Director {
             next_frame: 0.0,
             frame_no: 0,
             writer,
+            pending,
             finished_at: None,
         })
     }
@@ -207,7 +217,8 @@ impl App {
         loop {
             let Some(step) = d.steps.get(d.idx).cloned() else {
                 let end = *d.finished_at.get_or_insert(now);
-                if now - end > 0.6 && d.writer.is_some() {
+                let drained = d.pending.load(std::sync::atomic::Ordering::SeqCst) == 0;
+                if now - end > 0.6 && d.writer.is_some() && drained {
                     ctx.send_viewport_cmd(egui::ViewportCommand::Close);
                 }
                 break;
@@ -285,6 +296,7 @@ impl App {
         });
         if let Some(w) = &d.writer {
             for img in shots {
+                d.pending.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
                 let _ = w.send((d.frame_no, img));
                 d.frame_no += 1;
             }

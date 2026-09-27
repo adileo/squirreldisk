@@ -194,5 +194,9 @@
   "inside {path}: apps or system components may stop working": "{path} లోపల: యాప్‌లు లేదా సిస్టమ్ భాగాలు పని చేయడం ఆగిపోవచ్చు",
   "this is the root of a disk": "ఇది డిస్క్ యొక్క రూట్",
   "this is a mounted volume": "ఇది మౌంట్ చేయబడిన వాల్యూమ్",
-  "hidden configuration folder": "దాగి ఉన్న కాన్ఫిగరేషన్ ఫోల్డర్"
+  "hidden configuration folder": "దాగి ఉన్న కాన్ఫిగరేషన్ ఫోల్డర్",
+  "Install updates automatically": "అప్‌డేట్‌లను స్వయంచాలకంగా ఇన్‌స్టాల్ చేయి",
+  "Download new versions in the background and apply them on restart": "కొత్త వెర్షన్‌లను బ్యాక్‌గ్రౌండ్‌లో డౌన్‌లోడ్ చేసి, రీస్టార్ట్‌లో వర్తింపజేయి",
+  "Restart to update": "అప్‌డేట్ కోసం రీస్టార్ట్ చేయండి",
+  "{version} is ready — restart to update": "{version} సిద్ధంగా ఉంది — అప్‌డేట్ కోసం రీస్టార్ట్ చేయండి"
 }

@@ -194,5 +194,9 @@
   "inside {path}: apps or system components may stop working": "усередині {path}: програми або компоненти системи можуть перестати працювати",
   "this is the root of a disk": "це корінь диска",
   "this is a mounted volume": "це підключений том",
-  "hidden configuration folder": "прихована папка конфігурації"
+  "hidden configuration folder": "прихована папка конфігурації",
+  "Install updates automatically": "Встановлювати оновлення автоматично",
+  "Download new versions in the background and apply them on restart": "Завантажувати нові версії у фоні та застосовувати їх під час перезапуску",
+  "Restart to update": "Перезапустити для оновлення",
+  "{version} is ready — restart to update": "{version} готова — перезапустіть для оновлення"
 }

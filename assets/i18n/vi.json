@@ -194,5 +194,9 @@
  "inside {path}: apps or system components may stop working": "bên trong {path}: ứng dụng hoặc thành phần hệ thống có thể ngừng hoạt động",
  "this is the root of a disk": "đây là thư mục gốc của ổ đĩa",
  "this is a mounted volume": "đây là ổ đĩa đã gắn kết",
- "hidden configuration folder": "thư mục cấu hình ẩn"
+ "hidden configuration folder": "thư mục cấu hình ẩn",
+ "Install updates automatically": "Tự động cài đặt cập nhật",
+ "Download new versions in the background and apply them on restart": "Tải xuống phiên bản mới trong nền và áp dụng khi khởi động lại",
+ "Restart to update": "Khởi động lại để cập nhật",
+ "{version} is ready — restart to update": "{version} đã sẵn sàng — khởi động lại để cập nhật"
 }

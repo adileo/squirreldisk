@@ -194,5 +194,9 @@
  "inside {path}: apps or system components may stop working": "{path} 内：アプリやシステムコンポーネントが動作しなくなる可能性があります",
  "this is the root of a disk": "ディスクのルートです",
  "this is a mounted volume": "マウントされたボリュームです",
- "hidden configuration folder": "隠し設定フォルダ"
+ "hidden configuration folder": "隠し設定フォルダ",
+ "Install updates automatically": "アップデートを自動的にインストール",
+ "Download new versions in the background and apply them on restart": "新しいバージョンをバックグラウンドでダウンロードし、再起動時に適用",
+ "Restart to update": "再起動して更新",
+ "{version} is ready — restart to update": "{version} の準備ができました — 再起動して更新"
 }

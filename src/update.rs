@@ -181,7 +181,16 @@ impl Updater {
 /// Relaunches the (updated) executable and exits.
 pub fn restart() {
     if let Ok(exe) = std::env::current_exe() {
-        let _ = std::process::Command::new(exe).spawn();
+        // Inside a macOS bundle, relaunch the .app so it keeps its Dock identity.
+        let bundle = exe.ancestors().find(|p| p.extension().is_some_and(|e| e == "app")).map(|p| p.to_path_buf());
+        match bundle {
+            Some(app) if cfg!(target_os = "macos") => {
+                let _ = std::process::Command::new("open").arg("-n").arg(app).spawn();
+            }
+            _ => {
+                let _ = std::process::Command::new(exe).spawn();
+            }
+        }
     }
     std::process::exit(0);
 }

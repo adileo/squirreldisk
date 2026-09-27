@@ -194,5 +194,9 @@
   "inside {path}: apps or system components may stop working": "внутри {path}: приложения или компоненты системы могут перестать работать",
   "this is the root of a disk": "это корень диска",
   "this is a mounted volume": "это подключённый том",
-  "hidden configuration folder": "скрытая папка конфигурации"
+  "hidden configuration folder": "скрытая папка конфигурации",
+  "Install updates automatically": "Устанавливать обновления автоматически",
+  "Download new versions in the background and apply them on restart": "Загружать новые версии в фоне и применять их при перезапуске",
+  "Restart to update": "Перезапустить для обновления",
+  "{version} is ready — restart to update": "{version} готова — перезапустите для обновления"
 }

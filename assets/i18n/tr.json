@@ -194,5 +194,9 @@
   "inside {path}: apps or system components may stop working": "{path} içinde: uygulamalar veya sistem bileşenleri çalışmayı durdurabilir",
   "this is the root of a disk": "bu bir diskin kök dizini",
   "this is a mounted volume": "bu bağlanmış bir birim",
-  "hidden configuration folder": "gizli yapılandırma klasörü"
+  "hidden configuration folder": "gizli yapılandırma klasörü",
+  "Install updates automatically": "Güncellemeleri otomatik yükle",
+  "Download new versions in the background and apply them on restart": "Yeni sürümleri arka planda indir ve yeniden başlatınca uygula",
+  "Restart to update": "Güncellemek için yeniden başlat",
+  "{version} is ready — restart to update": "{version} hazır — güncellemek için yeniden başlatın"
 }

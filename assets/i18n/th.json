@@ -194,5 +194,9 @@
  "inside {path}: apps or system components may stop working": "อยู่ใน {path}: แอปหรือส่วนประกอบของระบบอาจหยุดทำงาน",
  "this is the root of a disk": "นี่คือรากของดิสก์",
  "this is a mounted volume": "นี่คือวอลุ่มที่เมานต์อยู่",
- "hidden configuration folder": "โฟลเดอร์การกำหนดค่าที่ซ่อนอยู่"
+ "hidden configuration folder": "โฟลเดอร์การกำหนดค่าที่ซ่อนอยู่",
+ "Install updates automatically": "ติดตั้งอัปเดตโดยอัตโนมัติ",
+ "Download new versions in the background and apply them on restart": "ดาวน์โหลดเวอร์ชันใหม่ในเบื้องหลังและนำไปใช้เมื่อรีสตาร์ท",
+ "Restart to update": "รีสตาร์ทเพื่ออัปเดต",
+ "{version} is ready — restart to update": "{version} พร้อมแล้ว — รีสตาร์ทเพื่ออัปเดต"
 }

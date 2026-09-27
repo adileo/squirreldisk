@@ -151,7 +151,7 @@ impl App {
         }
     }
 
-    fn update_pill(&mut self, ui: &mut Ui, right_center: Pos2) {
+    pub fn update_pill(&mut self, ui: &mut Ui, right_center: Pos2) {
         let theme = self.theme.clone();
         let state = self.updater.state();
         let (label, style, icon) = match &state {
@@ -161,7 +161,7 @@ impl App {
                 let tot = self.updater.total.load(Ordering::Relaxed).max(1);
                 (trf("Downloading {percent}%", &[("percent", &(d * 100 / tot))]), BtnStyle::Subtle, Icon::Download)
             }
-            UpState::Ready(v) => (trf("Restart for {version}", &[("version", v)]), BtnStyle::Primary, Icon::Refresh),
+            UpState::Ready(_) => (tr("Restart to update").to_string(), BtnStyle::Primary, Icon::Refresh),
             _ => return,
         };
         let w = ui.painter().layout_no_wrap(label.clone(), bold(13.0), Color32::WHITE).size().x + 50.0;

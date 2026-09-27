@@ -194,5 +194,9 @@
  "inside {path}: apps or system components may stop working": "di dalam {path}: aplikasi atau komponen sistem mungkin berhenti berfungsi",
  "this is the root of a disk": "ini adalah root sebuah disk",
  "this is a mounted volume": "ini adalah volume yang terpasang",
- "hidden configuration folder": "folder konfigurasi tersembunyi"
+ "hidden configuration folder": "folder konfigurasi tersembunyi",
+ "Install updates automatically": "Pasang pembaruan secara otomatis",
+ "Download new versions in the background and apply them on restart": "Unduh versi baru di latar belakang dan terapkan saat mulai ulang",
+ "Restart to update": "Mulai ulang untuk memperbarui",
+ "{version} is ready — restart to update": "{version} siap — mulai ulang untuk memperbarui"
 }

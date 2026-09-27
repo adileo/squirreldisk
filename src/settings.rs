@@ -40,6 +40,8 @@ pub struct Settings {
     pub volume: f32,
     pub shader_fx: bool,
     pub auto_update: bool,
+    /// Download new versions in the background; they're applied on restart.
+    pub auto_install: bool,
     pub rings: usize,
     pub watch_fs: bool,
     pub ssh_history: Vec<String>,
@@ -61,6 +63,7 @@ impl Default for Settings {
             volume: 0.6,
             shader_fx: true,
             auto_update: true,
+            auto_install: true,
             rings: 6,
             watch_fs: true,
             ssh_history: Vec::new(),

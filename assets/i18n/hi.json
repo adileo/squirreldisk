@@ -194,5 +194,9 @@
   "inside {path}: apps or system components may stop working": "{path} के अंदर: ऐप्स या सिस्टम घटक काम करना बंद कर सकते हैं",
   "this is the root of a disk": "यह एक डिस्क का रूट है",
   "this is a mounted volume": "यह एक माउंटेड वॉल्यूम है",
-  "hidden configuration folder": "छिपा हुआ कॉन्फ़िगरेशन फ़ोल्डर"
+  "hidden configuration folder": "छिपा हुआ कॉन्फ़िगरेशन फ़ोल्डर",
+  "Install updates automatically": "अपडेट अपने आप इंस्टॉल करें",
+  "Download new versions in the background and apply them on restart": "नए संस्करण बैकग्राउंड में डाउनलोड करें और रीस्टार्ट पर लागू करें",
+  "Restart to update": "अपडेट के लिए रीस्टार्ट करें",
+  "{version} is ready — restart to update": "{version} तैयार है — अपडेट के लिए रीस्टार्ट करें"
 }

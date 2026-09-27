@@ -194,5 +194,9 @@
   "inside {path}: apps or system components may stop working": "{path}-க்குள்: ஆப்ஸ் அல்லது கணினிக் கூறுகள் வேலை செய்வது நின்றுவிடலாம்",
   "this is the root of a disk": "இது ஒரு வட்டின் ரூட்",
   "this is a mounted volume": "இது ஏற்றப்பட்ட தொகுதி",
-  "hidden configuration folder": "மறைந்த உள்ளமைவுக் கோப்புறை"
+  "hidden configuration folder": "மறைந்த உள்ளமைவுக் கோப்புறை",
+  "Install updates automatically": "புதுப்பிப்புகளைத் தானாக நிறுவு",
+  "Download new versions in the background and apply them on restart": "புதிய பதிப்புகளைப் பின்னணியில் பதிவிறக்கி, மறுதொடக்கத்தில் பயன்படுத்து",
+  "Restart to update": "புதுப்பிக்க மறுதொடக்கு",
+  "{version} is ready — restart to update": "{version} தயார் — புதுப்பிக்க மறுதொடக்கவும்"
 }

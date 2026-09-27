@@ -286,6 +286,8 @@ pub struct App {
     /// Home page scroll offset and measured content height.
     pub home_scroll: f32,
     pub home_content_h: f32,
+    /// Last time we asked GitHub for a new version.
+    pub update_checked: Instant,
     pub sponsors: crate::sponsor::Sponsors,
     /// App icon as a texture, for the home header.
     pub logo: Option<egui::TextureHandle>,
@@ -390,6 +392,7 @@ impl App {
             settings_content_h: 640.0,
             home_scroll: 0.0,
             home_content_h: 0.0,
+            update_checked: Instant::now(),
             sponsors: crate::sponsor::Sponsors::start(settings.sponsor_measurement),
             logo: None,
             dock: DockState::default(),
@@ -477,6 +480,30 @@ impl App {
         crate::i18n::set_language(code);
         install_fonts(ctx, code);
         self.settings.save();
+    }
+
+    /// Keeps the app current: checks every 6 hours and, if allowed, downloads
+    /// new versions in the background so a restart is all that's needed.
+    fn auto_update(&mut self, ctx: &egui::Context) {
+        if scan::demo::enabled() {
+            return;
+        }
+        use crate::update::State;
+        let state = self.updater.state();
+        if self.settings.auto_update
+            && self.update_checked.elapsed() > Duration::from_secs(6 * 3600)
+            && matches!(state, State::Idle | State::UpToDate | State::Failed(_))
+        {
+            self.update_checked = Instant::now();
+            self.updater.check(ctx.clone());
+        }
+        if self.settings.auto_install {
+            if let State::Available(r) = state {
+                if r.asset_url.is_some() {
+                    self.updater.install(r, ctx.clone());
+                }
+            }
+        }
     }
 
     pub fn sfx(&mut self, s: Sfx) {
@@ -697,6 +724,7 @@ impl eframe::App for App {
         self.debug_hooks(&ctx);
         self.poll_sessions();
         self.update_dock(&ctx);
+        self.auto_update(&ctx);
         if self.volumes_at.elapsed() > Duration::from_secs(5) && self.screen == Screen::Home {
             self.volumes = disks::list();
             self.volumes_at = Instant::now();

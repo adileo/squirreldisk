@@ -194,5 +194,9 @@
   "inside {path}: apps or system components may stop working": "درون {path}: ممکن است برنامه‌ها یا اجزای سیستم از کار بیفتند",
   "this is the root of a disk": "این ریشهٔ یک دیسک است",
   "this is a mounted volume": "این یک درایو متصل‌شده است",
-  "hidden configuration folder": "پوشهٔ پیکربندی پنهان"
+  "hidden configuration folder": "پوشهٔ پیکربندی پنهان",
+  "Install updates automatically": "نصب خودکار به‌روزرسانی‌ها",
+  "Download new versions in the background and apply them on restart": "دانلود نسخه‌های جدید در پس‌زمینه و اعمال آن‌ها هنگام راه‌اندازی مجدد",
+  "Restart to update": "راه‌اندازی مجدد برای به‌روزرسانی",
+  "{version} is ready — restart to update": "{version} آماده است — برای به‌روزرسانی راه‌اندازی مجدد کنید"
 }

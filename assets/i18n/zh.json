@@ -194,5 +194,9 @@
  "inside {path}: apps or system components may stop working": "位于 {path} 内：应用或系统组件可能无法正常工作",
  "this is the root of a disk": "这是磁盘的根目录",
  "this is a mounted volume": "这是已挂载的宗卷",
- "hidden configuration folder": "隐藏的配置文件夹"
+ "hidden configuration folder": "隐藏的配置文件夹",
+ "Install updates automatically": "自动安装更新",
+ "Download new versions in the background and apply them on restart": "在后台下载新版本并在重启时应用",
+ "Restart to update": "重启以更新",
+ "{version} is ready — restart to update": "{version} 已就绪 — 重启以更新"
 }

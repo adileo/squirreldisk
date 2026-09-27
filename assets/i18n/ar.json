@@ -194,5 +194,9 @@
   "inside {path}: apps or system components may stop working": "داخل {path}: قد تتوقف التطبيقات أو مكونات النظام عن العمل",
   "this is the root of a disk": "هذا هو جذر القرص",
   "this is a mounted volume": "هذه وحدة تخزين مُركّبة",
-  "hidden configuration folder": "مجلد إعدادات مخفي"
+  "hidden configuration folder": "مجلد إعدادات مخفي",
+  "Install updates automatically": "تثبيت التحديثات تلقائيًا",
+  "Download new versions in the background and apply them on restart": "تنزيل الإصدارات الجديدة في الخلفية وتطبيقها عند إعادة التشغيل",
+  "Restart to update": "إعادة التشغيل للتحديث",
+  "{version} is ready — restart to update": "{version} جاهز — أعد التشغيل للتحديث"
 }
