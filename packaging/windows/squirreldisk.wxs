@@ -1,0 +1,53 @@
+<!--
+  Per-user MSI (no admin rights needed; lets the built-in updater replace the exe).
+  Build (WiX 5):  wix build packaging/windows/squirreldisk.wxs -arch x64
+                  -d Version=2.0.1 -d ExePath=target\release\squirreldisk.exe -o SquirrelDisk-Windows.msi
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package Name="SquirrelDisk"
+           Manufacturer="SquirrelDisk"
+           Version="$(Version)"
+           UpgradeCode="6f1d2c64-9a3b-4f7e-8c55-2b7d9e1a4c10"
+           Scope="perUser"
+           Compressed="yes">
+    <MajorUpgrade DowngradeErrorMessage="A newer version of SquirrelDisk is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <Icon Id="AppIcon" SourceFile="assets\icon\SquirrelDisk.ico" />
+    <Property Id="ARPPRODUCTICON" Value="AppIcon" />
+    <Property Id="ARPURLINFOABOUT" Value="https://squirreldisk.com" />
+    <Property Id="ARPHELPLINK" Value="https://github.com/adileo/squirreldisk/issues" />
+
+    <StandardDirectory Id="LocalAppDataFolder">
+      <Directory Id="ProgramsFolder" Name="Programs">
+        <Directory Id="INSTALLFOLDER" Name="SquirrelDisk">
+          <Component Id="MainExecutable">
+            <File Id="SquirrelDiskExe" Name="squirreldisk.exe" Source="$(ExePath)" />
+            <RegistryValue Root="HKCU" Key="Software\SquirrelDisk" Name="InstallDir" Type="string" Value="[INSTALLFOLDER]" KeyPath="yes" />
+            <RemoveFolder Id="RemoveInstallFolder" On="uninstall" />
+            <RemoveFolder Id="RemoveProgramsFolder" Directory="ProgramsFolder" On="uninstall" />
+          </Component>
+        </Directory>
+      </Directory>
+    </StandardDirectory>
+
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Component Id="StartMenuShortcut">
+        <Shortcut Id="SquirrelDiskShortcut" Name="SquirrelDisk" Description="See what's using your disk space"
+                  Target="[INSTALLFOLDER]squirreldisk.exe" WorkingDirectory="INSTALLFOLDER" Icon="AppIcon" />
+        <RegistryValue Root="HKCU" Key="Software\SquirrelDisk" Name="StartMenuShortcut" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </StandardDirectory>
+
+    <Feature Id="Main" Title="SquirrelDisk">
+      <ComponentRef Id="MainExecutable" />
+      <ComponentRef Id="StartMenuShortcut" />
+    </Feature>
+
+    <!-- Offer to start the app at the end of the install -->
+    <CustomAction Id="LaunchApp" Directory="INSTALLFOLDER" ExeCommand="&quot;[INSTALLFOLDER]squirreldisk.exe&quot;" Return="asyncNoWait" />
+    <InstallExecuteSequence>
+      <Custom Action="LaunchApp" After="InstallFinalize" Condition="NOT Installed AND UILevel &gt; 2" />
+    </InstallExecuteSequence>
+  </Package>
+</Wix>
