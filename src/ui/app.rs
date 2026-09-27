@@ -9,7 +9,7 @@ use crate::safety::Verdict;
 use crate::scan::{self, Progress, SharedTree};
 use crate::settings::Settings;
 use crate::sound::{Sfx, Sounds};
-use crate::tree::{fmt_size, Kind, Source};
+use crate::tree::{Kind, Source};
 use crate::update::Updater;
 use crate::watch::FsWatch;
 use eframe::egui::{self, Color32, FontData, FontDefinitions, FontFamily, Pos2, Rect};
@@ -68,7 +68,6 @@ pub struct Session {
     pub delete: Option<Arc<DeleteProgress>>,
     pub intro: bool,
     pub was_done: bool,
-    pub started: Instant,
     pub verts: Vec<f32>,
     pub idx: Vec<u32>,
     pub watch_focus: Option<View>,
@@ -116,7 +115,6 @@ impl Session {
             delete: None,
             intro: true,
             was_done: false,
-            started: Instant::now(),
             verts: Vec::new(),
             idx: Vec::new(),
             watch_focus: None,
@@ -558,14 +556,7 @@ impl App {
                         sounds.push(Sfx::Error);
                     }
                 } else {
-                    let (size, files) = {
-                        let t = s.tree.read().unwrap();
-                        (t.get(t.root).size, t.get(t.root).files)
-                    };
-                    toasts.push((
-                        crate::i18n::trf("{name} scanned · {size} in {files} files · {seconds}s", &[("name", &s.title), ("size", &fmt_size(size)), ("files", &crate::tree::fmt_count(files as u64)), ("seconds", &format!("{:.1}", s.started.elapsed().as_secs_f32()))]),
-                        self.theme.ok,
-                    ));
+                    // A finished scan speaks for itself: no toast, just the (optional) sound.
                     sounds.push(Sfx::Success);
                     if s.source().is_local() {
                         interest_jobs.push(s.tree.clone());
