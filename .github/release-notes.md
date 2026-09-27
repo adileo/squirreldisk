@@ -1,6 +1,7 @@
-## SquirrelDisk 2.1.1
+## SquirrelDisk 2.1.2
 
 - Settings and the home screen scroll when the window is small, so nothing ends up off screen.
+- Quieter finish: the pop-up at the end of a scan is gone.
 
 ### From 2.1
 
