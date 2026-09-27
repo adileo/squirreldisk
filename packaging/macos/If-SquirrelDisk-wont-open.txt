@@ -1,0 +1,21 @@
+If macOS won't open SquirrelDisk
+================================
+
+SquirrelDisk is free and open source, and it is distributed outside the
+Mac App Store, so macOS asks you to confirm the first time you open it.
+
+Option 1 - System Settings (easiest)
+  1. Open SquirrelDisk once. macOS shows a warning: close it.
+  2. Open System Settings > Privacy & Security.
+  3. Scroll down: next to "SquirrelDisk was blocked", click "Open Anyway".
+  4. Confirm with your password or Touch ID. From now on it opens normally.
+
+Option 2 - Terminal
+  If macOS says the app "is damaged" or Option 1 isn't shown, open the
+  Terminal app and run:
+
+      xattr -dr com.apple.quarantine /Applications/SquirrelDisk.app
+
+  Then open SquirrelDisk again.
+
+More help: https://github.com/adileo/squirreldisk

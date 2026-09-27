@@ -12,6 +12,8 @@ use std::sync::{Arc, Mutex};
 pub enum Mode {
     Trash,
     Permanent,
+    /// Permanent delete after overwriting every file (DoD 5220.22-M, 3 passes).
+    SecureErase,
     BackupFolder(PathBuf),
     BackupRclone(String),
 }
@@ -173,6 +175,10 @@ fn run(items: &[Item], mode: &Mode, source: &Source, root: &str, p: &DeleteProgr
                     p.set_phase("Moving to Trash");
                     trash::delete(&item.path).map_err(|e| e.to_string())?;
                 }
+                (Source::Local, Mode::SecureErase) => {
+                    p.set_phase("Securely erasing");
+                    remove_all_secure(Path::new(&item.path), p)?;
+                }
                 (Source::Local, _) => {
                     p.set_phase("Deleting");
                     remove_all(Path::new(&item.path), p)?;
@@ -211,7 +217,11 @@ fn run(items: &[Item], mode: &Mode, source: &Source, root: &str, p: &DeleteProgr
 
 /// `MARKETING_DEMO`: pretend to delete, touching nothing.
 fn simulate(items: &[Item], mode: &Mode, p: &DeleteProgress) {
-    p.set_phase(if *mode == Mode::Trash { "Moving to Trash" } else { "Deleting" });
+    p.set_phase(match mode {
+        Mode::Trash => "Moving to Trash",
+        Mode::SecureErase => "Securely erasing",
+        _ => "Deleting",
+    });
     for item in items {
         p.set_current(&item.path);
         let base = p.done_bytes.load(Ordering::Relaxed);
@@ -259,6 +269,158 @@ pub fn remove_all(path: &Path, p: &DeleteProgress) -> Result<(), String> {
         }
         p.done_bytes.fetch_add(size, Ordering::Relaxed);
         Ok(())
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Secure erase
+//
+// Each regular file is overwritten in place following DoD 5220.22-M (ECE):
+// pass 1 zeros, pass 2 ones, pass 3 random data, each flushed to disk with
+// fsync. The file is then renamed to a random name (so the original name
+// doesn't linger in the directory), truncated to zero and removed.
+//
+// Caveat, surfaced in the UI: on SSDs (wear levelling) and copy-on-write file
+// systems (APFS, Btrfs, ZFS) the drive may write the new data elsewhere and
+// keep the old blocks until they are trimmed. Full-disk encryption
+// (FileVault, BitLocker, LUKS) is what really protects data on those.
+
+const OVERWRITE_PASSES: usize = 3;
+
+/// Fast PRNG (xoshiro256**) for the random pass, seeded from the OS.
+struct Xoshiro([u64; 4]);
+
+impl Xoshiro {
+    fn from_os() -> Self {
+        let mut seed = [0u8; 32];
+        let from_os = std::fs::File::open("/dev/urandom").and_then(|mut f| std::io::Read::read_exact(&mut f, &mut seed));
+        if from_os.is_err() {
+            // Windows (or no /dev/urandom): mix time, pid and addresses.
+            let t = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_nanos()).unwrap_or(0);
+            let mix = [t as u64, (t >> 64) as u64 ^ std::process::id() as u64, &seed as *const _ as u64, 0x9E37_79B9_7F4A_7C15];
+            for (i, m) in mix.iter().enumerate() {
+                seed[i * 8..i * 8 + 8].copy_from_slice(&m.to_le_bytes());
+            }
+        }
+        let mut s = [0u64; 4];
+        for (i, v) in s.iter_mut().enumerate() {
+            *v = u64::from_le_bytes(seed[i * 8..i * 8 + 8].try_into().unwrap()) | 1;
+        }
+        Xoshiro(s)
+    }
+    fn next(&mut self) -> u64 {
+        let r = (self.0[1].wrapping_mul(5)).rotate_left(7).wrapping_mul(9);
+        let t = self.0[1] << 17;
+        self.0[2] ^= self.0[0];
+        self.0[3] ^= self.0[1];
+        self.0[1] ^= self.0[2];
+        self.0[0] ^= self.0[3];
+        self.0[2] ^= t;
+        self.0[3] = self.0[3].rotate_left(45);
+        r
+    }
+    fn fill(&mut self, buf: &mut [u8]) {
+        for chunk in buf.chunks_mut(8) {
+            let v = self.next().to_le_bytes();
+            chunk.copy_from_slice(&v[..chunk.len()]);
+        }
+    }
+}
+
+/// Overwrites the whole content of `path` with the DoD passes.
+/// `on_pass` is called after each pass has been flushed to disk.
+fn overwrite_file(path: &Path, len: u64, cancel: &AtomicBool, mut on_pass: impl FnMut()) -> Result<(), String> {
+    use std::io::{Seek, SeekFrom, Write};
+    let open = || std::fs::OpenOptions::new().write(true).open(path);
+    let mut f = match open() {
+        Ok(f) => f,
+        Err(_) => {
+            // read-only files (Windows attribute / unix mode): allow writing first
+            if let Ok(md) = std::fs::metadata(path) {
+                let mut perm = md.permissions();
+                #[allow(clippy::permissions_set_readonly_false)]
+                perm.set_readonly(false);
+                let _ = std::fs::set_permissions(path, perm);
+            }
+            open().map_err(|e| format!("{}: {e}", path.display()))?
+        }
+    };
+    let mut buf = vec![0u8; 1 << 20];
+    let mut rng = Xoshiro::from_os();
+    for pass in 0..OVERWRITE_PASSES {
+        f.seek(SeekFrom::Start(0)).map_err(|e| e.to_string())?;
+        match pass {
+            0 => buf.fill(0x00),
+            1 => buf.fill(0xFF),
+            _ => {}
+        }
+        let mut left = len;
+        while left > 0 {
+            if cancel.load(Ordering::Relaxed) {
+                return Err("cancelled".into());
+            }
+            if pass == 2 {
+                rng.fill(&mut buf);
+            }
+            let n = left.min(buf.len() as u64) as usize;
+            f.write_all(&buf[..n]).map_err(|e| format!("{}: {e}", path.display()))?;
+            left -= n as u64;
+        }
+        f.sync_all().map_err(|e| format!("{}: {e}", path.display()))?;
+        on_pass();
+    }
+    Ok(())
+}
+
+fn shred_file(path: &Path, md: &std::fs::Metadata, p: &DeleteProgress) -> Result<(), String> {
+    let alloc = crate::scan::platform::info(md, path).alloc;
+    // A file with other hard links is shared: overwriting it would destroy
+    // the data seen through the other names too, so just unlink it.
+    #[cfg(unix)]
+    let shared = {
+        use std::os::unix::fs::MetadataExt;
+        md.nlink() > 1
+    };
+    #[cfg(not(unix))]
+    let shared = false;
+    let mut credited = 0u64;
+    if md.len() > 0 && !shared {
+        overwrite_file(path, md.len(), &p.cancel, || {
+            let step = alloc / OVERWRITE_PASSES as u64;
+            p.done_bytes.fetch_add(step, Ordering::Relaxed);
+            credited += step;
+        })?;
+    }
+    // hide the original name, drop the length, then remove
+    let mut rng = Xoshiro::from_os();
+    let scrambled = path.with_file_name(format!("{:016x}", rng.next()));
+    let target = if std::fs::rename(path, &scrambled).is_ok() { scrambled } else { path.to_path_buf() };
+    if let Ok(f) = std::fs::OpenOptions::new().write(true).open(&target) {
+        let _ = f.set_len(0);
+        let _ = f.sync_all();
+    }
+    std::fs::remove_file(&target).map_err(|e| format!("{}: {e}", path.display()))?;
+    p.done_bytes.fetch_add(alloc.saturating_sub(credited), Ordering::Relaxed);
+    Ok(())
+}
+
+/// Like [`remove_all`], but securely erases every regular file first.
+pub fn remove_all_secure(path: &Path, p: &DeleteProgress) -> Result<(), String> {
+    let md = std::fs::symlink_metadata(path).map_err(|e| e.to_string())?;
+    if md.is_dir() {
+        let rd = std::fs::read_dir(path).map_err(|e| format!("{}: {e}", path.display()))?;
+        for e in rd.flatten() {
+            if p.cancel.load(Ordering::Relaxed) {
+                return Err("cancelled".into());
+            }
+            remove_all_secure(&e.path(), p)?;
+        }
+        std::fs::remove_dir(path).map_err(|e| format!("{}: {e}", path.display()))
+    } else if md.is_file() {
+        shred_file(path, &md, p)
+    } else {
+        // symlinks and special files: remove the entry, never follow it
+        std::fs::remove_file(path).map_err(|e| format!("{}: {e}", path.display()))
     }
 }
 
@@ -397,6 +559,37 @@ mod tests {
         assert_eq!(fs::read(loc.join("junk/deep/b.bin")).unwrap().len(), 20_000);
         fs::remove_dir_all(&base).unwrap();
         fs::remove_dir_all(&dest).unwrap();
+    }
+
+    #[test]
+    fn overwrite_replaces_every_byte() {
+        let base = fake_dir("shred");
+        let f = base.join("secret.txt");
+        let original = b"top secret payload ".repeat(5000);
+        fs::write(&f, &original).unwrap();
+        let mut passes = 0;
+        overwrite_file(&f, original.len() as u64, &AtomicBool::new(false), || passes += 1).unwrap();
+        assert_eq!(passes, OVERWRITE_PASSES);
+        let after = fs::read(&f).unwrap();
+        assert_eq!(after.len(), original.len());
+        assert!(!after.windows(10).any(|w| w == b"top secret"));
+        // last pass is random: not all zeros / ones
+        assert!(after.iter().any(|b| *b != 0x00 && *b != 0xFF));
+        fs::remove_dir_all(&base).unwrap();
+    }
+
+    #[test]
+    fn secure_erase_removes_target_only() {
+        let base = fake_dir("secure");
+        let target = base.join("junk");
+        let items = vec![Item { node: 3, path: target.to_string_lossy().into(), size: 30_000 }];
+        let p = start(items, Mode::SecureErase, Source::Local, base.to_string_lossy().into());
+        wait(&p);
+        assert!(p.errors.lock().unwrap().is_empty(), "{:?}", p.errors.lock().unwrap());
+        assert!(!target.exists());
+        assert!(base.join("keep.txt").exists());
+        assert_eq!(fs::read_dir(&base).unwrap().count(), 1);
+        fs::remove_dir_all(&base).unwrap();
     }
 
     #[test]

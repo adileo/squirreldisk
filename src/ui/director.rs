@@ -33,6 +33,7 @@ pub enum Step {
     Navigate(&'static str),
     Theme(&'static str),
     Record(bool),
+    Home,
 }
 
 use Step::*;
@@ -67,6 +68,10 @@ fn script(name: &str) -> Vec<Step> {
             s.extend([Wait(0.5), Move(Aim::Mark("del-go"), 0.7), Wait(0.3)]);
             s.extend(click());
             s.extend([Wait(3.2)]);
+        }
+        // Home after a finished scan (for layout checks)
+        "home-scanned" => {
+            s.extend([Scan("/"), WaitScan, Home, Wait(0.8)]);
         }
         // Themes
         "themes" => {
@@ -248,6 +253,10 @@ impl App {
                 Theme(name) => {
                     self.theme = super::theme::by_name(name);
                     self.settings.theme = name.to_string();
+                    true
+                }
+                Home => {
+                    self.screen = Screen::Home;
                     true
                 }
                 Record(on) => {

@@ -1,3 +1,4 @@
 /target
 *.bmp
 .DS_Store
+/web

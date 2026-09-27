@@ -4,6 +4,7 @@ use super::app::App;
 use super::theme::{lighten, with_alpha, Theme};
 use super::widgets::{self, bold, cr, font};
 use crate::sound::Sfx;
+use crate::i18n::tr;
 use crate::tree::fmt_size;
 use eframe::egui::{self, Align2, Color32, Id, LayerId, Order, Pos2, Rect, Shape, Stroke, Vec2};
 use std::f32::consts::TAU;
@@ -246,7 +247,7 @@ impl App {
         painter.galley(Pos2::new(rect.left() + 40.0, rect.top() + 6.0), g1, theme.text);
         painter.galley(Pos2::new(rect.left() + 40.0, rect.top() + 24.0), g2, theme.text_dim);
         if d.over_bin {
-            painter.text(rect.center_top() - Vec2::new(0.0, 8.0), Align2::CENTER_BOTTOM, "Drop to collect", bold(12.0), theme.warn);
+            painter.text(rect.center_top() - Vec2::new(0.0, 8.0), Align2::CENTER_BOTTOM, tr("Drop to collect"), bold(12.0), theme.warn);
         }
 
         if released && !down {
@@ -258,7 +259,7 @@ impl App {
                     let colors = [d.color, lighten(d.color, 0.15), theme.warn, theme.accent2];
                     self.particles.burst(rect.center(), 26, &colors, 260.0, Some(self.bin_rect.center()));
                 } else {
-                    self.toasts.push("Already collected (or not deletable)".into(), theme.warn);
+                    self.toasts.push(tr("Already collected (or not deletable)").into(), theme.warn);
                 }
             }
             return; // drag ends

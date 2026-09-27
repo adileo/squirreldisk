@@ -34,13 +34,24 @@
 All builds are on the [releases page](https://github.com/adileo/squirreldisk/releases). SquirrelDisk updates itself when a new version comes out.
 
 <details>
-<summary>First launch on macOS</summary>
+<summary>macOS says the app can't be opened</summary>
 
-SquirrelDisk is distributed outside the App Store, so macOS asks for confirmation the first time: right-click SquirrelDisk in Applications and choose **Open**. If macOS reports the app as damaged, run:
+SquirrelDisk is distributed outside the App Store, so macOS asks for confirmation the first time.
+
+1. Open SquirrelDisk once and close the warning.
+2. Go to **System Settings → Privacy & Security**, scroll down and click **Open Anyway** next to the SquirrelDisk message, then confirm.
+
+If macOS reports the app as damaged, run this in Terminal and open it again:
 
 ```bash
 xattr -dr com.apple.quarantine /Applications/SquirrelDisk.app
 ```
+</details>
+
+<details>
+<summary>Windows shows "Windows protected your PC"</summary>
+
+Click **More info**, then **Run anyway**. For the portable `.exe` you can also right-click the file, choose **Properties**, tick **Unblock** and press **OK**.
 </details>
 
 ## Features
@@ -55,6 +66,8 @@ xattr -dr com.apple.quarantine /Applications/SquirrelDisk.app
 
 <p align="center"><img src="screenshots/collect.gif" alt="Dragging folders into the collector and deleting them" width="860"></p>
 
+**Secure erase.** When you delete for good, you can have every file overwritten three times with zeros, ones and random data (DoD 5220.22-M) before it's removed.
+
 **Safe by design.** System folders, your home folder, whole drives and other essential locations are protected. App and settings folders ask for an extra confirmation before anything happens.
 
 **Accurate numbers.** SquirrelDisk shows the space files really take on disk. Files that live only in the cloud (iCloud, Dropbox, Google Drive, OneDrive) count as zero, and linked folders are counted once.
@@ -64,6 +77,8 @@ xattr -dr com.apple.quarantine /Applications/SquirrelDisk.app
 **Servers and cloud storage too.** Scan any machine you can reach over SSH, or S3 buckets, Google Drive, Dropbox, FTP and many more cloud services through [rclone](https://rclone.org).
 
 **Light on your machine.** The app is about 8 MB, starts instantly, and maps millions of files with a small amount of memory. It runs smoothly on older computers too.
+
+**Speaks your language.** SquirrelDisk is available in 25 languages, including English, 简体中文, हिन्दी, Español, Français, العربية, Português, Русский, Deutsch, 日本語, 한국어 and Italiano. It picks your system language automatically, and you can change it in Settings.
 
 **Make it yours.** Seven colour themes, optional sound effects, and an adjustable chart depth.
 

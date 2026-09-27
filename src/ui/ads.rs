@@ -3,6 +3,7 @@
 use super::theme::{lerp_color, with_alpha, Theme};
 use super::widgets::{self, bold, cr, font, Icon};
 use crate::sponsor::{Ad, Choice};
+use crate::i18n::tr;
 use eframe::egui::{self, Align2, Id, LayerId, Order, Pos2, Rect, Sense, Stroke, Ui, Vec2};
 
 fn icon_for(ad: &Ad) -> Icon {
@@ -28,7 +29,7 @@ pub fn banner(ui: &mut Ui, rect: Rect, id: Id, choice: &Choice, personalized: bo
     let ad = &choice.ad;
     // "why" badge on the right, before the arrow
     let arrow = Rect::from_center_size(Pos2::new(rect.right() - 20.0, rect.center().y), Vec2::splat(14.0));
-    let label_w = ui.painter().layout_no_wrap("Sponsor".into(), font(10.5), theme.text_faint).size().x;
+    let label_w = ui.painter().layout_no_wrap(tr("Sponsor").into(), font(10.5), theme.text_faint).size().x;
     let why_rect = Rect::from_min_max(Pos2::new(rect.right() - 38.0 - label_w - 22.0, rect.top()), Pos2::new(rect.right() - 32.0, rect.bottom()));
     let why = ui.interact(why_rect, id.with("why"), Sense::hover());
     let resp = ui.interact(rect, id, Sense::click());
@@ -45,7 +46,7 @@ pub fn banner(ui: &mut Ui, rect: Rect, id: Id, choice: &Choice, personalized: bo
     widgets::draw_icon(p, Icon::LinkOut, arrow, lerp_color(theme.text_dim, theme.text, h));
     let label_x = rect.right() - 38.0;
     let why_hot = why.hovered();
-    p.text(Pos2::new(label_x, rect.center().y), Align2::RIGHT_CENTER, "Sponsor", font(10.5), if why_hot { theme.text } else { theme.text_faint });
+    p.text(Pos2::new(label_x, rect.center().y), Align2::RIGHT_CENTER, tr("Sponsor"), font(10.5), if why_hot { theme.text } else { theme.text_faint });
     // tiny "i" badge: hover to see why this sponsor was picked
     let info = Pos2::new(label_x - label_w - 10.0, rect.center().y);
     p.circle_stroke(info, 6.0, Stroke::new(1.0, if why_hot { theme.text } else { theme.text_faint }));
@@ -74,21 +75,21 @@ pub fn banner(ui: &mut Ui, rect: Rect, id: Id, choice: &Choice, personalized: bo
 fn why_card(ctx: &egui::Context, anchor: Rect, choice: &Choice, personalized: bool, theme: &Theme) {
     let mut lines: Vec<(String, bool)> = Vec::new();
     if choice.ad.is_house() {
-        lines.push(("No sponsor right now: this is our own ad slot.".into(), false));
+        lines.push((tr("No sponsor right now: this is our own ad slot.").into(), false));
     } else if choice.reasons.is_empty() {
-        lines.push(("Shown to everyone, not targeted.".into(), false));
+        lines.push((tr("Shown to everyone, not targeted.").into(), false));
     } else {
-        lines.push(("Picked on this computer because:".into(), true));
+        lines.push((tr("Picked on this computer because:").into(), true));
         for r in &choice.reasons {
             lines.push((format!("\u{2022} {r}"), false));
         }
     }
     lines.push((String::new(), false));
-    lines.push(("Nothing about you or your files is sent to us or to the sponsor.".into(), false));
-    lines.push(("Every user downloads the same list of sponsors;".into(), false));
-    lines.push(("the choice is made locally.".into(), false));
+    lines.push((tr("Nothing about you or your files is sent to us or to the sponsor.").into(), false));
+    lines.push((tr("Every user downloads the same list of sponsors;").into(), false));
+    lines.push((tr("the choice is made locally.").into(), false));
     if !personalized {
-        lines.push(("Personalized sponsors are off (Settings).".into(), false));
+        lines.push((tr("Personalized sponsors are off (Settings).").into(), false));
     }
     let w = 340.0;
     let h = 24.0 + lines.len() as f32 * 17.0;

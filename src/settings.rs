@@ -34,6 +34,8 @@ pub fn config_dir() -> Option<PathBuf> {
 #[serde(default)]
 pub struct Settings {
     pub theme: String,
+    /// "auto" (follow the system) or a language code.
+    pub language: String,
     pub sound: bool,
     pub volume: f32,
     pub shader_fx: bool,
@@ -54,6 +56,7 @@ impl Default for Settings {
     fn default() -> Self {
         Settings {
             theme: "Hazelnut".into(),
+            language: "auto".into(),
             sound: false,
             volume: 0.6,
             shader_fx: true,

@@ -4,6 +4,7 @@ use super::app::{App, Modal, Target};
 use super::theme::{lerp_color, with_alpha, Theme};
 use super::widgets::{self, bold, cr, display, font, BtnStyle, Icon};
 use crate::delete::Mode;
+use crate::i18n::{tr, tr_phase, tr_reason, trf};
 use crate::safety::Verdict;
 use crate::sound::Sfx;
 use crate::tree::fmt_size;
@@ -79,8 +80,8 @@ impl App {
             Modal::Settings => self.settings_modal(ctx),
             Modal::Ssh { host, path } => self.ssh_modal(ctx, host, path),
             Modal::Rclone { path } => self.rclone_modal(ctx, path),
-            Modal::ConfirmDelete { session, items, mode, backup_folder, backup_remote, ack } => {
-                self.confirm_delete_modal(ctx, session, items, mode, backup_folder, backup_remote, ack)
+            Modal::ConfirmDelete { session, items, mode, backup_folder, backup_remote, ack, secure } => {
+                self.confirm_delete_modal(ctx, session, items, mode, backup_folder, backup_remote, ack, secure)
             }
             Modal::Deleting { session, finished_at } => self.deleting_modal(ctx, session, finished_at),
             Modal::Error { title: t, message } => self.error_modal(ctx, t, message),
@@ -100,12 +101,12 @@ impl App {
         let mut close = false;
         let mut go = false;
         let bd = modal_frame(ctx, self.modal_opened, Vec2::new(500.0, 290.0), &theme, |ui, card| {
-            title(ui, card, "Authentication needed", Some(&format!("{host} needs your SSH key passphrase or password.")), &theme);
+            title(ui, card, tr("Authentication needed"), Some(&trf("{host} needs your SSH key passphrase or password.", &[("host", &host)])), &theme);
             close = close_button(ui, card, &theme);
             let x0 = card.left() + 28.0;
             let w = card.width() - 56.0;
             let mut y = card.top() + 96.0;
-            ui.painter().text(Pos2::new(x0, y), Align2::LEFT_TOP, "PASSPHRASE OR PASSWORD", bold(11.0), theme.text_faint);
+            ui.painter().text(Pos2::new(x0, y), Align2::LEFT_TOP, tr("PASSPHRASE OR PASSWORD"), bold(11.0), theme.text_faint);
             y += 18.0;
             let r = Rect::from_min_size(Pos2::new(x0, y), Vec2::new(w, 38.0));
             let id = Id::new("ssh-secret");
@@ -130,12 +131,12 @@ impl App {
                 go = true;
             }
             y += 48.0;
-            let note = if retry { "That didn't work, please try again." } else { "Kept in memory for this session only, never saved to disk." };
+            let note = if retry { tr("That didn't work, please try again.") } else { tr("Kept in memory for this session only, never saved to disk.") };
             ui.painter().text(Pos2::new(x0, y), Align2::LEFT_TOP, note, font(12.0), if retry { theme.danger } else { theme.text_faint });
             let b = Rect::from_min_size(Pos2::new(card.right() - 150.0, card.bottom() - 60.0), Vec2::new(122.0, 36.0));
-            go |= widgets::button_ex(ui, b, Id::new("auth-go"), "Connect", Some(Icon::Bolt), BtnStyle::Primary, &theme, !secret.is_empty()).clicked();
+            go |= widgets::button_ex(ui, b, Id::new("auth-go"), tr("Connect"), Some(Icon::Bolt), BtnStyle::Primary, &theme, !secret.is_empty()).clicked();
             let c = Rect::from_min_size(Pos2::new(card.right() - 260.0, card.bottom() - 60.0), Vec2::new(100.0, 36.0));
-            close |= widgets::button(ui, c, Id::new("auth-cancel"), "Cancel", None, BtnStyle::Ghost, &theme).clicked();
+            close |= widgets::button(ui, c, Id::new("auth-cancel"), tr("Cancel"), None, BtnStyle::Ghost, &theme).clicked();
         });
         if go && !secret.is_empty() {
             crate::scan::remote::set_secret(&host, secret);
@@ -158,7 +159,7 @@ impl App {
             title(ui, card, &t, None, &theme);
             wrapped(ui, card.left_top() + Vec2::new(28.0, 66.0), card.width() - 56.0, &message, font(13.0), theme.text_dim);
             let b = Rect::from_min_size(Pos2::new(card.right() - 128.0, card.bottom() - 60.0), Vec2::new(100.0, 36.0));
-            close = widgets::button(ui, b, Id::new("err-ok"), "OK", None, BtnStyle::Primary, &theme).clicked();
+            close = widgets::button(ui, b, Id::new("err-ok"), tr("OK"), None, BtnStyle::Primary, &theme).clicked();
         });
         if close || bd { None } else { Some(Modal::Error { title: t, message }) }
     }
@@ -172,13 +173,15 @@ impl App {
         let upd = self.updater.state();
         let mut check_now = false;
         let gl_error = self.gl_error.clone();
-        let bd = modal_frame(ctx, self.modal_opened, Vec2::new(620.0, 710.0), &theme, |ui, card| {
-            title(ui, card, "Settings", Some("Appearance, sounds and behaviour."), &theme);
+        let mut picker = self.lang_picker;
+        let mut new_lang: Option<String> = None;
+        let bd = modal_frame(ctx, self.modal_opened, Vec2::new(620.0, 760.0), &theme, |ui, card| {
+            title(ui, card, tr("Settings"), Some(tr("Appearance, sounds and behaviour.")), &theme);
             close = close_button(ui, card, &theme);
             let x0 = card.left() + 28.0;
             let w = card.width() - 56.0;
             let mut y = card.top() + 96.0;
-            ui.painter().text(Pos2::new(x0, y), Align2::LEFT_TOP, "THEME", bold(11.0), theme.text_faint);
+            ui.painter().text(Pos2::new(x0, y), Align2::LEFT_TOP, tr("THEME"), bold(11.0), theme.text_faint);
             y += 20.0;
             let cols = 4;
             let gap = 10.0;
@@ -193,20 +196,38 @@ impl App {
             }
             y += ((themes.len() + cols - 1) / cols) as f32 * (th + gap) + 12.0;
 
+            // language
+            let lang_row = Rect::from_min_size(Pos2::new(x0, y), Vec2::new(w, 44.0));
+            {
+                let p = ui.painter();
+                p.text(Pos2::new(x0, lang_row.top() + 12.0), Align2::LEFT_CENTER, tr("Language"), bold(13.5), theme.text);
+                p.text(Pos2::new(x0, lang_row.top() + 30.0), Align2::LEFT_CENTER, tr("Automatic follows your system language"), font(11.5), theme.text_dim);
+            }
+            let current = if s.language == "auto" {
+                trf("Automatic ({language})", &[("language", &crate::i18n::lang(crate::i18n::current()).native)])
+            } else {
+                crate::i18n::lang(&s.language).native.to_string()
+            };
+            let lb = Rect::from_min_size(Pos2::new(x0 + w - 220.0, lang_row.top() + 6.0), Vec2::new(220.0, 32.0));
+            if widgets::button(ui, lb, Id::new("lang-btn"), &current, Some(Icon::Forward), BtnStyle::Subtle, &theme).clicked() {
+                picker = !picker;
+            }
+            y += 50.0;
+
             let rows: [(&str, &str, u8); 6] = [
-                ("Sound effects", "Plops, crunches and a little fanfare", 0),
-                ("Shader effects", "GPU-rendered, anti-aliased segments (turn off on very old GPUs)", 1),
-                ("Watch for changes", "Update the chart when files change on disk", 2),
-                ("Check for updates", "Look for new releases on GitHub at launch", 3),
-                ("Personalized sponsors", "Picked on this computer from disk categories; nothing about you is sent", 4),
-                ("Anonymous sponsor stats", "Daily view totals and click counts, with no ID of any kind", 5),
+                (tr("Sound effects"), tr("Plops, crunches and a little fanfare"), 0),
+                (tr("Shader effects"), tr("GPU-rendered, anti-aliased segments (turn off on very old GPUs)"), 1),
+                (tr("Watch for changes"), tr("Update the chart when files change on disk"), 2),
+                (tr("Check for updates"), tr("Look for new releases on GitHub at launch"), 3),
+                (tr("Personalized sponsors"), tr("Picked on this computer from disk categories; nothing about you is sent"), 4),
+                (tr("Anonymous sponsor stats"), tr("Daily view totals and click counts, with no ID of any kind"), 5),
             ];
             for (label, sub, k) in rows {
                 let r = Rect::from_min_size(Pos2::new(x0, y), Vec2::new(w, 44.0));
                 let p = ui.painter();
                 p.text(Pos2::new(r.left(), r.top() + 12.0), Align2::LEFT_CENTER, label, bold(13.5), theme.text);
                 p.text(Pos2::new(r.left(), r.top() + 30.0), Align2::LEFT_CENTER, sub, font(11.5), theme.text_dim);
-                let tr = Rect::from_center_size(Pos2::new(r.right() - 22.0, r.center().y), Vec2::new(44.0, 26.0));
+                let tgl = Rect::from_center_size(Pos2::new(r.right() - 22.0, r.center().y), Vec2::new(44.0, 26.0));
                 let v = match k {
                     0 => &mut s.sound,
                     1 => &mut s.shader_fx,
@@ -215,21 +236,21 @@ impl App {
                     4 => &mut s.personalized_sponsors,
                     _ => &mut s.sponsor_measurement,
                 };
-                widgets::toggle(ui, tr, Id::new(("set-toggle", k)), v, &theme);
+                widgets::toggle(ui, tgl, Id::new(("set-toggle", k)), v, &theme);
                 y += 46.0;
             }
             // Transparency: exactly what the sponsor feature knows, all local.
             let sig = self.sponsors.signals();
             let mut known: Vec<&str> = sig.interests.iter().map(|i| i.label()).collect();
             known.sort();
-            let interests = if !s.personalized_sponsors { "off".to_string() } else if known.is_empty() { "none yet".to_string() } else { known.join(", ") };
-            let local = format!("Known only on this device: {interests}  \u{00b7}  views waiting to be reported: {}", self.sponsors.pending_views());
+            let interests = if !s.personalized_sponsors { tr("off").to_string() } else if known.is_empty() { tr("none yet").to_string() } else { known.join(", ") };
+            let local = trf("Known only on this device: {interests}  ·  views waiting to be reported: {views}", &[("interests", &interests), ("views", &self.sponsors.pending_views())]);
             let local = widgets::truncate(ui.painter(), &local, &font(11.0), w);
             ui.painter().text(Pos2::new(x0, y + 4.0), Align2::LEFT_CENTER, local, font(11.0), theme.text_faint);
             y += 22.0;
             let p = ui.painter();
-            p.text(Pos2::new(x0, y + 12.0), Align2::LEFT_CENTER, "Chart depth", bold(13.5), theme.text);
-            p.text(Pos2::new(x0, y + 30.0), Align2::LEFT_CENTER, format!("{} rings — fewer is faster on old machines", s.rings), font(11.5), theme.text_dim);
+            p.text(Pos2::new(x0, y + 12.0), Align2::LEFT_CENTER, tr("Chart depth"), bold(13.5), theme.text);
+            p.text(Pos2::new(x0, y + 30.0), Align2::LEFT_CENTER, trf("{rings} rings — fewer is faster on old machines", &[("rings", &s.rings)]), font(11.5), theme.text_dim);
             let sr = Rect::from_min_size(Pos2::new(x0 + w - 200.0, y + 8.0), Vec2::new(200.0, 28.0));
             widgets::stepper(ui, sr, Id::new("rings"), &mut s.rings, 3, 9, &theme);
             y += 50.0;
@@ -238,24 +259,67 @@ impl App {
             p.line_segment([Pos2::new(x0, y), Pos2::new(x0 + w, y)], Stroke::new(1.0, with_alpha(theme.stroke, 0.7)));
             let status = match &upd {
                 UpState::Idle => "".to_string(),
-                UpState::Checking => "Checking…".to_string(),
-                UpState::UpToDate => "You're up to date".to_string(),
-                UpState::Available(r) => format!("Version {} is available", r.version),
-                UpState::Downloading => "Downloading update…".to_string(),
-                UpState::Ready(v) => format!("{v} installed — restart to use it"),
-                UpState::Failed(e) => format!("Update check failed: {e}"),
+                UpState::Checking => tr("Checking…").to_string(),
+                UpState::UpToDate => tr("You're up to date").to_string(),
+                UpState::Available(r) => trf("Version {version} is available", &[("version", &r.version)]),
+                UpState::Downloading => tr("Downloading update…").to_string(),
+                UpState::Ready(v) => trf("{version} installed — restart to use it", &[("version", v)]),
+                UpState::Failed(e) => trf("Update check failed: {error}", &[("error", e)]),
             };
             let mut line = format!("SquirrelDisk {}  ·  {}", env!("CARGO_PKG_VERSION"), status);
             if let Some(e) = &gl_error {
-                line = format!("{line}  ·  CPU renderer ({e})");
+                line = format!("{line}  ·  {}", trf("CPU renderer ({reason})", &[("reason", e)]));
             }
             let line = widgets::truncate(p, &line, &font(12.0), w - 170.0);
             p.text(Pos2::new(x0, y + 26.0), Align2::LEFT_CENTER, line, font(12.0), theme.text_dim);
             let b = Rect::from_min_size(Pos2::new(x0 + w - 160.0, y + 10.0), Vec2::new(160.0, 32.0));
-            check_now = widgets::button(ui, b, Id::new("check-upd"), "Check for updates", Some(Icon::Refresh), BtnStyle::Subtle, &theme).clicked();
+            check_now = widgets::button(ui, b, Id::new("check-upd"), tr("Check for updates"), Some(Icon::Refresh), BtnStyle::Subtle, &theme).clicked();
+            if picker {
+                // grid of languages drawn over the settings card
+                let cols = 3;
+                let (cw, ch) = ((w - 16.0) / cols as f32, 30.0);
+                let n = crate::i18n::LANGS.len() + 1;
+                let rows_n = n.div_ceil(cols);
+                let pr = Rect::from_min_size(Pos2::new(x0, card.top() + 90.0), Vec2::new(w, rows_n as f32 * ch + 56.0));
+                let p = ui.painter();
+                widgets::shadow(p, pr, 12.0, 1.2, &theme);
+                p.rect_filled(pr, widgets::cr(12.0), theme.surface_hi);
+                p.rect_stroke(pr, widgets::cr(12.0), Stroke::new(1.0, theme.stroke), egui::StrokeKind::Inside);
+                p.text(pr.left_top() + Vec2::new(14.0, 20.0), Align2::LEFT_CENTER, tr("Language"), bold(13.0), theme.text);
+                let codes: Vec<(&str, String)> = std::iter::once(("auto", tr("Automatic").to_string()))
+                    .chain(crate::i18n::LANGS.iter().map(|l| (l.code, l.native.to_string())))
+                    .collect();
+                for (k, (code, name)) in codes.iter().enumerate() {
+                    let cell = Rect::from_min_size(
+                        Pos2::new(pr.left() + 8.0 + (k % cols) as f32 * cw, pr.top() + 40.0 + (k / cols) as f32 * ch),
+                        Vec2::new(cw - 4.0, ch - 4.0),
+                    );
+                    let id = Id::new(("lang", *code));
+                    let resp = ui.interact(cell, id, Sense::click());
+                    let selected = s.language == *code;
+                    let h = ui.ctx().animate_bool_with_time(id, resp.hovered(), 0.08);
+                    let p = ui.painter();
+                    let fill = if selected { with_alpha(theme.accent, 0.35) } else { with_alpha(theme.surface, h) };
+                    p.rect_filled(cell, widgets::cr(6.0), fill);
+                    p.text(Pos2::new(cell.left() + 10.0, cell.center().y), Align2::LEFT_CENTER, name, font(13.0), theme.text);
+                    if resp.hovered() {
+                        ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
+                    }
+                    if resp.clicked() {
+                        new_lang = Some(code.to_string());
+                        picker = false;
+                    }
+                }
+            }
         });
         if check_now {
             self.updater.check(ctx.clone());
+        }
+        self.lang_picker = picker;
+        if let Some(code) = new_lang {
+            s.language = code.clone();
+            self.set_language(ctx, &code);
+            self.sfx(Sfx::Blip);
         }
         if s.sound && !self.settings.sound {
             self.settings.sound = true;
@@ -292,13 +356,13 @@ impl App {
             }
         }
         let bd = modal_frame(ctx, self.modal_opened, Vec2::new(560.0, 420.0), &theme, |ui, card| {
-            title(ui, card, "Scan a remote server", Some("Over SSH, using your keys and ~/.ssh/config."), &theme);
+            title(ui, card, tr("Scan a remote server"), Some(tr("Over SSH, using your keys and ~/.ssh/config.")), &theme);
             close = close_button(ui, card, &theme);
             let x0 = card.left() + 28.0;
             let w = card.width() - 56.0;
             let mut y = card.top() + 96.0;
             let p = ui.painter();
-            p.text(Pos2::new(x0, y), Align2::LEFT_TOP, "HOST", bold(11.0), theme.text_faint);
+            p.text(Pos2::new(x0, y), Align2::LEFT_TOP, tr("HOST"), bold(11.0), theme.text_faint);
             y += 18.0;
             let r = widgets::text_input(ui, Rect::from_min_size(Pos2::new(x0, y), Vec2::new(w, 38.0)), Id::new("ssh-host"), &mut host, "user@server.example.com", &theme);
             if r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
@@ -326,7 +390,7 @@ impl App {
             if !hosts.is_empty() {
                 y += 36.0;
             }
-            ui.painter().text(Pos2::new(x0, y), Align2::LEFT_TOP, "PATH", bold(11.0), theme.text_faint);
+            ui.painter().text(Pos2::new(x0, y), Align2::LEFT_TOP, tr("PATH"), bold(11.0), theme.text_faint);
             y += 18.0;
             widgets::text_input(ui, Rect::from_min_size(Pos2::new(x0, y), Vec2::new(w, 38.0)), Id::new("ssh-path"), &mut path, "/", &theme);
             y += 50.0;
@@ -334,14 +398,14 @@ impl App {
                 ui,
                 Pos2::new(x0, y),
                 w,
-                "SquirrelDisk installs a tiny agent in ~/.cache/squirreldisk on the server when possible, otherwise it falls back to find/du. Password prompts aren't supported: use key-based auth or ssh-agent.",
+                tr("SquirrelDisk installs a tiny agent in ~/.cache/squirreldisk on the server when possible, otherwise it uses find or du. If your key has a passphrase, you'll be asked for it."),
                 font(11.5),
                 theme.text_faint,
             );
             let b = Rect::from_min_size(Pos2::new(card.right() - 150.0, card.bottom() - 60.0), Vec2::new(122.0, 36.0));
-            go |= widgets::button_ex(ui, b, Id::new("ssh-go"), "Connect", Some(Icon::Bolt), BtnStyle::Primary, &theme, !host.trim().is_empty()).clicked();
+            go |= widgets::button_ex(ui, b, Id::new("ssh-go"), tr("Connect"), Some(Icon::Bolt), BtnStyle::Primary, &theme, !host.trim().is_empty()).clicked();
             let c = Rect::from_min_size(Pos2::new(card.right() - 260.0, card.bottom() - 60.0), Vec2::new(100.0, 36.0));
-            close |= widgets::button(ui, c, Id::new("ssh-cancel"), "Cancel", None, BtnStyle::Ghost, &theme).clicked();
+            close |= widgets::button(ui, c, Id::new("ssh-cancel"), tr("Cancel"), None, BtnStyle::Ghost, &theme).clicked();
         });
         if go && !host.trim().is_empty() {
             let h = host.trim().to_string();
@@ -365,24 +429,24 @@ impl App {
         let mut go = false;
         let mut open_site = false;
         let bd = modal_frame(ctx, self.modal_opened, Vec2::new(560.0, 380.0), &theme, |ui, card| {
-            title(ui, card, "Scan cloud storage", Some("S3, Google Drive, Dropbox, OneDrive, FTP, WebDAV… through rclone."), &theme);
+            title(ui, card, tr("Scan cloud storage"), Some(tr("S3, Google Drive, Dropbox, OneDrive, FTP, WebDAV… through rclone.")), &theme);
             close = close_button(ui, card, &theme);
             let x0 = card.left() + 28.0;
             let w = card.width() - 56.0;
             let mut y = card.top() + 100.0;
             if missing || remotes.is_none() {
                 let msg = if remotes.is_none() {
-                    "Looking for rclone…"
+                    tr("Looking for rclone…")
                 } else {
-                    "SquirrelDisk talks to 70+ storage providers through rclone, a free command line tool. Install it, run `rclone config` once to add your accounts, then come back here."
+                    tr("SquirrelDisk talks to 70+ storage providers through rclone, a free command line tool. Install it, run `rclone config` once to add your accounts, then come back here.")
                 };
                 wrapped(ui, Pos2::new(x0, y), w, msg, font(13.0), theme.text_dim);
                 let b = Rect::from_min_size(Pos2::new(card.right() - 170.0, card.bottom() - 60.0), Vec2::new(142.0, 36.0));
-                open_site = widgets::button(ui, b, Id::new("rc-site"), "Get rclone", Some(Icon::Download), BtnStyle::Primary, &theme).clicked();
+                open_site = widgets::button(ui, b, Id::new("rc-site"), tr("Get rclone"), Some(Icon::Download), BtnStyle::Primary, &theme).clicked();
                 return;
             }
             let list = remotes.clone().unwrap_or_default();
-            ui.painter().text(Pos2::new(x0, y), Align2::LEFT_TOP, "REMOTES", bold(11.0), theme.text_faint);
+            ui.painter().text(Pos2::new(x0, y), Align2::LEFT_TOP, tr("REMOTES"), bold(11.0), theme.text_faint);
             y += 20.0;
             let mut x = x0;
             for r in list.iter() {
@@ -404,17 +468,17 @@ impl App {
                 x += wch + 6.0;
             }
             if list.is_empty() {
-                ui.painter().text(Pos2::new(x0, y), Align2::LEFT_TOP, "No remotes yet — run `rclone config` in a terminal.", font(12.5), theme.warn);
+                ui.painter().text(Pos2::new(x0, y), Align2::LEFT_TOP, tr("No remotes yet — run `rclone config` in a terminal."), font(12.5), theme.warn);
             }
             y += 44.0;
-            ui.painter().text(Pos2::new(x0, y), Align2::LEFT_TOP, "LOCATION", bold(11.0), theme.text_faint);
+            ui.painter().text(Pos2::new(x0, y), Align2::LEFT_TOP, tr("LOCATION"), bold(11.0), theme.text_faint);
             y += 18.0;
             let r = widgets::text_input(ui, Rect::from_min_size(Pos2::new(x0, y), Vec2::new(w, 38.0)), Id::new("rc-path"), &mut path, "remote:bucket/folder", &theme);
             if r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
                 go = true;
             }
             let b = Rect::from_min_size(Pos2::new(card.right() - 150.0, card.bottom() - 60.0), Vec2::new(122.0, 36.0));
-            go |= widgets::button_ex(ui, b, Id::new("rc-go"), "Scan", Some(Icon::Bolt), BtnStyle::Primary, &theme, path.contains(':')).clicked();
+            go |= widgets::button_ex(ui, b, Id::new("rc-go"), tr("Scan"), Some(Icon::Bolt), BtnStyle::Primary, &theme, path.contains(':')).clicked();
         });
         if open_site {
             super::app::os_open("https://rclone.org/install/", false);
@@ -437,6 +501,7 @@ impl App {
         mut backup_folder: String,
         mut backup_remote: String,
         mut ack: bool,
+        mut secure: bool,
     ) -> Option<Modal> {
         let theme = self.theme.clone();
         let Some(s) = self.sessions.get(session) else { return None };
@@ -449,11 +514,12 @@ impl App {
         let mut confirm = false;
         let mut browse = false;
         let list_rows = items.len().min(5);
-        let height = 330.0 + list_rows as f32 * 44.0 + if caution { 36.0 } else { 0.0 } + if mode >= 2 { 52.0 } else { 0.0 };
+        let show_secure = mode == 1 && local;
+        let height = 330.0 + list_rows as f32 * 44.0 + if caution { 36.0 } else { 0.0 } + if mode >= 2 { 52.0 } else { 0.0 } + if show_secure { 58.0 } else { 0.0 };
         let bd = modal_frame(ctx, self.modal_opened, Vec2::new(640.0, height), &theme, |ui, card| {
             let n = ok_items.len();
-            let t = format!("Delete {} item{}?", n, if n == 1 { "" } else { "s" });
-            title(ui, card, &t, Some(&format!("{} will be freed", fmt_size(total))), &theme);
+            let t = if n == 1 { tr("Delete 1 item?").to_string() } else { trf("Delete {count} items?", &[("count", &n)]) };
+            title(ui, card, &t, Some(&trf("{size} will be freed", &[("size", &fmt_size(total))])), &theme);
             close = close_button(ui, card, &theme);
             let x0 = card.left() + 28.0;
             let w = card.width() - 56.0;
@@ -463,8 +529,8 @@ impl App {
                 let p = ui.painter();
                 let (icon, col, note) = match &it.verdict {
                     Verdict::Ok => (Icon::Check, theme.ok, None),
-                    Verdict::Caution(why) => (Icon::Warning, theme.warn, Some(why.clone())),
-                    Verdict::Forbidden(why) => (Icon::Shield, theme.danger, Some(format!("protected, will be skipped: {why}"))),
+                    Verdict::Caution(why) => (Icon::Warning, theme.warn, Some(tr_reason(why))),
+                    Verdict::Forbidden(why) => (Icon::Shield, theme.danger, Some(trf("protected, will be skipped: {reason}", &[("reason", &tr_reason(why))]))),
                 };
                 p.rect_filled(r, cr(10.0), with_alpha(theme.bg_bottom, 0.45));
                 widgets::draw_icon(p, icon, Rect::from_center_size(Pos2::new(r.left() + 18.0, r.center().y), Vec2::splat(14.0)), col);
@@ -476,7 +542,7 @@ impl App {
                 y += 44.0;
             }
             if items.len() > 5 {
-                ui.painter().text(Pos2::new(x0 + 4.0, y), Align2::LEFT_TOP, format!("and {} more…", items.len() - 5), font(12.0), theme.text_faint);
+                ui.painter().text(Pos2::new(x0 + 4.0, y), Align2::LEFT_TOP, trf("and {count} more…", &[("count", &(items.len() - 5))]), font(12.0), theme.text_faint);
                 y += 20.0;
             }
             y += 8.0;
@@ -484,10 +550,10 @@ impl App {
             let gap = 10.0;
             let cw = (w - gap) / 2.0;
             let modes: [(&str, &str, Icon, bool); 4] = [
-                ("Move to Trash", "Recoverable from the system trash", Icon::Trash, local),
-                ("Delete permanently", "Frees space now, no undo", Icon::Bolt, true),
-                ("Back up, then delete", "Copy to a folder (e.g. external disk)", Icon::External, true),
-                ("Cloud backup, then delete", if has_rclone { "Upload with rclone first" } else { "Needs rclone" }, Icon::Cloud, local && has_rclone),
+                (tr("Move to Trash"), tr("Recoverable from the system trash"), Icon::Trash, local),
+                (tr("Delete permanently"), tr("Frees space now, no undo"), Icon::Bolt, true),
+                (tr("Back up, then delete"), tr("Copy to a folder (e.g. external disk)"), Icon::External, true),
+                (tr("Cloud backup, then delete"), if has_rclone { tr("Upload with rclone first") } else { tr("Needs rclone") }, Icon::Cloud, local && has_rclone),
             ];
             for (k, (tt, sub, icon, en)) in modes.iter().enumerate() {
                 let r = Rect::from_min_size(Pos2::new(x0 + (k % 2) as f32 * (cw + gap), y + (k / 2) as f32 * 62.0), Vec2::new(cw, 54.0));
@@ -499,18 +565,26 @@ impl App {
             y += 128.0;
             if mode == 2 {
                 let r = Rect::from_min_size(Pos2::new(x0, y), Vec2::new(w - 110.0, 38.0));
-                widgets::text_input(ui, r, Id::new("bk-folder"), &mut backup_folder, "Backup folder, e.g. /Volumes/External", &theme);
+                widgets::text_input(ui, r, Id::new("bk-folder"), &mut backup_folder, tr("Backup folder, e.g. /Volumes/External"), &theme);
                 let b = Rect::from_min_size(Pos2::new(x0 + w - 100.0, y + 2.0), Vec2::new(100.0, 34.0));
-                browse = widgets::button(ui, b, Id::new("bk-browse"), "Browse…", Some(Icon::Folder), BtnStyle::Subtle, &theme).clicked();
+                browse = widgets::button(ui, b, Id::new("bk-browse"), tr("Browse…"), Some(Icon::Folder), BtnStyle::Subtle, &theme).clicked();
                 y += 52.0;
             } else if mode == 3 {
                 let r = Rect::from_min_size(Pos2::new(x0, y), Vec2::new(w, 38.0));
                 widgets::text_input(ui, r, Id::new("bk-remote"), &mut backup_remote, "remote:bucket/backups", &theme);
                 y += 52.0;
             }
+            if show_secure {
+                let r = Rect::from_min_size(Pos2::new(x0, y), Vec2::new(w, 24.0));
+                mark("secure", r);
+                widgets::checkbox(ui, r, Id::new("secure"), &mut secure, tr("Secure erase: overwrite files before deleting them"), &theme);
+                let hint = tr("3 passes (DoD 5220.22-M). On SSDs and APFS some old data may survive: disk encryption protects it fully.");
+                wrapped(ui, Pos2::new(x0 + 28.0, y + 22.0), w - 28.0, hint, font(11.0), theme.text_faint);
+                y += 58.0;
+            }
             if caution {
                 let r = Rect::from_min_size(Pos2::new(x0, y), Vec2::new(w, 28.0));
-                widgets::checkbox(ui, r, Id::new("ack"), &mut ack, "I know some items are app or system data and want to delete them anyway", &theme);
+                widgets::checkbox(ui, r, Id::new("ack"), &mut ack, tr("I know some items are app or system data and want to delete them anyway"), &theme);
             }
             let backup_ok = match mode {
                 2 => !backup_folder.trim().is_empty() && std::path::Path::new(backup_folder.trim()).is_dir(),
@@ -519,21 +593,22 @@ impl App {
             };
             let enabled = !ok_items.is_empty() && backup_ok && (!caution || ack);
             let label = match mode {
-                0 => "Move to Trash",
-                2 | 3 => "Back up & delete",
-                _ => "Delete forever",
+                0 => tr("Move to Trash"),
+                2 | 3 => tr("Back up & delete"),
+                _ if secure && show_secure => tr("Securely erase"),
+                _ => tr("Delete forever"),
             };
             let b = Rect::from_min_size(Pos2::new(card.right() - 196.0, card.bottom() - 60.0), Vec2::new(168.0, 38.0));
             mark("del-go", b);
             confirm = widgets::button_ex(ui, b, Id::new("del-go"), label, Some(Icon::Trash), BtnStyle::Danger, &theme, enabled).clicked();
             let c = Rect::from_min_size(Pos2::new(card.right() - 306.0, card.bottom() - 60.0), Vec2::new(100.0, 38.0));
-            close |= widgets::button(ui, c, Id::new("del-cancel"), "Cancel", None, BtnStyle::Ghost, &theme).clicked();
+            close |= widgets::button(ui, c, Id::new("del-cancel"), tr("Cancel"), None, BtnStyle::Ghost, &theme).clicked();
             if mode == 2 && !backup_folder.trim().is_empty() && !backup_ok {
-                ui.painter().text(Pos2::new(x0, card.bottom() - 40.0), Align2::LEFT_CENTER, "Folder not found", font(12.0), theme.danger);
+                ui.painter().text(Pos2::new(x0, card.bottom() - 40.0), Align2::LEFT_CENTER, tr("Folder not found"), font(12.0), theme.danger);
             }
         });
         if browse {
-            if let Some(p) = rfd::FileDialog::new().set_title("Choose where to put the backup").pick_folder() {
+            if let Some(p) = rfd::FileDialog::new().set_title(tr("Choose where to put the backup")).pick_folder() {
                 backup_folder = p.to_string_lossy().into_owned();
             }
         }
@@ -548,6 +623,7 @@ impl App {
                     self.settings.backup_remote = Some(backup_remote.trim().to_string());
                     Mode::BackupRclone(backup_remote.trim().to_string())
                 }
+                _ if secure && local => Mode::SecureErase,
                 _ => Mode::Permanent,
             };
             self.settings.save();
@@ -557,7 +633,7 @@ impl App {
         if close || bd {
             None
         } else {
-            Some(Modal::ConfirmDelete { session, items, mode, backup_folder, backup_remote, ack })
+            Some(Modal::ConfirmDelete { session, items, mode, backup_folder, backup_remote, ack, secure })
         }
     }
 
@@ -611,21 +687,21 @@ impl App {
             }
             if finished {
                 widgets::draw_icon(p, Icon::Check, Rect::from_center_size(c - Vec2::new(0.0, 14.0), Vec2::splat(30.0)), theme.ok);
-                p.text(c + Vec2::new(0.0, 22.0), Align2::CENTER_CENTER, "Done", display(18.0), theme.text);
+                p.text(c + Vec2::new(0.0, 22.0), Align2::CENTER_CENTER, tr("Done"), display(18.0), theme.text);
             } else {
                 p.text(c - Vec2::new(0.0, 6.0), Align2::CENTER_CENTER, format!("{:.0}%", disp * 100.0), display(30.0), theme.text);
                 p.text(c + Vec2::new(0.0, 22.0), Align2::CENTER_CENTER, format!("{items_done} / {items_total}"), font(12.0), theme.text_dim);
             }
             let mut y = card.top() + 222.0;
             let headline = if finished {
-                format!("Freed {}", fmt_size(freed))
+                trf("Freed {size}", &[("size", &fmt_size(freed))])
             } else {
-                format!("{phase}… {} freed of {}", fmt_size(freed), fmt_size(total / if backup.is_some() { 2 } else { 1 }))
+                trf("{phase}… {freed} freed of {total}", &[("phase", &tr_phase(&phase)), ("freed", &fmt_size(freed)), ("total", &fmt_size(total / if backup.is_some() { 2 } else { 1 }))])
             };
             p.text(Pos2::new(card.center().x, y), Align2::CENTER_CENTER, headline, bold(15.0), theme.text);
             y += 24.0;
             let sub = if finished {
-                backup.map(|b| format!("Backup saved to {b}")).unwrap_or_else(|| "The squirrel is pleased.".into())
+                backup.map(|b| trf("Backup saved to {path}", &[("path", &b)])).unwrap_or_else(|| tr("The squirrel is pleased.").into())
             } else {
                 current.clone()
             };
@@ -635,7 +711,7 @@ impl App {
             if !errors.is_empty() {
                 let r = Rect::from_min_size(Pos2::new(card.left() + 28.0, y), Vec2::new(card.width() - 56.0, 80.0));
                 p.rect_filled(r, cr(10.0), with_alpha(theme.danger, 0.12));
-                p.text(r.left_top() + Vec2::new(12.0, 14.0), Align2::LEFT_CENTER, format!("{} problem{}", errors.len(), if errors.len() == 1 { "" } else { "s" }), bold(12.0), theme.danger);
+                p.text(r.left_top() + Vec2::new(12.0, 14.0), Align2::LEFT_CENTER, if errors.len() == 1 { tr("1 problem").to_string() } else { trf("{count} problems", &[("count", &errors.len())]) }, bold(12.0), theme.danger);
                 for (k, e) in errors.iter().take(3).enumerate() {
                     let e = widgets::truncate(p, e, &font(11.0), r.width() - 24.0);
                     p.text(r.left_top() + Vec2::new(12.0, 32.0 + k as f32 * 15.0), Align2::LEFT_CENTER, e, font(11.0), theme.text_dim);
@@ -643,9 +719,9 @@ impl App {
             }
             let b = Rect::from_min_size(Pos2::new(card.center().x - 60.0, card.bottom() - 58.0), Vec2::new(120.0, 38.0));
             if finished {
-                close = widgets::button(ui, b, Id::new("del-close"), "Close", None, BtnStyle::Primary, &theme).clicked();
+                close = widgets::button(ui, b, Id::new("del-close"), tr("Close"), None, BtnStyle::Primary, &theme).clicked();
             } else {
-                cancel = widgets::button(ui, b, Id::new("del-stop"), "Stop", Some(Icon::Close), BtnStyle::Subtle, &theme).clicked();
+                cancel = widgets::button(ui, b, Id::new("del-stop"), tr("Stop"), Some(Icon::Close), BtnStyle::Subtle, &theme).clicked();
             }
         });
         if cancel {

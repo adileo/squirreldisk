@@ -1,15 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="660" height="400" viewBox="0 0 660 400">
+<svg xmlns="http://www.w3.org/2000/svg" width="660" height="460" viewBox="0 0 660 460">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#fbf8ff"/>
       <stop offset="1" stop-color="#efe8f8"/>
     </linearGradient>
   </defs>
-  <rect width="660" height="400" fill="url(#bg)"/>
+  <rect width="660" height="460" fill="url(#bg)"/>
   <circle cx="660" cy="0" r="220" fill="#8e6bff" opacity="0.06"/>
-  <circle cx="0" cy="400" r="200" fill="#ff7ec8" opacity="0.05"/>
-  <path d="M258 190 Q330 150 392 183" fill="none" stroke="#8e6bff" stroke-width="4" stroke-linecap="round" stroke-dasharray="2 11"/>
-  <path d="M389 172 L404 190 L381 194" fill="none" stroke="#8e6bff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <text x="330" y="328" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="17" font-weight="600" fill="#3a2d52">Drag SquirrelDisk to Applications</text>
-  <text x="330" y="352" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#7d6f93">Then open it from Launchpad or your Applications folder</text>
+  <circle cx="0" cy="460" r="200" fill="#ff7ec8" opacity="0.05"/>
+  <path d="M258 175 Q330 135 392 168" fill="none" stroke="#8e6bff" stroke-width="4" stroke-linecap="round" stroke-dasharray="2 11"/>
+  <path d="M389 157 L404 175 L381 179" fill="none" stroke="#8e6bff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="330" y="282" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="17" font-weight="600" fill="#3a2d52">Drag SquirrelDisk to Applications</text>
+  <text x="330" y="305" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#7d6f93">Won't open? Read the note below.</text>
+  <line x1="120" y1="330" x2="540" y2="330" stroke="#8e6bff" stroke-opacity="0.15"/>
 </svg>

@@ -8,6 +8,7 @@
 //! (or 3% of what was scanned, minimum 200 MB).
 
 use crate::tree::{Kind, Tree, NONE};
+use crate::i18n::tr;
 use serde::Deserialize;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Deserialize)]
@@ -37,14 +38,14 @@ impl Interest {
 
     pub fn label(self) -> &'static str {
         match self {
-            Interest::Developer => "software development",
-            Interest::Creator => "photo & video",
-            Interest::Gamer => "gaming",
-            Interest::Music => "music production",
-            Interest::Design => "design",
-            Interest::Cloud => "cloud storage",
-            Interest::Virtualization => "virtual machines",
-            Interest::Ai => "local AI models",
+            Interest::Developer => tr("software development"),
+            Interest::Creator => tr("photo & video"),
+            Interest::Gamer => tr("gaming"),
+            Interest::Music => tr("music production"),
+            Interest::Design => tr("design"),
+            Interest::Cloud => tr("cloud storage"),
+            Interest::Virtualization => tr("virtual machines"),
+            Interest::Ai => tr("local AI models"),
         }
     }
 

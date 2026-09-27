@@ -11,6 +11,8 @@ mod tree;
 #[cfg(feature = "gui")]
 mod disks;
 #[cfg(feature = "gui")]
+mod i18n;
+#[cfg(feature = "gui")]
 mod icon;
 #[cfg(feature = "gui")]
 mod sound;

@@ -1,6 +1,6 @@
 [package]
 name = "squirreldisk"
-version = "2.0.1"
+version = "2.1.0"
 edition = "2021"
 description = "Fast, fun, cross-platform disk usage analyzer with an animated sunburst"
 license = "AGPL-3.0-only"
@@ -30,7 +30,7 @@ tiny-skia = { version = "0.12", optional = true, default-features = false, featu
 embed-resource = "3"
 
 [target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.61", features = ["Win32_Storage_FileSystem", "Win32_Foundation"] }
+windows-sys = { version = "0.61", features = ["Win32_Storage_FileSystem", "Win32_Foundation", "Win32_Globalization"] }
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"

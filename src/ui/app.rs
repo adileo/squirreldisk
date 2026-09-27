@@ -225,7 +225,7 @@ pub enum Modal {
     Settings,
     Ssh { host: String, path: String },
     Rclone { path: String },
-    ConfirmDelete { session: usize, items: Vec<DeleteItem>, mode: usize, backup_folder: String, backup_remote: String, ack: bool },
+    ConfirmDelete { session: usize, items: Vec<DeleteItem>, mode: usize, backup_folder: String, backup_remote: String, ack: bool, secure: bool },
     Deleting { session: usize, finished_at: Option<Instant> },
     Error { title: String, message: String },
     /// ssh needs a key passphrase or a password.
@@ -280,6 +280,8 @@ pub struct App {
     pub chrome: (f32, f32),
     /// Hosts for which the user already typed a secret (to flag wrong ones).
     pub ssh_tried: HashSet<String>,
+    /// Language picker popover open in Settings.
+    pub lang_picker: bool,
     pub sponsors: crate::sponsor::Sponsors,
     /// App icon as a texture, for the home header.
     pub logo: Option<egui::TextureHandle>,
@@ -289,12 +291,26 @@ pub struct App {
     pub marks: std::collections::HashMap<String, Rect>,
 }
 
-fn install_fonts(ctx: &egui::Context) {
+/// Installs the bundled fonts plus, for non-Latin languages, a system font
+/// that covers the script (loaded at runtime to keep the app small).
+pub fn install_fonts(ctx: &egui::Context, lang: &str) {
     let mut fonts = FontDefinitions::default();
+    let script_font = crate::i18n::system_font(lang).map(|(bytes, index)| {
+        let mut fd = FontData::from_owned(bytes);
+        fd.index = index;
+        fd
+    });
+    let has_script = script_font.is_some();
+    if let Some(fd) = script_font {
+        fonts.font_data.insert("system-script".into(), Arc::new(fd));
+    }
     fonts.font_data.insert("inter".into(), Arc::new(FontData::from_static(include_bytes!("../../assets/fonts/Inter-Regular.ttf"))));
     fonts.font_data.insert("inter-bold".into(), Arc::new(FontData::from_static(include_bytes!("../../assets/fonts/Inter-SemiBold.ttf"))));
     fonts.font_data.insert("fredoka".into(), Arc::new(FontData::from_static(include_bytes!("../../assets/fonts/Fredoka-SemiBold.ttf"))));
-    let fallback: Vec<String> = fonts.families.get(&FontFamily::Proportional).cloned().unwrap_or_default();
+    let mut fallback: Vec<String> = fonts.families.get(&FontFamily::Proportional).cloned().unwrap_or_default();
+    if has_script {
+        fallback.insert(0, "system-script".into());
+    }
     let mut prop = vec!["inter".to_string()];
     prop.extend(fallback.iter().cloned());
     fonts.families.insert(FontFamily::Proportional, prop);
@@ -312,8 +328,10 @@ fn install_fonts(ctx: &egui::Context) {
 
 impl App {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
-        install_fonts(&cc.egui_ctx);
         let settings = Settings::load();
+        let lang = crate::i18n::resolve(&std::env::var("SQUIRRELDISK_LANG").unwrap_or_else(|_| settings.language.clone()));
+        crate::i18n::set_language(lang);
+        install_fonts(&cc.egui_ctx, lang);
         let theme = theme::by_name(&settings.theme);
         let (gl, gl_error) = match cc.gl.as_ref().map(|gl| SunburstGl::new(gl)) {
             Some(Ok(r)) => (Some(Arc::new(Mutex::new(r))), None),
@@ -363,6 +381,7 @@ impl App {
             gl_error,
             debug: super::debug::Debug::from_env(),
             ssh_tried: HashSet::new(),
+            lang_picker: false,
             sponsors: crate::sponsor::Sponsors::start(settings.sponsor_measurement),
             logo: None,
             dock: DockState::default(),
@@ -441,6 +460,15 @@ impl App {
         if self.director.is_some() {
             self.marks.insert(name.into(), rect);
         }
+    }
+
+    /// Switches the UI language ("auto" follows the system).
+    pub fn set_language(&mut self, ctx: &egui::Context, setting: &str) {
+        self.settings.language = setting.to_string();
+        let code = crate::i18n::resolve(setting);
+        crate::i18n::set_language(code);
+        install_fonts(ctx, code);
+        self.settings.save();
     }
 
     pub fn sfx(&mut self, s: Sfx) {
@@ -525,7 +553,7 @@ impl App {
                         (t.get(t.root).size, t.get(t.root).files)
                     };
                     toasts.push((
-                        format!("{} scanned · {} in {} files · {:.1}s", s.title, fmt_size(size), crate::tree::fmt_count(files as u64), s.started.elapsed().as_secs_f32()),
+                        crate::i18n::trf("{name} scanned · {size} in {files} files · {seconds}s", &[("name", &s.title), ("size", &fmt_size(size)), ("files", &crate::tree::fmt_count(files as u64)), ("seconds", &format!("{:.1}", s.started.elapsed().as_secs_f32()))]),
                         self.theme.ok,
                     ));
                     sounds.push(Sfx::Success);

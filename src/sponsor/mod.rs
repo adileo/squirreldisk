@@ -21,6 +21,7 @@ pub mod interests;
 pub mod wire;
 
 pub use interests::Interest;
+use crate::i18n::{tr, trf};
 use std::collections::HashSet;
 use std::sync::{Arc, Mutex};
 
@@ -77,8 +78,8 @@ impl Ad {
     pub fn house() -> Ad {
         Ad {
             id: String::new(),
-            title: "Your brand here".into(),
-            text: "Reach people who care about their disks.".into(),
+            title: tr("Your brand here").into(),
+            text: tr("Reach people who care about their disks.").into(),
             url: SPONSORS_URL.into(),
             icon: "acorn".into(),
             weight: 1,
@@ -149,24 +150,24 @@ pub fn evaluate(target: &Target, s: &Signals, personalized: bool) -> Option<Vec<
         if !target.os.iter().any(|o| o == s.os) {
             return None;
         }
-        why.push(format!("you use {}", match s.os { "macos" => "macOS", "windows" => "Windows", _ => "Linux" }));
+        why.push(trf("you use {os}", &[("os", &match s.os { "macos" => "macOS", "windows" => "Windows", _ => "Linux" })]));
     }
     if !target.lang.is_empty() {
         if !target.lang.iter().any(|l| *l == s.lang) {
             return None;
         }
-        why.push(format!("your system language is \"{}\"", s.lang));
+        why.push(trf("your system language is \"{lang}\"", &[("lang", &s.lang)]));
     }
     if !target.interests.is_empty() {
         let hit: Vec<&Interest> = target.interests.iter().filter(|i| s.interests.contains(i)).collect();
         if hit.is_empty() {
             return None;
         }
-        why.push(format!("your disk suggests: {}", hit.iter().map(|i| i.label()).collect::<Vec<_>>().join(", ")));
+        why.push(trf("your disk suggests: {interests}", &[("interests", &hit.iter().map(|i| i.label()).collect::<Vec<_>>().join(", "))]));
     }
     if let Some(min) = target.disk_full_above {
         match s.disk_full {
-            Some(f) if f >= min => why.push(format!("your startup disk is {:.0}% full", f * 100.0)),
+            Some(f) if f >= min => why.push(trf("your startup disk is {percent}% full", &[("percent", &format!("{:.0}", f * 100.0))])),
             _ => return None,
         }
     }
@@ -174,7 +175,7 @@ pub fn evaluate(target: &Target, s: &Signals, personalized: bool) -> Option<Vec<
         if want != s.external_drive {
             return None;
         }
-        why.push(if want { "an external drive is connected".into() } else { "no external drive is connected".into() });
+        why.push(if want { tr("an external drive is connected").into() } else { tr("no external drive is connected").into() });
     }
     Some(why)
 }
