@@ -21,7 +21,7 @@
     <StandardDirectory Id="LocalAppDataFolder">
       <Directory Id="ProgramsFolder" Name="Programs">
         <Directory Id="INSTALLFOLDER" Name="SquirrelDisk">
-          <Component Id="MainExecutable">
+          <Component Id="MainExecutable" Guid="3c7e9b1a-5d2f-4a8e-9f61-0b4c2d7e8a95">
             <File Id="SquirrelDiskExe" Name="squirreldisk.exe" Source="$(ExePath)" />
             <RegistryValue Root="HKCU" Key="Software\SquirrelDisk" Name="InstallDir" Type="string" Value="[INSTALLFOLDER]" KeyPath="yes" />
             <RemoveFolder Id="RemoveInstallFolder" On="uninstall" />
@@ -32,7 +32,7 @@
     </StandardDirectory>
 
     <StandardDirectory Id="ProgramMenuFolder">
-      <Component Id="StartMenuShortcut">
+      <Component Id="StartMenuShortcut" Guid="8a2f6d40-1c9b-4e73-b5d8-6e0f3a9c2b17">
         <Shortcut Id="SquirrelDiskShortcut" Name="SquirrelDisk" Description="See what's using your disk space"
                   Target="[INSTALLFOLDER]squirreldisk.exe" WorkingDirectory="INSTALLFOLDER" Icon="AppIcon" />
         <RegistryValue Root="HKCU" Key="Software\SquirrelDisk" Name="StartMenuShortcut" Type="integer" Value="1" KeyPath="yes" />
