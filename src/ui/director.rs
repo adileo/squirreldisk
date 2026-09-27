@@ -12,6 +12,10 @@ use std::sync::mpsc::Sender;
 
 pub const FPS: f64 = 15.0;
 
+/// Script done (no more frames will come) / ffmpeg finished writing.
+static FINISHED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+static ENCODED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
 #[derive(Clone, Debug)]
 pub enum Aim {
     /// A sunburst slice, by path relative to the scan root.
@@ -118,19 +122,65 @@ impl Director {
             return None;
         }
         let pending = std::sync::Arc::new(std::sync::atomic::AtomicUsize::new(0));
-        let writer = std::env::var("MARKETING_DEMO_RECORD").ok().map(|dir| {
-            let _ = std::fs::create_dir_all(&dir);
+        let writer = std::env::var("MARKETING_DEMO_RECORD").ok().map(|dest| {
             let (tx, rx) = std::sync::mpsc::channel::<(usize, std::sync::Arc<egui::ColorImage>)>();
-            // PNG encoding of retina frames is slow: use a few writer threads.
-            let rx = std::sync::Arc::new(std::sync::Mutex::new(rx));
-            for _ in 0..6 {
-                let (rx, dir, pending) = (rx.clone(), dir.clone(), pending.clone());
-                std::thread::spawn(move || loop {
-                    let next = rx.lock().unwrap().recv();
-                    let Ok((n, img)) = next else { break };
-                    let _ = write_frame(&format!("{dir}/frame-{n:05}.png"), &img);
-                    pending.fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
+            if dest.ends_with(".mp4") {
+                // Stream raw frames straight into ffmpeg: nothing piles up in RAM or on disk.
+                let pending = pending.clone();
+                std::thread::spawn(move || {
+                    use std::io::Write;
+                    let mut child: Option<std::process::Child> = None;
+                    let mut buf = Vec::new();
+                    loop {
+                        let img = match rx.recv_timeout(std::time::Duration::from_millis(200)) {
+                            Ok((_, img)) => img,
+                            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {
+                                if FINISHED.load(std::sync::atomic::Ordering::SeqCst) && pending.load(std::sync::atomic::Ordering::SeqCst) == 0 {
+                                    break;
+                                }
+                                continue;
+                            }
+                            Err(_) => break,
+                        };
+                        let ff = child.get_or_insert_with(|| {
+                            std::process::Command::new("ffmpeg")
+                                .args(["-loglevel", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgba", "-s"])
+                                .arg(format!("{}x{}", img.size[0], img.size[1]))
+                                .args(["-r", "15", "-i", "-", "-c:v", "libx264", "-preset", "veryfast", "-crf", "10", "-pix_fmt", "yuv444p"])
+                                .arg(&dest)
+                                .stdin(std::process::Stdio::piped())
+                                .spawn()
+                                .expect("ffmpeg")
+                        });
+                        buf.clear();
+                        for p in &img.pixels {
+                            buf.extend_from_slice(&[p.r(), p.g(), p.b(), 255]);
+                        }
+                        if let Some(stdin) = ff.stdin.as_mut() {
+                            let _ = stdin.write_all(&buf);
+                        }
+                        pending.fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
+                    }
+                    if let Some(mut ff) = child {
+                        drop(ff.stdin.take());
+                        let _ = ff.wait();
+                    }
+                    ENCODED.store(true, std::sync::atomic::Ordering::SeqCst);
                 });
+            } else {
+                let _ = std::fs::create_dir_all(&dest);
+                // PNG frames (small windows only): a few writer threads.
+                let rx = std::sync::Arc::new(std::sync::Mutex::new(rx));
+                for _ in 0..6 {
+                    let (rx, dir, pending) = (rx.clone(), dest.clone(), pending.clone());
+                    std::thread::spawn(move || loop {
+                        let next = rx.lock().unwrap().recv();
+                        let Ok((n, img)) = next else { break };
+                        let _ = write_frame(&format!("{dir}/frame-{n:05}.png"), &img);
+                        pending.fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
+                    });
+                }
+                ENCODED.store(true, std::sync::atomic::Ordering::SeqCst);
             }
             tx
         });
@@ -217,8 +267,12 @@ impl App {
         loop {
             let Some(step) = d.steps.get(d.idx).cloned() else {
                 let end = *d.finished_at.get_or_insert(now);
+                if now - end > 0.6 {
+                    FINISHED.store(true, std::sync::atomic::Ordering::SeqCst);
+                    d.recording = false;
+                }
                 let drained = d.pending.load(std::sync::atomic::Ordering::SeqCst) == 0;
-                if now - end > 0.6 && d.writer.is_some() && drained {
+                if now - end > 0.6 && d.writer.is_some() && drained && ENCODED.load(std::sync::atomic::Ordering::SeqCst) {
                     ctx.send_viewport_cmd(egui::ViewportCommand::Close);
                 }
                 break;
