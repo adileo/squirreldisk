@@ -73,6 +73,13 @@ fn run_gui() {
         .with_min_inner_size([860.0, 560.0])
         .with_drag_and_drop(true)
         .with_icon(icon);
+    // SQD_WINDOW=WxH (development: check layouts at a given size)
+    if let Some((w, h)) = std::env::var("SQD_WINDOW").ok().and_then(|v| {
+        let (w, h) = v.split_once('x')?;
+        Some((w.parse::<f32>().ok()?, h.parse::<f32>().ok()?))
+    }) {
+        viewport = viewport.with_inner_size([w, h]);
+    }
     if cfg!(target_os = "macos") {
         viewport = viewport.with_fullsize_content_view(true).with_titlebar_shown(false).with_title_shown(false);
     }

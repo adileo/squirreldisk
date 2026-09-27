@@ -14,7 +14,7 @@ use super::Ad;
 use std::collections::HashMap;
 use std::sync::Mutex;
 
-pub const API: &str = "https://squirreldisk.com";
+pub const API: &str = "https://www.squirreldisk.com";
 
 const UA: &str = concat!("SquirrelDisk/", env!("CARGO_PKG_VERSION"));
 

@@ -282,6 +282,12 @@ pub struct App {
     pub ssh_tried: HashSet<String>,
     /// Language picker popover open in Settings.
     pub lang_picker: bool,
+    /// Settings modal scroll offset and measured content height.
+    pub settings_scroll: f32,
+    pub settings_content_h: f32,
+    /// Home page scroll offset and measured content height.
+    pub home_scroll: f32,
+    pub home_content_h: f32,
     pub sponsors: crate::sponsor::Sponsors,
     /// App icon as a texture, for the home header.
     pub logo: Option<egui::TextureHandle>,
@@ -382,6 +388,10 @@ impl App {
             debug: super::debug::Debug::from_env(),
             ssh_tried: HashSet::new(),
             lang_picker: false,
+            settings_scroll: 0.0,
+            settings_content_h: 640.0,
+            home_scroll: 0.0,
+            home_content_h: 0.0,
             sponsors: crate::sponsor::Sponsors::start(settings.sponsor_measurement),
             logo: None,
             dock: DockState::default(),

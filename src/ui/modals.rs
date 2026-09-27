@@ -175,86 +175,129 @@ impl App {
         let gl_error = self.gl_error.clone();
         let mut picker = self.lang_picker;
         let mut new_lang: Option<String> = None;
+        let mut scroll = self.settings_scroll;
+        let mut content_h = self.settings_content_h;
         let bd = modal_frame(ctx, self.modal_opened, Vec2::new(620.0, 760.0), &theme, |ui, card| {
             title(ui, card, tr("Settings"), Some(tr("Appearance, sounds and behaviour.")), &theme);
             close = close_button(ui, card, &theme);
             let x0 = card.left() + 28.0;
             let w = card.width() - 56.0;
-            let mut y = card.top() + 96.0;
-            ui.painter().text(Pos2::new(x0, y), Align2::LEFT_TOP, tr("THEME"), bold(11.0), theme.text_faint);
-            y += 20.0;
-            let cols = 4;
-            let gap = 10.0;
-            let tw = (w - gap * (cols as f32 - 1.0)) / cols as f32;
-            let th = 76.0;
-            for (k, t) in themes.iter().enumerate() {
-                let r = Rect::from_min_size(Pos2::new(x0 + (k % cols) as f32 * (tw + gap), y + (k / cols) as f32 * (th + gap)), Vec2::new(tw, th));
-                mark(format!("theme:{}", t.name), r);
-                if theme_swatch(ui, r, t, t.name == theme.name, self.time).clicked() {
-                    new_theme = Some(t.name.to_string());
+            // Scrollable middle: title and footer stay put.
+            let body = Rect::from_min_max(Pos2::new(card.left(), card.top() + 88.0), Pos2::new(card.right(), card.bottom() - 66.0));
+            let max_scroll = (content_h - body.height()).max(0.0);
+            if ui.rect_contains_pointer(body) {
+                scroll -= ui.input(|i| i.smooth_scroll_delta.y);
+            }
+            scroll = scroll.clamp(0.0, max_scroll);
+            let mut end_y = 0.0;
+            ui.scope_builder(egui::UiBuilder::new().max_rect(body), |ui| {
+                ui.set_clip_rect(body.intersect(ui.clip_rect()));
+                let top = body.top() + 8.0 - scroll;
+                let mut y = top;
+                ui.painter().text(Pos2::new(x0, y), Align2::LEFT_TOP, tr("THEME"), bold(11.0), theme.text_faint);
+                y += 20.0;
+                let cols = 4;
+                let gap = 10.0;
+                let tw = (w - gap * (cols as f32 - 1.0)) / cols as f32;
+                let th = 76.0;
+                for (k, t) in themes.iter().enumerate() {
+                    let r = Rect::from_min_size(Pos2::new(x0 + (k % cols) as f32 * (tw + gap), y + (k / cols) as f32 * (th + gap)), Vec2::new(tw, th));
+                    mark(format!("theme:{}", t.name), r);
+                    if theme_swatch(ui, r, t, t.name == theme.name, self.time).clicked() {
+                        new_theme = Some(t.name.to_string());
+                    }
                 }
-            }
-            y += ((themes.len() + cols - 1) / cols) as f32 * (th + gap) + 12.0;
+                y += ((themes.len() + cols - 1) / cols) as f32 * (th + gap) + 12.0;
 
-            // language
-            let lang_row = Rect::from_min_size(Pos2::new(x0, y), Vec2::new(w, 44.0));
-            {
-                let p = ui.painter();
-                p.text(Pos2::new(x0, lang_row.top() + 12.0), Align2::LEFT_CENTER, tr("Language"), bold(13.5), theme.text);
-                p.text(Pos2::new(x0, lang_row.top() + 30.0), Align2::LEFT_CENTER, tr("Automatic follows your system language"), font(11.5), theme.text_dim);
-            }
-            let current = if s.language == "auto" {
-                trf("Automatic ({language})", &[("language", &crate::i18n::lang(crate::i18n::current()).native)])
-            } else {
-                crate::i18n::lang(&s.language).native.to_string()
-            };
-            let lb = Rect::from_min_size(Pos2::new(x0 + w - 220.0, lang_row.top() + 6.0), Vec2::new(220.0, 32.0));
-            if widgets::button(ui, lb, Id::new("lang-btn"), &current, Some(Icon::Forward), BtnStyle::Subtle, &theme).clicked() {
-                picker = !picker;
-            }
-            y += 50.0;
-
-            let rows: [(&str, &str, u8); 6] = [
-                (tr("Sound effects"), tr("Plops, crunches and a little fanfare"), 0),
-                (tr("Shader effects"), tr("GPU-rendered, anti-aliased segments (turn off on very old GPUs)"), 1),
-                (tr("Watch for changes"), tr("Update the chart when files change on disk"), 2),
-                (tr("Check for updates"), tr("Look for new releases on GitHub at launch"), 3),
-                (tr("Personalized sponsors"), tr("Picked on this computer from disk categories; nothing about you is sent"), 4),
-                (tr("Anonymous sponsor stats"), tr("Daily view totals and click counts, with no ID of any kind"), 5),
-            ];
-            for (label, sub, k) in rows {
-                let r = Rect::from_min_size(Pos2::new(x0, y), Vec2::new(w, 44.0));
-                let p = ui.painter();
-                p.text(Pos2::new(r.left(), r.top() + 12.0), Align2::LEFT_CENTER, label, bold(13.5), theme.text);
-                p.text(Pos2::new(r.left(), r.top() + 30.0), Align2::LEFT_CENTER, sub, font(11.5), theme.text_dim);
-                let tgl = Rect::from_center_size(Pos2::new(r.right() - 22.0, r.center().y), Vec2::new(44.0, 26.0));
-                let v = match k {
-                    0 => &mut s.sound,
-                    1 => &mut s.shader_fx,
-                    2 => &mut s.watch_fs,
-                    3 => &mut s.auto_update,
-                    4 => &mut s.personalized_sponsors,
-                    _ => &mut s.sponsor_measurement,
+                // language
+                let lang_row = Rect::from_min_size(Pos2::new(x0, y), Vec2::new(w, 44.0));
+                {
+                    let p = ui.painter();
+                    p.text(Pos2::new(x0, lang_row.top() + 12.0), Align2::LEFT_CENTER, tr("Language"), bold(13.5), theme.text);
+                    p.text(Pos2::new(x0, lang_row.top() + 30.0), Align2::LEFT_CENTER, tr("Automatic follows your system language"), font(11.5), theme.text_dim);
+                }
+                let current = if s.language == "auto" {
+                    trf("Automatic ({language})", &[("language", &crate::i18n::lang(crate::i18n::current()).native)])
+                } else {
+                    crate::i18n::lang(&s.language).native.to_string()
                 };
-                widgets::toggle(ui, tgl, Id::new(("set-toggle", k)), v, &theme);
-                y += 46.0;
-            }
-            // Transparency: exactly what the sponsor feature knows, all local.
-            let sig = self.sponsors.signals();
-            let mut known: Vec<&str> = sig.interests.iter().map(|i| i.label()).collect();
-            known.sort();
-            let interests = if !s.personalized_sponsors { tr("off").to_string() } else if known.is_empty() { tr("none yet").to_string() } else { known.join(", ") };
-            let local = trf("Known only on this device: {interests}  ·  views waiting to be reported: {views}", &[("interests", &interests), ("views", &self.sponsors.pending_views())]);
-            let local = widgets::truncate(ui.painter(), &local, &font(11.0), w);
-            ui.painter().text(Pos2::new(x0, y + 4.0), Align2::LEFT_CENTER, local, font(11.0), theme.text_faint);
-            y += 22.0;
-            let p = ui.painter();
-            p.text(Pos2::new(x0, y + 12.0), Align2::LEFT_CENTER, tr("Chart depth"), bold(13.5), theme.text);
-            p.text(Pos2::new(x0, y + 30.0), Align2::LEFT_CENTER, trf("{rings} rings — fewer is faster on old machines", &[("rings", &s.rings)]), font(11.5), theme.text_dim);
-            let sr = Rect::from_min_size(Pos2::new(x0 + w - 200.0, y + 8.0), Vec2::new(200.0, 28.0));
-            widgets::stepper(ui, sr, Id::new("rings"), &mut s.rings, 3, 9, &theme);
-            y += 50.0;
+                let lb = Rect::from_min_size(Pos2::new(x0 + w - 220.0, lang_row.top() + 6.0), Vec2::new(220.0, 32.0));
+                if widgets::button(ui, lb, Id::new("lang-btn"), &current, Some(Icon::Forward), BtnStyle::Subtle, &theme).clicked() {
+                    picker = !picker;
+                }
+                y += 50.0;
 
+                let rows: [(&str, &str, u8); 6] = [
+                    (tr("Sound effects"), tr("Plops, crunches and a little fanfare"), 0),
+                    (tr("Shader effects"), tr("GPU-rendered, anti-aliased segments (turn off on very old GPUs)"), 1),
+                    (tr("Watch for changes"), tr("Update the chart when files change on disk"), 2),
+                    (tr("Check for updates"), tr("Look for new releases on GitHub at launch"), 3),
+                    (tr("Personalized sponsors"), tr("Picked on this computer from disk categories; nothing about you is sent"), 4),
+                    (tr("Anonymous sponsor stats"), tr("Daily view totals and click counts, with no ID of any kind"), 5),
+                ];
+                for (label, sub, k) in rows {
+                    let r = Rect::from_min_size(Pos2::new(x0, y), Vec2::new(w, 44.0));
+                    let p = ui.painter();
+                    p.text(Pos2::new(r.left(), r.top() + 12.0), Align2::LEFT_CENTER, label, bold(13.5), theme.text);
+                    p.text(Pos2::new(r.left(), r.top() + 30.0), Align2::LEFT_CENTER, sub, font(11.5), theme.text_dim);
+                    let tgl = Rect::from_center_size(Pos2::new(r.right() - 22.0, r.center().y), Vec2::new(44.0, 26.0));
+                    let v = match k {
+                        0 => &mut s.sound,
+                        1 => &mut s.shader_fx,
+                        2 => &mut s.watch_fs,
+                        3 => &mut s.auto_update,
+                        4 => &mut s.personalized_sponsors,
+                        _ => &mut s.sponsor_measurement,
+                    };
+                    widgets::toggle(ui, tgl, Id::new(("set-toggle", k)), v, &theme);
+                    y += 46.0;
+                }
+                // Transparency: exactly what the sponsor feature knows, all local.
+                let sig = self.sponsors.signals();
+                let mut known: Vec<&str> = sig.interests.iter().map(|i| i.label()).collect();
+                known.sort();
+                let interests = if !s.personalized_sponsors { tr("off").to_string() } else if known.is_empty() { tr("none yet").to_string() } else { known.join(", ") };
+                let local = trf("Known only on this device: {interests}  ·  views waiting to be reported: {views}", &[("interests", &interests), ("views", &self.sponsors.pending_views())]);
+                let local = widgets::truncate(ui.painter(), &local, &font(11.0), w);
+                ui.painter().text(Pos2::new(x0, y + 4.0), Align2::LEFT_CENTER, local, font(11.0), theme.text_faint);
+                y += 22.0;
+                let p = ui.painter();
+                p.text(Pos2::new(x0, y + 12.0), Align2::LEFT_CENTER, tr("Chart depth"), bold(13.5), theme.text);
+                p.text(Pos2::new(x0, y + 30.0), Align2::LEFT_CENTER, trf("{rings} rings — fewer is faster on old machines", &[("rings", &s.rings)]), font(11.5), theme.text_dim);
+                let sr = Rect::from_min_size(Pos2::new(x0 + w - 200.0, y + 8.0), Vec2::new(200.0, 28.0));
+                widgets::stepper(ui, sr, Id::new("rings"), &mut s.rings, 3, 9, &theme);
+                y += 50.0;
+
+                end_y = y - top + 16.0;
+            });
+            content_h = end_y;
+            if max_scroll > 0.0 {
+                // soft fades hint that there is more
+                let p = ui.painter();
+                let bg = lerp_color(theme.surface, theme.bg_top, 0.3);
+                if scroll > 1.0 {
+                    let r = Rect::from_min_size(body.left_top(), Vec2::new(body.width() - 14.0, 18.0));
+                    widgets::vgradient(p, r, bg, with_alpha(bg, 0.0));
+                }
+                if scroll < max_scroll - 1.0 {
+                    let r = Rect::from_min_max(Pos2::new(body.left(), body.bottom() - 18.0), Pos2::new(body.right() - 14.0, body.bottom()));
+                    widgets::vgradient(p, r, with_alpha(bg, 0.0), bg);
+                }
+                // custom scrollbar
+                let track = Rect::from_min_max(Pos2::new(card.right() - 11.0, body.top() + 4.0), Pos2::new(card.right() - 6.0, body.bottom() - 4.0));
+                let thumb_h = (track.height() * body.height() / content_h).max(28.0);
+                let t = scroll / max_scroll;
+                let thumb = Rect::from_min_size(Pos2::new(track.left(), track.top() + (track.height() - thumb_h) * t), Vec2::new(track.width(), thumb_h));
+                let resp = ui.interact(thumb.expand2(Vec2::new(4.0, 0.0)), Id::new("settings-scroll"), Sense::drag());
+                if resp.dragged() {
+                    scroll = (scroll + resp.drag_delta().y * max_scroll / (track.height() - thumb_h).max(1.0)).clamp(0.0, max_scroll);
+                }
+                let h = ui.ctx().animate_bool_with_time(Id::new("settings-scroll-h"), resp.hovered() || resp.dragged(), 0.12);
+                let p = ui.painter();
+                p.rect_filled(track, widgets::cr(3.0), with_alpha(theme.stroke, 0.35));
+                p.rect_filled(thumb, widgets::cr(3.0), lerp_color(with_alpha(theme.text_faint, 0.8), theme.text_dim, h));
+            }
+            let y = card.bottom() - 62.0;
             let p = ui.painter();
             p.line_segment([Pos2::new(x0, y), Pos2::new(x0 + w, y)], Stroke::new(1.0, with_alpha(theme.stroke, 0.7)));
             let status = match &upd {
@@ -316,6 +359,8 @@ impl App {
             self.updater.check(ctx.clone());
         }
         self.lang_picker = picker;
+        self.settings_scroll = scroll;
+        self.settings_content_h = content_h;
         if let Some(code) = new_lang {
             s.language = code.clone();
             self.set_language(ctx, &code);

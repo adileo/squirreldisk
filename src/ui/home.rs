@@ -32,7 +32,14 @@ impl App {
 
         let w = (screen.width() - 64.0).min(820.0);
         let x0 = screen.center().x - w / 2.0;
-        let mut y = screen.top() + TITLEBAR_INSET + 24.0;
+        // The page scrolls when the window is shorter than the content.
+        let max_scroll = (self.home_content_h - screen.height()).max(0.0);
+        if self.modal.is_none() && ui.rect_contains_pointer(screen) {
+            self.home_scroll -= ui.input(|i| i.smooth_scroll_delta.y);
+        }
+        self.home_scroll = self.home_scroll.clamp(0.0, max_scroll);
+        let page_top = screen.top() - self.home_scroll;
+        let mut y = page_top + TITLEBAR_INSET + 24.0;
 
         // --- header
         {
@@ -125,7 +132,23 @@ impl App {
 
         let p = ui.painter();
         let foot = format!("v{} · {}", env!("CARGO_PKG_VERSION"), tr("drop a folder anywhere to scan it · Esc goes back"));
-        p.text(Pos2::new(screen.center().x, (y + 20.0).max(screen.bottom() - 26.0)), Align2::CENTER_CENTER, foot, font(11.5), theme.text_faint);
+        let foot_y = (y + 20.0).max(screen.bottom() - 26.0 - self.home_scroll);
+        p.text(Pos2::new(screen.center().x, foot_y), Align2::CENTER_CENTER, foot, font(11.5), theme.text_faint);
+        self.home_content_h = y + 44.0 - page_top;
+        if max_scroll > 0.0 {
+            let track = Rect::from_min_max(Pos2::new(screen.right() - 9.0, screen.top() + TITLEBAR_INSET + 8.0), Pos2::new(screen.right() - 4.0, screen.bottom() - 8.0));
+            let thumb_h = (track.height() * screen.height() / self.home_content_h).max(32.0);
+            let t = self.home_scroll / max_scroll;
+            let thumb = Rect::from_min_size(Pos2::new(track.left(), track.top() + (track.height() - thumb_h) * t), Vec2::new(track.width(), thumb_h));
+            let resp = ui.interact(thumb.expand2(Vec2::new(4.0, 0.0)), Id::new("home-scroll"), Sense::drag());
+            if resp.dragged() {
+                self.home_scroll = (self.home_scroll + resp.drag_delta().y * max_scroll / (track.height() - thumb_h).max(1.0)).clamp(0.0, max_scroll);
+            }
+            let h = ui.ctx().animate_bool_with_time(Id::new("home-scroll-h"), resp.hovered() || resp.dragged(), 0.12);
+            let p = ui.painter();
+            p.rect_filled(track, cr(3.0), with_alpha(theme.stroke, 0.35));
+            p.rect_filled(thumb, cr(3.0), lerp_color(with_alpha(theme.text_faint, 0.8), theme.text_dim, h));
+        }
     }
 
     fn update_pill(&mut self, ui: &mut Ui, right_center: Pos2) {

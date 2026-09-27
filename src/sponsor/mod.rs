@@ -25,7 +25,7 @@ use crate::i18n::{tr, trf};
 use std::collections::HashSet;
 use std::sync::{Arc, Mutex};
 
-pub const SPONSORS_URL: &str = "https://squirreldisk.com/sponsors";
+pub const SPONSORS_URL: &str = "https://www.squirreldisk.com/sponsors";
 
 /// Targeting rules attached to an ad. Every listed condition must hold;
 /// empty lists / `None` mean "any".

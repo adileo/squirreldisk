@@ -1,4 +1,8 @@
-## SquirrelDisk 2.1
+## SquirrelDisk 2.1.1
+
+- Settings and the home screen scroll when the window is small, so nothing ends up off screen.
+
+### From 2.1
 
 - **25 languages.** SquirrelDisk now speaks English, 简体中文, हिन्दी, Español, Français, العربية, বাংলা, Português, Русский, اردو, Bahasa Indonesia, Deutsch, 日本語, मराठी, తెలుగు, Türkçe, தமிழ், Tiếng Việt, 한국어, Italiano, فارسی, Polski, Українська, ไทย and Nederlands. It follows your system language; change it in Settings.
 - **Secure erase.** When deleting permanently, tick "Secure erase" to overwrite every file three times (zeros, ones, random data — DoD 5220.22-M) before it's removed. On SSDs and APFS some old data can survive: full-disk encryption (FileVault, BitLocker) protects it completely.
