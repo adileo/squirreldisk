@@ -1,4 +1,8 @@
-## SquirrelDisk 2.3
+## SquirrelDisk 2.3.1
+
+- **Linux:** the AppImage now includes the keyboard libraries (xkbcommon) it loads at startup, so it also opens on minimal systems that don't have them installed.
+
+### From 2.3
 
 - **Cloud accounts, built in.** Home → Cloud storage now installs rclone for you with one click (official build, checksum-verified, no admin rights needed) on macOS, Windows and Linux.
 - **Add, edit and remove accounts** without the terminal: Google Drive, Dropbox, OneDrive, Box and pCloud sign in through your browser; S3 and compatible, Backblaze B2, SFTP, FTP, WebDAV/Nextcloud and MEGA take a short form. The connection is tested when you save. Anything else is one click away in `rclone config`.
