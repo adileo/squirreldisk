@@ -109,6 +109,32 @@ jobs:
           cp packaging/linux/squirreldisk.desktop pkg/SquirrelDisk/
           cp assets/icon/icon-256.png pkg/SquirrelDisk/squirreldisk.png
           tar -C pkg -czf SquirrelDisk-Linux-x86_64.tar.gz SquirrelDisk
+      - name: Build AppImage
+        run: |
+          sudo apt-get install -y zsync
+          wget -q https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool
+          chmod +x appimagetool
+          mkdir -p AppDir/usr/bin AppDir/usr/share/applications AppDir/usr/share/icons/hicolor/256x256/apps
+          cp target/release/squirreldisk AppDir/usr/bin/
+          install -m755 packaging/linux/AppRun AppDir/AppRun
+          cp packaging/linux/squirreldisk.desktop AppDir/
+          cp packaging/linux/squirreldisk.desktop AppDir/usr/share/applications/
+          cp assets/icon/icon-256.png AppDir/squirreldisk.png
+          cp assets/icon/icon-256.png AppDir/usr/share/icons/hicolor/256x256/apps/squirreldisk.png
+          cp assets/icon/icon-256.png AppDir/.DirIcon
+          # update info lets AppImageUpdate / Gear Lever update it in place
+          ARCH=x86_64 APPIMAGE_EXTRACT_AND_RUN=1 ./appimagetool \
+            -u "gh-releases-zsync|adileo|squirreldisk|latest|SquirrelDisk-x86_64.AppImage.zsync" \
+            AppDir SquirrelDisk-x86_64.AppImage
+          # smoke test: the bundled binary starts
+          APPIMAGE_EXTRACT_AND_RUN=1 ./SquirrelDisk-x86_64.AppImage --version
+          ls -la SquirrelDisk-x86_64.AppImage*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: |
+            SquirrelDisk-x86_64.AppImage
+            SquirrelDisk-x86_64.AppImage.zsync
       - name: Build agents (static, musl)
         run: |
           pip install ziglang
@@ -122,6 +148,8 @@ jobs:
         with:
           body_path: .github/release-notes.md
           files: |
+            SquirrelDisk-x86_64.AppImage
+            SquirrelDisk-x86_64.AppImage.zsync
             SquirrelDisk-Linux-x86_64.tar.gz
             squirreldisk-x86_64-unknown-linux-gnu
             squirreldisk-agent-x86_64-unknown-linux-musl

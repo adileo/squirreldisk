@@ -1,0 +1,4 @@
+#!/bin/sh
+# AppImage entry point: run the bundled binary.
+HERE="$(dirname "$(readlink -f "$0")")"
+exec "$HERE/usr/bin/squirreldisk" "$@"

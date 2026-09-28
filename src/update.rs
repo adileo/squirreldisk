@@ -69,6 +69,21 @@ struct GhAsset {
     browser_download_url: String,
 }
 
+/// When running from an AppImage, the path of the .AppImage file (set by the
+/// AppImage runtime). The executable itself lives on a read-only mount, so
+/// updates replace this file instead.
+pub fn appimage_path() -> Option<std::path::PathBuf> {
+    std::env::var_os("APPIMAGE").map(std::path::PathBuf::from).filter(|p| p.is_file())
+}
+
+fn appimage_asset() -> &'static str {
+    if cfg!(target_arch = "aarch64") {
+        "SquirrelDisk-aarch64.AppImage"
+    } else {
+        "SquirrelDisk-x86_64.AppImage"
+    }
+}
+
 /// Compares dotted versions numerically ("2.10.0" > "2.9.3").
 pub fn is_newer(candidate: &str, current: &str) -> bool {
     let parse = |s: &str| -> Vec<u64> {
@@ -116,7 +131,13 @@ impl Updater {
                 let asset = rel
                     .assets
                     .iter()
-                    .find(|a| a.name == want || a.name == format!("{want}.exe"))
+                    .find(|a| {
+                        if appimage_path().is_some() {
+                            a.name == appimage_asset()
+                        } else {
+                            a.name == want || a.name == format!("{want}.exe")
+                        }
+                    })
                     .map(|a| a.browser_download_url.clone());
                 Ok(State::Available(Release {
                     version: rel.tag_name.trim_start_matches('v').to_string(),
@@ -144,7 +165,12 @@ impl Updater {
                     .map_err(|e| e.to_string())?;
                 total.store(resp.body().content_length().unwrap_or(0), Ordering::Relaxed);
                 let mut reader = resp.into_body().into_reader();
-                let tmp = std::env::temp_dir().join(format!("squirreldisk-update-{}", std::process::id()));
+                let appimage = appimage_path();
+                // Download next to the AppImage so the final rename is atomic.
+                let tmp = match &appimage {
+                    Some(p) => p.with_file_name(format!(".squirreldisk-update-{}.AppImage", std::process::id())),
+                    None => std::env::temp_dir().join(format!("squirreldisk-update-{}", std::process::id())),
+                };
                 let mut f = std::fs::File::create(&tmp).map_err(|e| e.to_string())?;
                 let mut buf = vec![0u8; 64 * 1024];
                 loop {
@@ -165,8 +191,18 @@ impl Updater {
                     use std::os::unix::fs::PermissionsExt;
                     let _ = std::fs::set_permissions(&tmp, std::fs::Permissions::from_mode(0o755));
                 }
-                self_replace::self_replace(&tmp).map_err(|e| e.to_string())?;
-                let _ = std::fs::remove_file(&tmp);
+                match &appimage {
+                    Some(target) => {
+                        if let Err(e) = std::fs::rename(&tmp, target) {
+                            let _ = std::fs::remove_file(&tmp);
+                            return Err(format!("can't replace {}: {e}", target.display()));
+                        }
+                    }
+                    None => {
+                        self_replace::self_replace(&tmp).map_err(|e| e.to_string())?;
+                        let _ = std::fs::remove_file(&tmp);
+                    }
+                }
                 Ok(())
             })();
             *st.lock().unwrap() = match r {
@@ -180,6 +216,10 @@ impl Updater {
 
 /// Relaunches the (updated) executable and exits.
 pub fn restart() {
+    if let Some(appimage) = appimage_path() {
+        let _ = std::process::Command::new(appimage).spawn();
+        std::process::exit(0);
+    }
     if let Ok(exe) = std::env::current_exe() {
         // Inside a macOS bundle, relaunch the .app so it keeps its Dock identity.
         let bundle = exe.ancestors().find(|p| p.extension().is_some_and(|e| e == "app")).map(|p| p.to_path_buf());

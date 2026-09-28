@@ -330,7 +330,7 @@ impl Iterator for ChildIter<'_> {
     }
 }
 
-/// Human-readable size, e.g. `438.1 GB` (decimal units like Finder/DaisyDisk).
+/// Human-readable size, e.g. `438.1 GB`
 pub fn fmt_size(bytes: u64) -> String {
     const UNITS: [&str; 6] = ["B", "KB", "MB", "GB", "TB", "PB"];
     if bytes < 1000 {
