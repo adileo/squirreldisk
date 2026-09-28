@@ -1,6 +1,6 @@
 [package]
 name = "squirreldisk"
-version = "2.3.1"
+version = "2.4.0"
 edition = "2021"
 description = "Fast, fun, cross-platform disk usage analyzer with an animated sunburst"
 license = "AGPL-3.0-only"

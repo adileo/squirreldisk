@@ -1,4 +1,8 @@
-## SquirrelDisk 2.3.1
+## SquirrelDisk 2.4
+
+- **Portable mode (Windows and Linux).** Create a folder named `portable` next to the `.exe`, the `.AppImage` or the `squirreldisk` binary, and SquirrelDisk keeps everything there: settings, the rclone it installs and your cloud accounts. Perfect for a USB stick. You can also pick any folder with the `SQUIRRELDISK_CONFIG_DIR` environment variable, on every platform.
+
+### From 2.3.1
 
 - **Linux:** the AppImage now includes the keyboard libraries (xkbcommon) it loads at startup, so it also opens on minimal systems that don't have them installed.
 
