@@ -19,12 +19,12 @@ thread_local! {
     static MARKS: std::cell::RefCell<Vec<(String, Rect)>> = const { std::cell::RefCell::new(Vec::new()) };
 }
 
-fn mark(name: impl Into<String>, rect: Rect) {
+pub(super) fn mark(name: impl Into<String>, rect: Rect) {
     MARKS.with(|m| m.borrow_mut().push((name.into(), rect)));
 }
 
 /// Draws backdrop + card; returns whether the backdrop was clicked.
-fn modal_frame(ctx: &egui::Context, opened: Instant, size: Vec2, theme: &Theme, add: impl FnOnce(&mut Ui, Rect)) -> bool {
+pub(super) fn modal_frame(ctx: &egui::Context, opened: Instant, size: Vec2, theme: &Theme, add: impl FnOnce(&mut Ui, Rect)) -> bool {
     let screen = ctx.content_rect();
     let t = (opened.elapsed().as_secs_f32() / 0.18).min(1.0);
     let e = 1.0 - (1.0 - t).powi(3);
@@ -51,7 +51,7 @@ fn modal_frame(ctx: &egui::Context, opened: Instant, size: Vec2, theme: &Theme, 
     backdrop_clicked
 }
 
-fn title(ui: &Ui, card: Rect, text: &str, sub: Option<&str>, theme: &Theme) {
+pub(super) fn title(ui: &Ui, card: Rect, text: &str, sub: Option<&str>, theme: &Theme) {
     let p = ui.painter();
     p.text(card.left_top() + Vec2::new(28.0, 26.0), Align2::LEFT_TOP, text, display(19.0), theme.text);
     if let Some(s) = sub {
@@ -59,13 +59,13 @@ fn title(ui: &Ui, card: Rect, text: &str, sub: Option<&str>, theme: &Theme) {
     }
 }
 
-fn close_button(ui: &mut Ui, card: Rect, theme: &Theme) -> bool {
+pub(super) fn close_button(ui: &mut Ui, card: Rect, theme: &Theme) -> bool {
     let r = Rect::from_center_size(Pos2::new(card.right() - 30.0, card.top() + 32.0), Vec2::splat(30.0));
     mark("modal-close", r);
     widgets::icon_button(ui, r, Id::new("modal-close"), Icon::Close, theme, true).clicked()
 }
 
-fn wrapped(ui: &Ui, pos: Pos2, width: f32, text: &str, f: egui::FontId, color: Color32) -> f32 {
+pub(super) fn wrapped(ui: &Ui, pos: Pos2, width: f32, text: &str, f: egui::FontId, color: Color32) -> f32 {
     let g = ui.painter().layout(text.to_string(), f, color, width);
     let h = g.size().y;
     ui.painter().galley(pos, g, color);
@@ -79,7 +79,8 @@ impl App {
         let keep = match modal {
             Modal::Settings => self.settings_modal(ctx),
             Modal::Ssh { host, path } => self.ssh_modal(ctx, host, path),
-            Modal::Rclone { path } => self.rclone_modal(ctx, path),
+            Modal::Rclone { path, confirm_remove } => self.cloud_modal(ctx, path, confirm_remove),
+            Modal::CloudAccount(f) => self.account_modal(ctx, f),
             Modal::ConfirmDelete { session, items, mode, backup_folder, backup_remote, ack, secure } => {
                 self.confirm_delete_modal(ctx, session, items, mode, backup_folder, backup_remote, ack, secure)
             }
@@ -499,76 +500,6 @@ impl App {
         if close || bd { None } else { Some(Modal::Ssh { host, path }) }
     }
 
-    fn rclone_modal(&mut self, ctx: &egui::Context, mut path: String) -> Option<Modal> {
-        let theme = self.theme.clone();
-        let remotes = self.rclone.lock().unwrap().clone();
-        let missing = remotes.as_ref().map(|v| v.first().map(|s| s == "\u{0}").unwrap_or(false)).unwrap_or(false);
-        let mut close = false;
-        let mut go = false;
-        let mut open_site = false;
-        let bd = modal_frame(ctx, self.modal_opened, Vec2::new(560.0, 380.0), &theme, |ui, card| {
-            title(ui, card, tr("Scan cloud storage"), Some(tr("S3, Google Drive, Dropbox, OneDrive, FTP, WebDAV… through rclone.")), &theme);
-            close = close_button(ui, card, &theme);
-            let x0 = card.left() + 28.0;
-            let w = card.width() - 56.0;
-            let mut y = card.top() + 100.0;
-            if missing || remotes.is_none() {
-                let msg = if remotes.is_none() {
-                    tr("Looking for rclone…")
-                } else {
-                    tr("SquirrelDisk talks to 70+ storage providers through rclone, a free command line tool. Install it, run `rclone config` once to add your accounts, then come back here.")
-                };
-                wrapped(ui, Pos2::new(x0, y), w, msg, font(13.0), theme.text_dim);
-                let b = Rect::from_min_size(Pos2::new(card.right() - 170.0, card.bottom() - 60.0), Vec2::new(142.0, 36.0));
-                open_site = widgets::button(ui, b, Id::new("rc-site"), tr("Get rclone"), Some(Icon::Download), BtnStyle::Primary, &theme).clicked();
-                return;
-            }
-            let list = remotes.clone().unwrap_or_default();
-            ui.painter().text(Pos2::new(x0, y), Align2::LEFT_TOP, tr("REMOTES"), bold(11.0), theme.text_faint);
-            y += 20.0;
-            let mut x = x0;
-            for r in list.iter() {
-                let wch = ui.painter().layout_no_wrap(r.clone(), font(12.5), Color32::WHITE).size().x + 34.0;
-                if x + wch > x0 + w {
-                    x = x0;
-                    y += 34.0;
-                }
-                let rr = Rect::from_min_size(Pos2::new(x, y), Vec2::new(wch, 28.0));
-                let id = Id::new(("rc", r));
-                let resp = ui.interact(rr, id, Sense::click());
-                let hh = ui.ctx().animate_bool_with_time(id, resp.hovered() || path.starts_with(r.as_str()), 0.1);
-                ui.painter().rect_filled(rr, cr(6.0), lerp_color(theme.surface_hi, with_alpha(theme.accent, 0.5), hh));
-                widgets::draw_icon(ui.painter(), Icon::Cloud, Rect::from_center_size(Pos2::new(rr.left() + 14.0, rr.center().y), Vec2::splat(12.0)), theme.text_dim);
-                ui.painter().text(Pos2::new(rr.left() + 26.0, rr.center().y), Align2::LEFT_CENTER, r, font(12.5), theme.text);
-                if resp.clicked() {
-                    path = r.clone();
-                }
-                x += wch + 6.0;
-            }
-            if list.is_empty() {
-                ui.painter().text(Pos2::new(x0, y), Align2::LEFT_TOP, tr("No remotes yet — run `rclone config` in a terminal."), font(12.5), theme.warn);
-            }
-            y += 44.0;
-            ui.painter().text(Pos2::new(x0, y), Align2::LEFT_TOP, tr("LOCATION"), bold(11.0), theme.text_faint);
-            y += 18.0;
-            let r = widgets::text_input(ui, Rect::from_min_size(Pos2::new(x0, y), Vec2::new(w, 38.0)), Id::new("rc-path"), &mut path, "remote:bucket/folder", &theme);
-            if r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
-                go = true;
-            }
-            let b = Rect::from_min_size(Pos2::new(card.right() - 150.0, card.bottom() - 60.0), Vec2::new(122.0, 36.0));
-            go |= widgets::button_ex(ui, b, Id::new("rc-go"), tr("Scan"), Some(Icon::Bolt), BtnStyle::Primary, &theme, path.contains(':')).clicked();
-        });
-        if open_site {
-            super::app::os_open("https://rclone.org/install/", false);
-        }
-        if go && path.contains(':') {
-            self.modal = None;
-            self.start_session(Target::Rclone(path.trim().to_string()));
-            return None;
-        }
-        if close || bd { None } else { Some(Modal::Rclone { path }) }
-    }
-
     #[allow(clippy::too_many_arguments)]
     fn confirm_delete_modal(
         &mut self,
@@ -584,7 +515,7 @@ impl App {
         let theme = self.theme.clone();
         let Some(s) = self.sessions.get(session) else { return None };
         let local = s.source().is_local();
-        let has_rclone = self.rclone.lock().unwrap().as_ref().is_some_and(|v| v.first().map(|x| x != "\u{0}").unwrap_or(false));
+        let has_rclone = matches!(*self.rclone.lock().unwrap(), super::app::RcloneState::Ready(_));
         let ok_items: Vec<&super::app::DeleteItem> = items.iter().filter(|i| !i.verdict.is_forbidden()).collect();
         let total: u64 = ok_items.iter().map(|i| i.size).sum();
         let caution = items.iter().any(|i| matches!(i.verdict, Verdict::Caution(_)));

@@ -1,6 +1,6 @@
 [package]
 name = "squirreldisk"
-version = "2.2.1"
+version = "2.3.0"
 edition = "2021"
 description = "Fast, fun, cross-platform disk usage analyzer with an animated sunburst"
 license = "AGPL-3.0-only"
@@ -10,7 +10,7 @@ repository = "https://github.com/adileo/squirreldisk"
 default = ["gui"]
 # Everything needed for the desktop app. Build with --no-default-features
 # to get the tiny headless agent used on remote servers.
-gui = ["dep:eframe", "dep:egui_glow", "dep:notify", "dep:sysinfo", "dep:rodio", "dep:ureq", "dep:self-replace", "dep:rfd", "dep:tiny-skia"]
+gui = ["dep:eframe", "dep:egui_glow", "dep:notify", "dep:sysinfo", "dep:rodio", "dep:ureq", "dep:self-replace", "dep:rfd", "dep:tiny-skia", "dep:miniz_oxide", "dep:ring"]
 
 [dependencies]
 eframe = { optional = true, version = "0.36", default-features = false, features = ["glow", "default_fonts", "wayland", "x11"] }
@@ -24,6 +24,8 @@ self-replace = { version = "1.5", optional = true }
 rfd = { optional = true, version = "0.17", default-features = false, features = ["xdg-portal"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+miniz_oxide = { version = "0.8", optional = true }
+ring = { version = "0.17", optional = true, default-features = false }
 tiny-skia = { version = "0.12", optional = true, default-features = false, features = ["std", "simd", "png-format"] }
 
 [target.'cfg(windows)'.build-dependencies]

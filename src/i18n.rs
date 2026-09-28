@@ -258,6 +258,7 @@ mod tests {
                 include_str!("ui/home.rs"),
                 include_str!("ui/view.rs"),
                 include_str!("ui/modals.rs"),
+                include_str!("ui/cloud.rs"),
                 include_str!("ui/fx.rs"),
                 include_str!("ui/ads.rs"),
                 include_str!("ui/app.rs"),

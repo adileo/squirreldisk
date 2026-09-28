@@ -1,4 +1,5 @@
 pub mod app;
+pub mod cloud;
 pub mod fx;
 pub mod home;
 pub mod modals;

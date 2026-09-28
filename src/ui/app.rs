@@ -221,10 +221,32 @@ pub struct DeleteItem {
     pub verdict: Verdict,
 }
 
+#[derive(Clone)]
+pub enum RcloneState {
+    Looking,
+    Missing,
+    Ready(Vec<crate::rclone::Remote>),
+}
+
+/// Looks for rclone and lists its remotes in the background.
+pub fn refresh_rclone(state: &Arc<Mutex<RcloneState>>, ctx: &egui::Context) {
+    let r = state.clone();
+    let ctx = ctx.clone();
+    std::thread::spawn(move || {
+        crate::rclone::rescan();
+        let v = if crate::rclone::available() { RcloneState::Ready(crate::rclone::remotes()) } else { RcloneState::Missing };
+        *r.lock().unwrap() = v;
+        ctx.request_repaint();
+    });
+}
+
 pub enum Modal {
     Settings,
     Ssh { host: String, path: String },
-    Rclone { path: String },
+    /// Cloud storage: pick a remote to scan, manage accounts, install rclone.
+    Rclone { path: String, confirm_remove: Option<String> },
+    /// Add or edit an rclone account.
+    CloudAccount(Box<super::cloud::AccountForm>),
     ConfirmDelete { session: usize, items: Vec<DeleteItem>, mode: usize, backup_folder: String, backup_remote: String, ack: bool, secure: bool },
     Deleting { session: usize, finished_at: Option<Instant> },
     Error { title: String, message: String },
@@ -267,7 +289,9 @@ pub struct App {
     pub time: f64,
     pub dt: f32,
     pub last_frame: Instant,
-    pub rclone: Arc<Mutex<Option<Vec<String>>>>,
+    pub rclone: Arc<Mutex<RcloneState>>,
+    /// rclone download in progress (Cloud storage dialog).
+    pub rclone_install: Option<Arc<crate::rclone::Task>>,
     pub ssh_hosts: Vec<String>,
     pub ctx_menu: Option<CtxMenu>,
     pub bin_rect: Rect,
@@ -366,14 +390,8 @@ impl App {
         if let Some(e) = &gl_error {
             eprintln!("SquirrelDisk: falling back to CPU rendering: {e}");
         }
-        let rclone = Arc::new(Mutex::new(None));
-        {
-            let r = rclone.clone();
-            std::thread::spawn(move || {
-                let v = if scan::remote::rclone_available() { Some(scan::remote::rclone_remotes()) } else { None };
-                *r.lock().unwrap() = Some(v.unwrap_or_else(|| vec!["\u{0}".into()]));
-            });
-        }
+        let rclone = Arc::new(Mutex::new(RcloneState::Looking));
+        refresh_rclone(&rclone, &cc.egui_ctx);
         let updater = Updater::new();
         if settings.auto_update && !scan::demo::enabled() {
             updater.check(cc.egui_ctx.clone());
@@ -397,6 +415,7 @@ impl App {
             dt: 0.016,
             last_frame: Instant::now(),
             rclone,
+            rclone_install: None,
             ssh_hosts: scan::remote::ssh_config_hosts(),
             ctx_menu: None,
             bin_rect: Rect::NOTHING,

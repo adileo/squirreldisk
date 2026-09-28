@@ -79,7 +79,17 @@ impl App {
                 }
                 Ok("ssh") => self.open_modal(Modal::Ssh { host: String::new(), path: "/".into() }),
                 Ok("sshauth") => self.open_modal(Modal::SshAuth { host: "user@server".into(), path: "/".into(), secret: String::new(), retry: false }),
-                Ok("rclone") => self.open_modal(Modal::Rclone { path: String::new() }),
+                Ok(m) if m.starts_with("cloud") => {
+                    let kind = m.trim_start_matches("cloud").trim_start_matches(':');
+                    self.open_modal(Modal::CloudAccount(Box::new(super::cloud::AccountForm::with_provider(kind, &[]))))
+                }
+                Ok("rclone") => {
+                    self.open_modal(Modal::Rclone { path: String::new(), confirm_remove: None });
+                    // SQD_RCLONE_INSTALL=1 presses "Install rclone" right away
+                    if std::env::var_os("SQD_RCLONE_INSTALL").is_some() {
+                        self.rclone_install = Some(crate::rclone::install(ctx.clone()));
+                    }
+                }
                 Ok("delete") => {
                     if !self.sessions.is_empty() {
                         self.open_delete_confirm(0)

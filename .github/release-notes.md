@@ -1,4 +1,10 @@
-## SquirrelDisk 2.2.1
+## SquirrelDisk 2.3
+
+- **Cloud accounts, built in.** Home → Cloud storage now installs rclone for you with one click (official build, checksum-verified, no admin rights needed) on macOS, Windows and Linux.
+- **Add, edit and remove accounts** without the terminal: Google Drive, Dropbox, OneDrive, Box and pCloud sign in through your browser; S3 and compatible, Backblaze B2, SFTP, FTP, WebDAV/Nextcloud and MEGA take a short form. The connection is tested when you save. Anything else is one click away in `rclone config`.
+- rclone installed with Homebrew, Scoop, winget or Chocolatey is now found even when SquirrelDisk is opened from the Finder or Start menu.
+
+### From 2.2.1
 
 - The language picker in Settings shows every language in its own script (no more empty boxes) and closes when you click outside it.
 - The "Check for updates" button fits its label in every language.

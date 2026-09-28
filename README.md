@@ -78,7 +78,7 @@ Click **More info**, then **Run anyway**. For the portable `.exe` you can also r
 
 **Always up to date.** Delete something in Finder, Explorer or your file manager and the chart updates on its own.
 
-**Servers and cloud storage too.** Scan any machine you can reach over SSH, or S3 buckets, Google Drive, Dropbox, FTP and many more cloud services through [rclone](https://rclone.org).
+**Servers and cloud storage too.** Scan any machine you can reach over SSH, or S3 buckets, Google Drive, Dropbox, FTP and many more cloud services through [rclone](https://rclone.org). No rclone yet? SquirrelDisk installs it with one click, and you can add, edit and remove your cloud accounts right from the app.
 
 **Light on your machine.** The app is about 8 MB, starts instantly, and maps millions of files with a small amount of memory. It runs smoothly on older computers too.
 

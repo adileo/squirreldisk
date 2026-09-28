@@ -1,7 +1,7 @@
 //! Deletion jobs with progress, optional backup and safety re-checks.
 
 use crate::safety::{Os, Rules, Verdict};
-use crate::scan::remote::{hide_console, run_ssh, sh_quote};
+use crate::scan::remote::{run_ssh, sh_quote};
 use crate::tree::Source;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
@@ -476,8 +476,7 @@ fn backup_to_folder(source: &Source, path: &str, dest: &Path, p: &DeleteProgress
             if st.success() { Ok(()) } else { Err("scp backup failed".into()) }
         }
         Source::Rclone { .. } => {
-            let mut c = Command::new("rclone");
-            hide_console(&mut c);
+            let mut c = crate::rclone::command();
             let st = c.arg("copyto").arg(path).arg(dest).stdin(Stdio::null()).status().map_err(|e| e.to_string())?;
             if st.success() { Ok(()) } else { Err("rclone backup failed".into()) }
         }
@@ -488,22 +487,19 @@ fn backup_rclone(source: &Source, path: &str, dest: &str) -> Result<(), String> 
     if !source.is_local() {
         return Err("cloud backup is only available for local files".into());
     }
-    let mut c = Command::new("rclone");
-    hide_console(&mut c);
+    let mut c = crate::rclone::command();
     let st = c.arg("copyto").arg(path).arg(dest).stdin(Stdio::null()).status().map_err(|e| format!("cannot run rclone: {e}"))?;
     if st.success() { Ok(()) } else { Err("rclone upload failed".into()) }
 }
 
 fn rclone_delete(path: &str) -> Result<(), String> {
-    let mut c = Command::new("rclone");
-    hide_console(&mut c);
+    let mut c = crate::rclone::command();
     // `purge` handles directories, `deletefile` single objects.
     let st = c.arg("purge").arg(path).stdin(Stdio::null()).stderr(Stdio::null()).status().map_err(|e| e.to_string())?;
     if st.success() {
         return Ok(());
     }
-    let mut c = Command::new("rclone");
-    hide_console(&mut c);
+    let mut c = crate::rclone::command();
     let st = c.arg("deletefile").arg(path).stdin(Stdio::null()).status().map_err(|e| e.to_string())?;
     if st.success() { Ok(()) } else { Err("rclone delete failed".into()) }
 }

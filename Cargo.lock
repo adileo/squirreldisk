@@ -2774,18 +2774,20 @@ dependencies = [
 
 [[package]]
 name = "squirreldisk"
-version = "2.2.1"
+version = "2.3.0"
 dependencies = [
  "eframe",
  "egui_glow",
  "embed-resource",
  "libc",
+ "miniz_oxide 0.8.9",
  "notify",
  "objc2 0.6.4",
  "objc2-app-kit 0.3.2",
  "objc2-foundation 0.3.2",
  "raw-window-handle",
  "rfd",
+ "ring",
  "rodio",
  "self-replace",
  "serde",

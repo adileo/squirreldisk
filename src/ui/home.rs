@@ -1,6 +1,6 @@
 //! Home screen: disks, recent scans and other sources.
 
-use super::app::{App, Modal, Screen, Target};
+use super::app::{App, Modal, RcloneState, Screen, Target};
 use super::theme::{lerp_color, lighten, with_alpha};
 use super::widgets::{self, bold, cr, font, BtnStyle, Icon};
 use crate::i18n::{tr, tr_status, trf};
@@ -98,9 +98,10 @@ impl App {
         let cw = (w - gap * 2.0) / 3.0;
         let rclone_state = self.rclone.lock().unwrap().clone();
         let rclone_sub = match &rclone_state {
-            None => tr("Looking for rclone…").to_string(),
-            Some(v) if v.first().map(|s| s == "\u{0}").unwrap_or(false) => tr("S3, Drive, FTP… (needs rclone)").to_string(),
-            Some(v) => if v.len() == 1 { tr("1 remote configured").to_string() } else { trf("{n} remotes configured", &[("n", &v.len())]) },
+            RcloneState::Looking => tr("Looking for rclone…").to_string(),
+            RcloneState::Missing => tr("S3, Drive, FTP… (needs rclone)").to_string(),
+            RcloneState::Ready(v) if v.is_empty() => tr("Add Google Drive, S3, Dropbox…").to_string(),
+            RcloneState::Ready(v) => if v.len() == 1 { tr("1 remote configured").to_string() } else { trf("{n} remotes configured", &[("n", &v.len())]) },
         };
         let cards = [
             (Icon::Folder, tr("A folder"), tr("Pick any folder, or drop it here").to_string(), 0usize),
@@ -120,7 +121,7 @@ impl App {
                         let host = self.settings.ssh_history.first().cloned().unwrap_or_default();
                         self.open_modal(Modal::Ssh { host, path: "/".into() });
                     }
-                    _ => self.open_modal(Modal::Rclone { path: String::new() }),
+                    _ => self.open_modal(Modal::Rclone { path: String::new(), confirm_remove: None }),
                 }
             }
         }

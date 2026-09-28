@@ -389,6 +389,8 @@ pub enum Icon {
     Bolt,
     /// Link leaving the app (↗).
     LinkOut,
+    Plus,
+    Pencil,
 }
 
 pub fn draw_icon(p: &Painter, icon: Icon, r: Rect, c: Color32) {
@@ -407,6 +409,14 @@ pub fn draw_icon(p: &Painter, icon: Icon, r: Rect, c: Color32) {
         Icon::Close => {
             p.line_segment([at(-0.5, -0.5), at(0.5, 0.5)], st);
             p.line_segment([at(0.5, -0.5), at(-0.5, 0.5)], st);
+        }
+        Icon::Plus => {
+            p.line_segment([at(0.0, -0.6), at(0.0, 0.6)], st);
+            p.line_segment([at(-0.6, 0.0), at(0.6, 0.0)], st);
+        }
+        Icon::Pencil => {
+            p.line(vec![at(-0.6, 0.6), at(-0.6, 0.25), at(0.3, -0.65), at(0.65, -0.3), at(-0.25, 0.6), at(-0.6, 0.6)], st);
+            p.line_segment([at(0.08, -0.43), at(0.43, -0.08)], st);
         }
         Icon::Check => {
             p.line(vec![at(-0.6, 0.0), at(-0.15, 0.45), at(0.65, -0.45)], Stroke::new(w * 1.3, c));

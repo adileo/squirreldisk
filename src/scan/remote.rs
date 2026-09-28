@@ -415,21 +415,6 @@ pub fn start_ssh(host: String, path: String) -> ScanHandle {
 // ---------------------------------------------------------------------------
 // rclone (S3, Google Drive, FTP, SFTP, Dropbox, OneDrive, ...)
 
-pub fn rclone_available() -> bool {
-    let mut c = Command::new("rclone");
-    hide_console(&mut c);
-    c.arg("version").stdout(Stdio::null()).stderr(Stdio::null()).status().map(|s| s.success()).unwrap_or(false)
-}
-
-pub fn rclone_remotes() -> Vec<String> {
-    let mut c = Command::new("rclone");
-    hide_console(&mut c);
-    match c.arg("listremotes").output() {
-        Ok(o) => String::from_utf8_lossy(&o.stdout).lines().map(|l| l.trim().to_string()).filter(|l| !l.is_empty()).collect(),
-        Err(_) => Vec::new(),
-    }
-}
-
 #[derive(serde::Deserialize)]
 struct LsEntry {
     #[serde(rename = "Path")]
@@ -444,8 +429,7 @@ pub fn start_rclone(remote_path: String) -> ScanHandle {
     let (t, p) = (tree.clone(), progress.clone());
     std::thread::spawn(move || {
         p.set_status("Listing");
-        let mut c = Command::new("rclone");
-        hide_console(&mut c);
+        let mut c = crate::rclone::command();
         let child = c
             .args(["lsjson", "-R", "--files-only", "--fast-list", "--no-mimetype", "--no-modtime", &remote_path])
             .stdout(Stdio::piped())

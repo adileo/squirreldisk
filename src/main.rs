@@ -3,6 +3,7 @@
 
 mod agent;
 mod delete;
+mod rclone;
 mod safety;
 mod scan;
 mod settings;
