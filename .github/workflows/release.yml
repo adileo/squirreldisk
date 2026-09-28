@@ -116,6 +116,15 @@ jobs:
           chmod +x appimagetool
           mkdir -p AppDir/usr/bin AppDir/usr/share/applications AppDir/usr/share/icons/hicolor/256x256/apps
           cp target/release/squirreldisk AppDir/usr/bin/
+          # winit loads xkbcommon with dlopen, so it is not a linked dependency;
+          # bundle it for systems without it (e.g. minimal X11 setups)
+          sudo apt-get install -y libxkbcommon-x11-0 libxcb-xkb1
+          mkdir -p AppDir/usr/lib
+          for lib in libxkbcommon.so.0 libxkbcommon-x11.so.0 libxcb-xkb.so.1; do
+            cp -L "/usr/lib/x86_64-linux-gnu/$lib" AppDir/usr/lib/
+          done
+          ln -s libxkbcommon.so.0 AppDir/usr/lib/libxkbcommon.so
+          ln -s libxkbcommon-x11.so.0 AppDir/usr/lib/libxkbcommon-x11.so
           install -m755 packaging/linux/AppRun AppDir/AppRun
           cp packaging/linux/squirreldisk.desktop AppDir/
           cp packaging/linux/squirreldisk.desktop AppDir/usr/share/applications/

@@ -1,4 +1,6 @@
 #!/bin/sh
 # AppImage entry point: run the bundled binary.
 HERE="$(dirname "$(readlink -f "$0")")"
+# Libraries loaded at runtime (xkbcommon) that minimal systems may lack.
+export LD_LIBRARY_PATH="${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}$HERE/usr/lib"
 exec "$HERE/usr/bin/squirreldisk" "$@"
