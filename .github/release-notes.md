@@ -1,5 +1,6 @@
-## SquirrelDisk 2.1.3
+## SquirrelDisk 2.1.4
 
+- **Linux AppImage is back.** Download `SquirrelDisk-x86_64.AppImage`, make it executable and run it. It works with AppImageUpdate and Gear Lever, and SquirrelDisk also updates it by itself.
 - **Automatic updates.** New versions download in the background; a "Restart to update" button appears when one is ready. Turn it off in Settings → Install updates automatically. SquirrelDisk also checks again every 6 hours while it's open.
 - Settings and the home screen scroll when the window is small, so nothing ends up off screen.
 - Quieter finish: the pop-up at the end of a scan is gone.
@@ -13,7 +14,7 @@
 ### Downloads
 - **macOS:** `SquirrelDisk-macOS.dmg` (Apple silicon and Intel) — open it and drag SquirrelDisk to Applications.
 - **Windows:** `SquirrelDisk-Windows.msi` (installer) or `squirreldisk-x86_64-pc-windows-msvc.exe` (portable).
-- **Linux:** `SquirrelDisk-Linux-x86_64.tar.gz`.
+- **Linux:** `SquirrelDisk-x86_64.AppImage` (recommended) or `SquirrelDisk-Linux-x86_64.tar.gz`.
 
 ### First launch
 **macOS** — if macOS says SquirrelDisk can't be opened: open it once, then go to **System Settings → Privacy & Security** and click **Open Anyway**. If it says the app is damaged, run in Terminal:
