@@ -17,7 +17,7 @@
 </p>
 
 > [!NOTE]
-> **SquirrelDisk 2 is here.** After a few quiet years, SquirrelDisk is back, rebuilt from the ground up: faster, better looking, and with many long-standing bugs fixed on every platform. Completely free.
+> **SquirrelDisk 2 is here.** After a few quiet years, SquirrelDisk is back, rebuilt from the ground up by its original author in native Rust: faster, better looking, and with many long-standing bugs fixed on every platform. Completely free, and actively maintained here in this repository.
 
 <p align="center">
   <img src="screenshots/hero.gif" alt="Scanning a disk and exploring the chart" width="860">
