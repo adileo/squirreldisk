@@ -118,6 +118,30 @@ cargo run --release
 
 On Linux you also need the ALSA, X11 and Wayland development packages (`libasound2-dev libxkbcommon-dev libwayland-dev libx11-dev` on Debian and Ubuntu).
 
+## AI usage disclaimer
+
+SquirrelDisk is designed, written and maintained by one developer. I use AI tools as an assistant in a few specific areas, and I review every change myself:
+
+- **Translations.** AI helped me translate the app into 25 languages, which I couldn't have done on my own.
+- **Interface polish.** Fine-tuning animations and interactions, and building parts of the website.
+- **Issues and replies.** Phrasing answers more clearly in English, and in some routine cases posting them automatically. Either way, every reply goes through me.
+- **Chores.** Small refactors, build tweaks and similar mechanical changes.
+
+The core of SquirrelDisk 2 (the scanner, the chart and the cleanup logic) is my own from-scratch rewrite. Every release is reviewed and tested by hand on macOS, Windows and Linux before it ships.
+
+### AI-assisted contributions
+
+Often the most useful contribution isn't code. A bug report with logs, the steps to reproduce it and an example of what you see helps more than a feature implemented without discussion. For small fixes, open an issue instead of a pull request: it's usually quicker for me to fix it directly.
+
+Fully AI-generated pull requests are not welcome. Code written with the help of AI tools is fine, as long as you meet the same standard as everyone else:
+
+- **Say so** in the pull request if AI wrote a meaningful part of it.
+- **Show your testing.** Describe how you tested the change and on which systems.
+- **Attach screenshots or a short recording** for anything visible in the app, where possible.
+- **Be ready to explain your choices.** If asked, you should be able to justify the technical decisions in the code you submit.
+
+Pull requests that haven't been tested, or whose author can't explain them, may be closed. If in doubt just open an issue.
+
 ## License
 
 [AGPL-3.0](LICENSE)
