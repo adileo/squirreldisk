@@ -198,5 +198,9 @@
   "Install updates automatically": "Updates automatisch installeren",
   "Download new versions in the background and apply them on restart": "Nieuwe versies op de achtergrond downloaden en toepassen bij herstart",
   "Restart to update": "Herstarten om bij te werken",
-  "{version} is ready — restart to update": "{version} is klaar — herstart om bij te werken"
+  "{version} is ready — restart to update": "{version} is klaar — herstart om bij te werken",
+  "Chart style": "Grafiekstijl",
+  "Rings (sunburst) or nested boxes (treemap)": "Ringen (sunburst) of geneste vakken (treemap)",
+  "Sunburst": "Sunburst",
+  "Treemap": "Treemap"
 }

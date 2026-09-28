@@ -72,7 +72,11 @@ impl App {
         let chart = Rect::from_min_max(Pos2::new(body.left() + 8.0, body.top()), Pos2::new(panel.left() - 8.0, body.bottom() - 76.0));
         let collector = Rect::from_min_size(Pos2::new(body.left() + 20.0, body.bottom() - 70.0), Vec2::new((chart.width() - 24.0).min(460.0), 54.0));
 
-        self.chart_ui(ui, chart, panel, si);
+        if self.settings.chart_style == "treemap" {
+            self.treemap_ui(ui, chart, panel, si);
+        } else {
+            self.chart_ui(ui, chart, panel, si);
+        }
         self.panel_ui(ui, panel, si);
         self.sponsor_banner(ui, banner, "panel");
         self.collector_ui(ui, collector, si);
@@ -468,7 +472,7 @@ impl App {
         }
     }
 
-    fn expand(&mut self, si: usize, node: u32) {
+    pub fn expand(&mut self, si: usize, node: u32) {
         let s = &self.sessions[si];
         let expandable = {
             let t = s.tree.read().unwrap();
@@ -509,6 +513,7 @@ impl App {
             p.rect_filled(panel, cr(12.0), with_alpha(theme.surface, if theme.dark { 0.72 } else { 0.9 }));
             p.rect_stroke(panel, cr(12.0), Stroke::new(1.0, with_alpha(theme.stroke, 0.6)), egui::StrokeKind::Inside);
         }
+        let treemap_mode = self.settings.chart_style == "treemap";
         let s = &self.sessions[si];
         let pv = s.panel_view;
         let selected = s.selected;
@@ -560,7 +565,7 @@ impl App {
             .iter()
             .map(|&c| {
                 let n = t.get(c);
-                let color = s.anim.anims.get(&(c as u64)).map(|a| a.color).unwrap_or(match n.kind {
+                let color = (if treemap_mode { s.treemap.color_of(c as u64) } else { s.anim.anims.get(&(c as u64)).map(|a| a.color) }).unwrap_or(match n.kind {
                     Kind::Dir | Kind::File => theme.wheel_at(0.0),
                     _ => theme.neutral,
                 });

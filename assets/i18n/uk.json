@@ -198,5 +198,9 @@
   "Install updates automatically": "Встановлювати оновлення автоматично",
   "Download new versions in the background and apply them on restart": "Завантажувати нові версії у фоні та застосовувати їх під час перезапуску",
   "Restart to update": "Перезапустити для оновлення",
-  "{version} is ready — restart to update": "{version} готова — перезапустіть для оновлення"
+  "{version} is ready — restart to update": "{version} готова — перезапустіть для оновлення",
+  "Chart style": "Стиль діаграми",
+  "Rings (sunburst) or nested boxes (treemap)": "Кільця (sunburst) або вкладені блоки (treemap)",
+  "Sunburst": "Кільцева",
+  "Treemap": "Плиткова"
 }

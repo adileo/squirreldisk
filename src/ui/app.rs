@@ -53,6 +53,7 @@ pub struct Session {
     pub back: Vec<View>,
     pub fwd: Vec<View>,
     pub anim: Animator,
+    pub treemap: super::treemap::TreemapState,
     pub layout_sig: (u64, View, usize, i32, String),
     pub last_layout: Instant,
     pub collector: Vec<u32>,
@@ -101,6 +102,7 @@ impl Session {
             back: Vec::new(),
             fwd: Vec::new(),
             anim: Animator::default(),
+            treemap: Default::default(),
             layout_sig: (0, root, 0, 0, String::new()),
             last_layout: Instant::now() - Duration::from_secs(1),
             collector: Vec::new(),
@@ -334,7 +336,10 @@ pub fn install_fonts(ctx: &egui::Context, lang: &str) {
 
 impl App {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
-        let settings = Settings::load();
+        let mut settings = Settings::load();
+        if let Ok(style) = std::env::var("SQUIRRELDISK_CHART") {
+            settings.chart_style = style;
+        }
         let lang = crate::i18n::resolve(&std::env::var("SQUIRRELDISK_LANG").unwrap_or_else(|_| settings.language.clone()));
         crate::i18n::set_language(lang);
         install_fonts(&cc.egui_ctx, lang);
@@ -759,6 +764,12 @@ impl eframe::App for App {
         self.toasts.draw(&ctx, &theme, self.dt);
 
         // keyboard shortcuts
+        // ⌘, (Ctrl+, elsewhere) opens Settings from anywhere, like every Mac app.
+        let open_settings = ctx.input(|i| i.modifiers.command && i.key_pressed(egui::Key::Comma));
+        if open_settings && !matches!(self.modal, Some(Modal::Deleting { .. }) | Some(Modal::Settings)) {
+            self.ctx_menu = None;
+            self.open_modal(Modal::Settings);
+        }
         let (esc, back) = ctx.input(|i| (i.key_pressed(egui::Key::Escape), i.key_pressed(egui::Key::Backspace)));
         if esc {
             if self.ctx_menu.is_some() {
@@ -789,7 +800,7 @@ impl eframe::App for App {
             || !self.particles.is_empty()
             || !self.toasts.is_empty()
             || match self.screen {
-                Screen::Session(i) => self.sessions.get(i).is_some_and(|s| !s.anim.settled),
+                Screen::Session(i) => self.sessions.get(i).is_some_and(|s| if self.settings.chart_style == "treemap" { !s.treemap.settled } else { !s.anim.settled }),
                 Screen::Home => false,
             };
         if animating || (self.settings.shader_fx && matches!(self.screen, Screen::Session(_))) {

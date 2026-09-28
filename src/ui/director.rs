@@ -38,6 +38,7 @@ pub enum Step {
     Theme(&'static str),
     Record(bool),
     Home,
+    GoUp,
 }
 
 use Step::*;
@@ -72,6 +73,15 @@ fn script(name: &str) -> Vec<Step> {
             s.extend([Wait(0.5), Move(Aim::Mark("del-go"), 0.7), Wait(0.3)]);
             s.extend(click());
             s.extend([Wait(3.2)]);
+        }
+        // Treemap view: live scan, zoom into folders, back out
+        "treemap" => {
+            s.extend([Scan("/"), Record(true), Wait(0.3), Move(Aim::Frac(0.52, 0.93), 1.0), Wait(5.6)]);
+            s.extend([Move(Aim::Node("Users/alex/Movies"), 1.0), Wait(0.9)]);
+            s.extend(click());
+            s.extend([Wait(1.5), Move(Aim::Node("Users/alex/Movies/Final Cut Library.fcpbundle"), 0.9), Wait(0.9)]);
+            s.extend(click());
+            s.extend([Wait(1.6), GoUp, Wait(1.2), GoUp, Wait(1.6)]);
         }
         // Home after a finished scan (for layout checks)
         "home-scanned" => {
@@ -238,6 +248,12 @@ impl App {
             Aim::Node(rel) => {
                 let Screen::Session(i) = self.screen else { return screen.center() };
                 let s = &self.sessions[i];
+                if self.settings.chart_style == "treemap" {
+                    let t = s.tree.read().unwrap();
+                    let (id, exact) = t.find_path(&format!("{}/{}", t.root_path.trim_end_matches('/'), rel));
+                    drop(t);
+                    return if exact { s.treemap.center_of(id as u64).unwrap_or(screen.center()) } else { screen.center() };
+                }
                 let Some(geo) = s.geo else { return screen.center() };
                 let t = s.tree.read().unwrap();
                 let full = format!("{}/{}", t.root_path.trim_end_matches('/'), rel);
@@ -322,6 +338,12 @@ impl App {
                 }
                 Home => {
                     self.screen = Screen::Home;
+                    true
+                }
+                GoUp => {
+                    if let Screen::Session(i) = self.screen {
+                        self.sessions[i].go_up();
+                    }
                     true
                 }
                 Record(on) => {

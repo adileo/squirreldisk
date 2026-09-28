@@ -43,6 +43,8 @@ pub struct Settings {
     /// Download new versions in the background; they're applied on restart.
     pub auto_install: bool,
     pub rings: usize,
+    /// "sunburst" (default) or "treemap".
+    pub chart_style: String,
     pub watch_fs: bool,
     pub ssh_history: Vec<String>,
     pub backup_folder: Option<String>,
@@ -65,6 +67,7 @@ impl Default for Settings {
             auto_update: true,
             auto_install: true,
             rings: 6,
+            chart_style: "sunburst".into(),
             watch_fs: true,
             ssh_history: Vec::new(),
             backup_folder: None,

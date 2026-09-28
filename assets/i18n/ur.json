@@ -198,5 +198,9 @@
   "Install updates automatically": "اپ ڈیٹس خودکار طور پر انسٹال کریں",
   "Download new versions in the background and apply them on restart": "نئے ورژن پس منظر میں ڈاؤن لوڈ کریں اور ری اسٹارٹ پر لاگو کریں",
   "Restart to update": "اپ ڈیٹ کے لیے ری اسٹارٹ کریں",
-  "{version} is ready — restart to update": "{version} تیار ہے — اپ ڈیٹ کے لیے ری اسٹارٹ کریں"
+  "{version} is ready — restart to update": "{version} تیار ہے — اپ ڈیٹ کے لیے ری اسٹارٹ کریں",
+  "Chart style": "چارٹ کا انداز",
+  "Rings (sunburst) or nested boxes (treemap)": "حلقے (سن برسٹ) یا اندرونی خانے (ٹری میپ)",
+  "Sunburst": "سن برسٹ",
+  "Treemap": "ٹری میپ"
 }

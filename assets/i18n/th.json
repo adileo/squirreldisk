@@ -198,5 +198,9 @@
  "Install updates automatically": "ติดตั้งอัปเดตโดยอัตโนมัติ",
  "Download new versions in the background and apply them on restart": "ดาวน์โหลดเวอร์ชันใหม่ในเบื้องหลังและนำไปใช้เมื่อรีสตาร์ท",
  "Restart to update": "รีสตาร์ทเพื่ออัปเดต",
- "{version} is ready — restart to update": "{version} พร้อมแล้ว — รีสตาร์ทเพื่ออัปเดต"
+ "{version} is ready — restart to update": "{version} พร้อมแล้ว — รีสตาร์ทเพื่ออัปเดต",
+ "Chart style": "รูปแบบแผนภูมิ",
+ "Rings (sunburst) or nested boxes (treemap)": "วงแหวน (ซันเบิร์สต์) หรือกล่องซ้อนกัน (ทรีแมป)",
+ "Sunburst": "ซันเบิร์สต์",
+ "Treemap": "ทรีแมป"
 }

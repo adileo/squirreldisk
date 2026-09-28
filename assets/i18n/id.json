@@ -198,5 +198,9 @@
  "Install updates automatically": "Pasang pembaruan secara otomatis",
  "Download new versions in the background and apply them on restart": "Unduh versi baru di latar belakang dan terapkan saat mulai ulang",
  "Restart to update": "Mulai ulang untuk memperbarui",
- "{version} is ready — restart to update": "{version} siap — mulai ulang untuk memperbarui"
+ "{version} is ready — restart to update": "{version} siap — mulai ulang untuk memperbarui",
+ "Chart style": "Gaya bagan",
+ "Rings (sunburst) or nested boxes (treemap)": "Cincin (sunburst) atau kotak bersarang (treemap)",
+ "Sunburst": "Sunburst",
+ "Treemap": "Treemap"
 }

@@ -198,5 +198,9 @@
   "Install updates automatically": "अपडेट आपोआप इंस्टॉल करा",
   "Download new versions in the background and apply them on restart": "नवीन आवृत्त्या पार्श्वभूमीत डाउनलोड करा आणि रीस्टार्ट केल्यावर लागू करा",
   "Restart to update": "अपडेटसाठी रीस्टार्ट करा",
-  "{version} is ready — restart to update": "{version} तयार आहे — अपडेटसाठी रीस्टार्ट करा"
+  "{version} is ready — restart to update": "{version} तयार आहे — अपडेटसाठी रीस्टार्ट करा",
+  "Chart style": "चार्ट शैली",
+  "Rings (sunburst) or nested boxes (treemap)": "रिंग (सनबर्स्ट) किंवा नेस्टेड बॉक्स (ट्रीमॅप)",
+  "Sunburst": "सनबर्स्ट",
+  "Treemap": "ट्रीमॅप"
 }

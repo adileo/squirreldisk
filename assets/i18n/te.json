@@ -198,5 +198,9 @@
   "Install updates automatically": "అప్‌డేట్‌లను స్వయంచాలకంగా ఇన్‌స్టాల్ చేయి",
   "Download new versions in the background and apply them on restart": "కొత్త వెర్షన్‌లను బ్యాక్‌గ్రౌండ్‌లో డౌన్‌లోడ్ చేసి, రీస్టార్ట్‌లో వర్తింపజేయి",
   "Restart to update": "అప్‌డేట్ కోసం రీస్టార్ట్ చేయండి",
-  "{version} is ready — restart to update": "{version} సిద్ధంగా ఉంది — అప్‌డేట్ కోసం రీస్టార్ట్ చేయండి"
+  "{version} is ready — restart to update": "{version} సిద్ధంగా ఉంది — అప్‌డేట్ కోసం రీస్టార్ట్ చేయండి",
+  "Chart style": "చార్ట్ శైలి",
+  "Rings (sunburst) or nested boxes (treemap)": "వలయాలు (సన్‌బర్స్ట్) లేదా అంతర్గత పెట్టెలు (ట్రీమ్యాప్)",
+  "Sunburst": "సన్‌బర్స్ట్",
+  "Treemap": "ట్రీమ్యాప్"
 }

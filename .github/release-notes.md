@@ -1,5 +1,9 @@
-## SquirrelDisk 2.1.4
+## SquirrelDisk 2.2
 
+- **Treemap view.** Prefer boxes to rings? Pick "Treemap" in Settings → Chart style: every folder becomes a box inside its parent, with names and sizes. Zooming, hovering, collecting and deleting work just like in the sunburst.
+- **⌘, opens Settings** from anywhere (Ctrl+, on Windows and Linux).
+
+### From 2.1.4
 - **Linux AppImage is back.** Download `SquirrelDisk-x86_64.AppImage`, make it executable and run it. It works with AppImageUpdate and Gear Lever, and SquirrelDisk also updates it by itself.
 - **Automatic updates.** New versions download in the background; a "Restart to update" button appears when one is ready. Turn it off in Settings → Install updates automatically. SquirrelDisk also checks again every 6 hours while it's open.
 - Settings and the home screen scroll when the window is small, so nothing ends up off screen.

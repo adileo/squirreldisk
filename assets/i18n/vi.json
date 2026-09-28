@@ -198,5 +198,9 @@
  "Install updates automatically": "Tự động cài đặt cập nhật",
  "Download new versions in the background and apply them on restart": "Tải xuống phiên bản mới trong nền và áp dụng khi khởi động lại",
  "Restart to update": "Khởi động lại để cập nhật",
- "{version} is ready — restart to update": "{version} đã sẵn sàng — khởi động lại để cập nhật"
+ "{version} is ready — restart to update": "{version} đã sẵn sàng — khởi động lại để cập nhật",
+ "Chart style": "Kiểu biểu đồ",
+ "Rings (sunburst) or nested boxes (treemap)": "Vòng tròn (sunburst) hoặc ô lồng nhau (treemap)",
+ "Sunburst": "Sunburst",
+ "Treemap": "Treemap"
 }

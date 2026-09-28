@@ -198,5 +198,9 @@
   "Install updates automatically": "Güncellemeleri otomatik yükle",
   "Download new versions in the background and apply them on restart": "Yeni sürümleri arka planda indir ve yeniden başlatınca uygula",
   "Restart to update": "Güncellemek için yeniden başlat",
-  "{version} is ready — restart to update": "{version} hazır — güncellemek için yeniden başlatın"
+  "{version} is ready — restart to update": "{version} hazır — güncellemek için yeniden başlatın",
+  "Chart style": "Grafik stili",
+  "Rings (sunburst) or nested boxes (treemap)": "Halkalar (sunburst) veya iç içe kutular (treemap)",
+  "Sunburst": "Sunburst",
+  "Treemap": "Treemap"
 }

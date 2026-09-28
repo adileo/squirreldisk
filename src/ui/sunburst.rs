@@ -97,7 +97,7 @@ impl Geometry {
     }
 }
 
-fn view_children(tree: &Tree, view: View) -> (Vec<u32>, u64) {
+pub fn view_children(tree: &Tree, view: View) -> (Vec<u32>, u64) {
     let mut kids = tree.sorted_children(view.node);
     if view.skip > 0 {
         kids = kids.split_off(view.skip.min(kids.len()));

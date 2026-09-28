@@ -198,5 +198,9 @@
  "Install updates automatically": "アップデートを自動的にインストール",
  "Download new versions in the background and apply them on restart": "新しいバージョンをバックグラウンドでダウンロードし、再起動時に適用",
  "Restart to update": "再起動して更新",
- "{version} is ready — restart to update": "{version} の準備ができました — 再起動して更新"
+ "{version} is ready — restart to update": "{version} の準備ができました — 再起動して更新",
+ "Chart style": "チャートのスタイル",
+ "Rings (sunburst) or nested boxes (treemap)": "リング（サンバースト）または入れ子の箱（ツリーマップ）",
+ "Sunburst": "サンバースト",
+ "Treemap": "ツリーマップ"
 }

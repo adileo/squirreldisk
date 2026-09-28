@@ -62,6 +62,10 @@ Click **More info**, then **Run anyway**. For the portable `.exe` you can also r
 
 <p align="center"><img src="screenshots/explore.png" alt="Exploring a folder" width="820"></p>
 
+**Sunburst or treemap.** Prefer boxes to rings? Switch to the treemap in Settings: every folder becomes a box inside its parent, with names and sizes, and everything else works the same way.
+
+<p align="center"><img src="screenshots/treemap.gif" alt="Exploring a disk in the treemap view" width="860"></p>
+
 **Collect, then clean up.** Drag slices or list rows into the collector at the bottom. When you're ready, move everything to the Trash, delete it for good, or copy it to an external drive or to the cloud first. A progress view keeps you posted, with a little celebration at the end.
 
 <p align="center"><img src="screenshots/collect.gif" alt="Dragging folders into the collector and deleting them" width="860"></p>

@@ -198,5 +198,9 @@
   "Install updates automatically": "تثبيت التحديثات تلقائيًا",
   "Download new versions in the background and apply them on restart": "تنزيل الإصدارات الجديدة في الخلفية وتطبيقها عند إعادة التشغيل",
   "Restart to update": "إعادة التشغيل للتحديث",
-  "{version} is ready — restart to update": "{version} جاهز — أعد التشغيل للتحديث"
+  "{version} is ready — restart to update": "{version} جاهز — أعد التشغيل للتحديث",
+  "Chart style": "نمط المخطط",
+  "Rings (sunburst) or nested boxes (treemap)": "حلقات (مخطط شمسي) أو مربعات متداخلة (خريطة شجرية)",
+  "Sunburst": "مخطط شمسي",
+  "Treemap": "خريطة شجرية"
 }

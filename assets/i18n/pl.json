@@ -198,5 +198,9 @@
   "Install updates automatically": "Instaluj aktualizacje automatycznie",
   "Download new versions in the background and apply them on restart": "Pobieraj nowe wersje w tle i instaluj je przy ponownym uruchomieniu",
   "Restart to update": "Uruchom ponownie, aby zaktualizować",
-  "{version} is ready — restart to update": "{version} jest gotowa — uruchom ponownie, aby zaktualizować"
+  "{version} is ready — restart to update": "{version} jest gotowa — uruchom ponownie, aby zaktualizować",
+  "Chart style": "Styl wykresu",
+  "Rings (sunburst) or nested boxes (treemap)": "Pierścienie (sunburst) lub zagnieżdżone prostokąty (treemap)",
+  "Sunburst": "Sunburst",
+  "Treemap": "Treemap"
 }

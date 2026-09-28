@@ -198,5 +198,9 @@
  "Install updates automatically": "自动安装更新",
  "Download new versions in the background and apply them on restart": "在后台下载新版本并在重启时应用",
  "Restart to update": "重启以更新",
- "{version} is ready — restart to update": "{version} 已就绪 — 重启以更新"
+ "{version} is ready — restart to update": "{version} 已就绪 — 重启以更新",
+ "Chart style": "图表样式",
+ "Rings (sunburst) or nested boxes (treemap)": "环形（旭日图）或嵌套方块（树状图）",
+ "Sunburst": "旭日图",
+ "Treemap": "树状图"
 }

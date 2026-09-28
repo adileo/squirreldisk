@@ -198,5 +198,9 @@
   "Install updates automatically": "نصب خودکار به‌روزرسانی‌ها",
   "Download new versions in the background and apply them on restart": "دانلود نسخه‌های جدید در پس‌زمینه و اعمال آن‌ها هنگام راه‌اندازی مجدد",
   "Restart to update": "راه‌اندازی مجدد برای به‌روزرسانی",
-  "{version} is ready — restart to update": "{version} آماده است — برای به‌روزرسانی راه‌اندازی مجدد کنید"
+  "{version} is ready — restart to update": "{version} آماده است — برای به‌روزرسانی راه‌اندازی مجدد کنید",
+  "Chart style": "سبک نمودار",
+  "Rings (sunburst) or nested boxes (treemap)": "حلقه‌ها (سان‌برست) یا جعبه‌های تودرتو (نقشه درختی)",
+  "Sunburst": "سان‌برست",
+  "Treemap": "نقشه درختی"
 }

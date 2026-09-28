@@ -198,5 +198,9 @@
  "Install updates automatically": "업데이트 자동 설치",
  "Download new versions in the background and apply them on restart": "백그라운드에서 새 버전을 다운로드하고 재시작 시 적용",
  "Restart to update": "재시작하여 업데이트",
- "{version} is ready — restart to update": "{version} 준비 완료 — 재시작하여 업데이트"
+ "{version} is ready — restart to update": "{version} 준비 완료 — 재시작하여 업데이트",
+ "Chart style": "차트 스타일",
+ "Rings (sunburst) or nested boxes (treemap)": "링(선버스트) 또는 중첩 상자(트리맵)",
+ "Sunburst": "선버스트",
+ "Treemap": "트리맵"
 }

@@ -198,5 +198,9 @@
   "Install updates automatically": "স্বয়ংক্রিয়ভাবে আপডেট ইনস্টল করুন",
   "Download new versions in the background and apply them on restart": "ব্যাকগ্রাউন্ডে নতুন সংস্করণ ডাউনলোড করুন এবং রিস্টার্টে প্রয়োগ করুন",
   "Restart to update": "আপডেট করতে রিস্টার্ট করুন",
-  "{version} is ready — restart to update": "{version} প্রস্তুত — আপডেট করতে রিস্টার্ট করুন"
+  "{version} is ready — restart to update": "{version} প্রস্তুত — আপডেট করতে রিস্টার্ট করুন",
+  "Chart style": "চার্টের ধরন",
+  "Rings (sunburst) or nested boxes (treemap)": "রিং (সানবার্স্ট) বা নেস্টেড বক্স (ট্রিম্যাপ)",
+  "Sunburst": "সানবার্স্ট",
+  "Treemap": "ট্রিম্যাপ"
 }
