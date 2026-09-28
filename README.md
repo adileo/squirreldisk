@@ -54,6 +54,24 @@ xattr -dr com.apple.quarantine /Applications/SquirrelDisk.app
 Click **More info**, then **Run anyway**. For the portable `.exe` you can also right-click the file, choose **Properties**, tick **Unblock** and press **OK**.
 </details>
 
+<details>
+<summary>Portable mode (Windows and Linux)</summary>
+
+To keep everything on a USB stick or in a single folder, create an empty folder named `portable` next to the Windows `.exe`, the `.AppImage` file or the `squirreldisk` binary from the archive:
+
+```
+SquirrelDisk/
+├── squirreldisk-x86_64-pc-windows-msvc.exe
+└── portable/
+```
+
+SquirrelDisk then keeps its settings there instead of in your user profile, along with the rclone it installs and your cloud accounts (`rclone.conf`). If you set `RCLONE_CONFIG` yourself, that file is used instead.
+
+Self-update replaces the executable in place, so the folder must be writable.
+
+To use a specific folder instead, set the `SQUIRRELDISK_CONFIG_DIR` environment variable. It takes priority over the `portable` folder and works on macOS too.
+</details>
+
 ## Features
 
 **The whole disk at a glance.** Every folder becomes a slice of a colourful sunburst, sized by the space it takes. The chart builds up live while the scan runs, so the big offenders show up in seconds.

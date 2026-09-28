@@ -44,7 +44,23 @@ fn extra_dirs() -> Vec<PathBuf> {
     v
 }
 
+/// In portable mode rclone's accounts live in our folder too, unless the
+/// user already points rclone somewhere with `RCLONE_CONFIG`.
+fn config_file() -> Option<PathBuf> {
+    if std::env::var_os("RCLONE_CONFIG").is_some() {
+        return None;
+    }
+    crate::settings::portable_dir().map(|d| d.join("rclone.conf"))
+}
+
 fn find() -> Option<PathBuf> {
+    let managed = || managed_dir().map(|d| d.join(exe_name())).filter(|f| f.is_file());
+    // a portable install prefers the copy it carries along
+    if crate::settings::portable_dir().is_some() {
+        if let Some(f) = managed() {
+            return Some(f);
+        }
+    }
     // SQD_NO_SYSTEM_RCLONE=1 pretends rclone isn't installed (testing the installer)
     if std::env::var_os("SQD_NO_SYSTEM_RCLONE").is_none() {
         let path = std::env::var_os("PATH").map(|p| std::env::split_paths(&p).collect::<Vec<_>>()).unwrap_or_default();
@@ -55,7 +71,7 @@ fn find() -> Option<PathBuf> {
             }
         }
     }
-    managed_dir().map(|d| d.join(exe_name())).filter(|f| f.is_file())
+    managed()
 }
 
 /// The rclone executable, if there is one.
@@ -75,6 +91,9 @@ pub fn rescan() {
 /// `rclone` ready to run (falls back to the bare name, which fails cleanly).
 pub fn command() -> Command {
     let mut c = Command::new(bin().unwrap_or_else(|| PathBuf::from("rclone")));
+    if let Some(f) = config_file() {
+        c.env("RCLONE_CONFIG", f);
+    }
     hide_console(&mut c);
     c
 }
@@ -139,19 +158,21 @@ pub fn valid_name(n: &str) -> bool {
 /// and options the built-in forms don't cover.
 pub fn open_config_terminal() -> Result<(), String> {
     let bin = bin().ok_or("rclone is not installed")?;
+    let conf: Vec<String> = config_file().map(|f| vec!["--config".into(), f.to_string_lossy().into_owned()]).unwrap_or_default();
     #[cfg(target_os = "macos")]
     {
         // a .command file opens in Terminal without needing Automation permission
         let f = std::env::temp_dir().join("squirreldisk-rclone-config.command");
-        let q = bin.to_string_lossy().replace('\'', "'\\''");
-        std::fs::write(&f, format!("#!/bin/sh\nclear\n'{q}' config\n")).map_err(|e| e.to_string())?;
+        let q = |s: &str| format!("'{}'", s.replace('\'', "'\\''"));
+        let extra: String = conf.iter().map(|a| format!(" {}", q(a))).collect();
+        std::fs::write(&f, format!("#!/bin/sh\nclear\n{} config{extra}\n", q(&bin.to_string_lossy()))).map_err(|e| e.to_string())?;
         use std::os::unix::fs::PermissionsExt;
         let _ = std::fs::set_permissions(&f, std::fs::Permissions::from_mode(0o755));
         Command::new("open").arg(&f).spawn().map(|_| ()).map_err(|e| e.to_string())
     }
     #[cfg(windows)]
     {
-        Command::new("cmd").args(["/c", "start", "rclone config"]).arg(&bin).arg("config").spawn().map(|_| ()).map_err(|e| e.to_string())
+        Command::new("cmd").args(["/c", "start", "rclone config"]).arg(&bin).arg("config").args(&conf).spawn().map(|_| ()).map_err(|e| e.to_string())
     }
     #[cfg(all(unix, not(target_os = "macos")))]
     {
@@ -166,7 +187,7 @@ pub fn open_config_terminal() -> Result<(), String> {
             ("xterm", &["-e"]),
         ];
         for (term, pre) in tries {
-            if Command::new(term).args(pre).arg(&b).arg("config").spawn().is_ok() {
+            if Command::new(term).args(pre).arg(&b).arg("config").args(&conf).spawn().is_ok() {
                 return Ok(());
             }
         }
@@ -529,5 +550,35 @@ mod tests {
         }
         assert_eq!(t.finished(), Some(Ok(())));
         assert!(dir.join(super::exe_name()).is_file());
+    }
+}
+
+#[cfg(test)]
+mod portable_tests {
+    use std::path::PathBuf;
+
+    fn rclone_config(c: &std::process::Command) -> Option<PathBuf> {
+        c.get_envs().find(|(k, _)| *k == "RCLONE_CONFIG").and_then(|(_, v)| v).map(PathBuf::from)
+    }
+
+    /// One test, since both cases change process-wide state.
+    #[test]
+    fn portable_config_dir() {
+        let exe_dir = std::env::current_exe().unwrap().parent().unwrap().to_path_buf();
+        let portable = exe_dir.join("portable");
+        std::fs::create_dir_all(&portable).unwrap();
+        assert_eq!(crate::settings::config_dir(), Some(portable.clone()));
+        assert_eq!(super::managed_dir(), Some(portable.join("bin")));
+        assert_eq!(rclone_config(&super::command()), Some(portable.join("rclone.conf")));
+
+        let custom = std::env::temp_dir().join("sqd-portable-test");
+        std::env::set_var("SQUIRRELDISK_CONFIG_DIR", &custom);
+        assert_eq!(crate::settings::config_dir(), Some(custom.clone()));
+        assert_eq!(rclone_config(&super::command()), Some(custom.join("rclone.conf")));
+        std::env::remove_var("SQUIRRELDISK_CONFIG_DIR");
+
+        std::fs::remove_dir(&portable).unwrap();
+        assert_ne!(crate::settings::config_dir(), Some(portable));
+        assert_eq!(rclone_config(&super::command()), None);
     }
 }

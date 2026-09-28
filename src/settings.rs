@@ -12,7 +12,21 @@ pub fn home_dir() -> Option<PathBuf> {
     }
 }
 
+/// A config folder chosen by the user instead of the system one:
+/// `SQUIRRELDISK_CONFIG_DIR`, or a `portable` folder next to the executable
+/// (next to the AppImage file, not inside its mount).
+pub fn portable_dir() -> Option<PathBuf> {
+    if let Some(d) = std::env::var_os("SQUIRRELDISK_CONFIG_DIR").filter(|d| !d.is_empty()) {
+        return Some(PathBuf::from(d));
+    }
+    let exe = std::env::var_os("APPIMAGE").map(PathBuf::from).filter(|p| p.is_file()).or_else(|| std::env::current_exe().ok())?;
+    exe.parent().map(|d| d.join("portable")).filter(|d| d.is_dir())
+}
+
 pub fn config_dir() -> Option<PathBuf> {
+    if let Some(d) = portable_dir() {
+        return Some(d);
+    }
     #[cfg(target_os = "macos")]
     {
         home_dir().map(|h| h.join("Library/Application Support/SquirrelDisk"))
