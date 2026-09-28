@@ -429,24 +429,35 @@ impl App {
             if let Some(f) = frac {
                 widgets::ring(p, geo.center, r0 + 1.0, 2.0, f, theme.accent, Color32::TRANSPARENT);
             }
-            let status = pr.status.lock().unwrap().clone();
-            let files = pr.files.load(Ordering::Relaxed);
-            let bytes = pr.bytes.load(Ordering::Relaxed);
-            let txt = match frac {
-                Some(f) => trf("{status} · {percent}% · {files} files · {size}", &[("status", &tr_status(&status)), ("percent", &format!("{:.0}", f * 100.0)), ("files", &crate::tree::fmt_count_compact(files)), ("size", &fmt_size(bytes))]),
-                None => trf("{status} · {files} files · {size}", &[("status", &tr_status(&status)), ("files", &crate::tree::fmt_count_compact(files)), ("size", &fmt_size(bytes))]),
-            };
-            let g = p.layout_no_wrap(txt.clone(), bold(12.0), theme.text);
-            let pill = Rect::from_center_size(Pos2::new(chart.center().x, chart.top() + 18.0), Vec2::new(g.size().x + 40.0, 30.0));
-            widgets::shadow(p, pill, 8.0, 0.6, &theme);
-            p.rect_filled(pill, cr(8.0), with_alpha(theme.surface_hi, 0.95));
-            p.circle_filled(Pos2::new(pill.left() + 16.0, pill.center().y), 3.5, with_alpha(theme.accent2, 0.6 + 0.4 * (self.time as f32 * 4.0).sin().abs()));
-            p.galley(Pos2::new(pill.left() + 26.0, pill.center().y - g.size().y / 2.0), g, theme.text);
-            // Only surface a path when a folder is blocking us (network mount, huge dir…).
-            if let Some((cur, secs)) = pr.stuck(10.0) {
-                let c = widgets::truncate(p, &trf("Still reading {path} ({seconds}s)", &[("path", &cur), ("seconds", &format!("{secs:.0}"))]), &font(11.0), chart.width() - 60.0);
-                p.text(Pos2::new(chart.center().x, pill.bottom() + 12.0), Align2::CENTER_CENTER, c, font(11.0), theme.warn);
-            }
+            self.scan_pill(p, chart, si);
+        }
+    }
+
+    /// Floating "Scanning · 42% · 1.2M files · 300 GB" badge at the top of the chart.
+    pub fn scan_pill(&self, p: &egui::Painter, chart: Rect, si: usize) {
+        let theme = &self.theme;
+        let pr = &self.sessions[si].progress;
+        if pr.is_done() {
+            return;
+        }
+        let frac = pr.fraction();
+        let status = pr.status.lock().unwrap().clone();
+        let files = pr.files.load(Ordering::Relaxed);
+        let bytes = pr.bytes.load(Ordering::Relaxed);
+        let txt = match frac {
+            Some(f) => trf("{status} · {percent}% · {files} files · {size}", &[("status", &tr_status(&status)), ("percent", &format!("{:.0}", f * 100.0)), ("files", &crate::tree::fmt_count_compact(files)), ("size", &fmt_size(bytes))]),
+            None => trf("{status} · {files} files · {size}", &[("status", &tr_status(&status)), ("files", &crate::tree::fmt_count_compact(files)), ("size", &fmt_size(bytes))]),
+        };
+        let g = p.layout_no_wrap(txt.clone(), bold(12.0), theme.text);
+        let pill = Rect::from_center_size(Pos2::new(chart.center().x, chart.top() + 18.0), Vec2::new(g.size().x + 40.0, 30.0));
+        widgets::shadow(p, pill, 8.0, 0.6, theme);
+        p.rect_filled(pill, cr(8.0), with_alpha(theme.surface_hi, 0.95));
+        p.circle_filled(Pos2::new(pill.left() + 16.0, pill.center().y), 3.5, with_alpha(theme.accent2, 0.6 + 0.4 * (self.time as f32 * 4.0).sin().abs()));
+        p.galley(Pos2::new(pill.left() + 26.0, pill.center().y - g.size().y / 2.0), g, theme.text);
+        // Only surface a path when a folder is blocking us (network mount, huge dir…).
+        if let Some((cur, secs)) = pr.stuck(10.0) {
+            let c = widgets::truncate(p, &trf("Still reading {path} ({seconds}s)", &[("path", &cur), ("seconds", &format!("{secs:.0}"))]), &font(11.0), chart.width() - 60.0);
+            p.text(Pos2::new(chart.center().x, pill.bottom() + 12.0), Align2::CENTER_CENTER, c, font(11.0), theme.warn);
         }
     }
 

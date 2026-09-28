@@ -174,6 +174,7 @@ impl App {
         let mut check_now = false;
         let gl_error = self.gl_error.clone();
         let mut picker = self.lang_picker;
+        let mut lang_btn = Rect::NOTHING;
         let mut new_lang: Option<String> = None;
         let mut scroll = self.settings_scroll;
         let mut content_h = self.settings_content_h;
@@ -222,7 +223,8 @@ impl App {
                     crate::i18n::lang(&s.language).native.to_string()
                 };
                 let lb = Rect::from_min_size(Pos2::new(x0 + w - 220.0, lang_row.top() + 6.0), Vec2::new(220.0, 32.0));
-                if widgets::button(ui, lb, Id::new("lang-btn"), &current, Some(Icon::Forward), BtnStyle::Subtle, &theme).clicked() {
+                lang_btn = lb;
+            if widgets::button(ui, lb, Id::new("lang-btn"), &current, Some(Icon::Forward), BtnStyle::Subtle, &theme).clicked() {
                     picker = !picker;
                 }
                 y += 50.0;
@@ -330,9 +332,11 @@ impl App {
             if let Some(e) = &gl_error {
                 line = format!("{line}  ·  {}", trf("CPU renderer ({reason})", &[("reason", e)]));
             }
-            let line = widgets::truncate(p, &line, &font(12.0), w - 170.0);
+            // the button grows with its (translated) label
+            let bw = (p.layout_no_wrap(tr("Check for updates").to_string(), bold(13.0), theme.text).size().x + 52.0).clamp(160.0, w * 0.55);
+            let line = widgets::truncate(p, &line, &font(12.0), w - bw - 12.0);
             p.text(Pos2::new(x0, y + 26.0), Align2::LEFT_CENTER, line, font(12.0), theme.text_dim);
-            let b = Rect::from_min_size(Pos2::new(x0 + w - 160.0, y + 10.0), Vec2::new(160.0, 32.0));
+            let b = Rect::from_min_size(Pos2::new(x0 + w - bw, y + 10.0), Vec2::new(bw, 32.0));
             check_now = widgets::button(ui, b, Id::new("check-upd"), tr("Check for updates"), Some(Icon::Refresh), BtnStyle::Subtle, &theme).clicked();
             if picker {
                 // grid of languages drawn over the settings card
@@ -341,6 +345,14 @@ impl App {
                 let n = crate::i18n::LANGS.len() + 1;
                 let rows_n = n.div_ceil(cols);
                 let pr = Rect::from_min_size(Pos2::new(x0, card.top() + 90.0), Vec2::new(w, rows_n as f32 * ch + 56.0));
+                // a click anywhere else closes the picker
+                if ui.input(|i| i.pointer.any_pressed()) {
+                    if let Some(pos) = ui.input(|i| i.pointer.interact_pos()) {
+                        if !pr.contains(pos) && !lang_btn.contains(pos) {
+                            picker = false;
+                        }
+                    }
+                }
                 let p = ui.painter();
                 widgets::shadow(p, pr, 12.0, 1.2, &theme);
                 p.rect_filled(pr, widgets::cr(12.0), theme.surface_hi);
@@ -374,6 +386,10 @@ impl App {
         });
         if check_now {
             self.updater.check(ctx.clone());
+        }
+        if picker != self.lang_picker {
+            // native names need every script's font while the picker is open
+            crate::ui::app::install_fonts(ctx, crate::i18n::current(), picker);
         }
         self.lang_picker = picker;
         self.settings_scroll = scroll;

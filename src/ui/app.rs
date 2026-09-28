@@ -301,24 +301,38 @@ pub struct App {
 
 /// Installs the bundled fonts plus, for non-Latin languages, a system font
 /// that covers the script (loaded at runtime to keep the app small).
-pub fn install_fonts(ctx: &egui::Context, lang: &str) {
+pub fn install_fonts(ctx: &egui::Context, lang: &str, all_scripts: bool) {
     let mut fonts = FontDefinitions::default();
-    let script_font = crate::i18n::system_font(lang).map(|(bytes, index)| {
-        let mut fd = FontData::from_owned(bytes);
-        fd.index = index;
-        fd
-    });
-    let has_script = script_font.is_some();
-    if let Some(fd) = script_font {
-        fonts.font_data.insert("system-script".into(), Arc::new(fd));
+    // The current language's script first; with `all_scripts` (language
+    // picker open) one font per script so every native name renders.
+    let mut codes: Vec<&str> = vec![lang];
+    if all_scripts {
+        let mut seen = vec![crate::i18n::lang(lang).script];
+        for l in crate::i18n::LANGS.iter() {
+            let windows_ja = cfg!(windows) && l.code == "ja";
+            if !seen.contains(&l.script) || windows_ja {
+                seen.push(l.script);
+                codes.push(l.code);
+            }
+        }
+    }
+    let mut script_names: Vec<String> = Vec::new();
+    for (k, code) in codes.iter().enumerate() {
+        if let Some((bytes, index)) = crate::i18n::system_font(code) {
+            let mut fd = FontData::from_owned(bytes);
+            fd.index = index;
+            let name = format!("system-script-{k}");
+            fonts.font_data.insert(name.clone(), Arc::new(fd));
+            script_names.push(name);
+        }
     }
     fonts.font_data.insert("inter".into(), Arc::new(FontData::from_static(include_bytes!("../../assets/fonts/Inter-Regular.ttf"))));
     fonts.font_data.insert("inter-bold".into(), Arc::new(FontData::from_static(include_bytes!("../../assets/fonts/Inter-SemiBold.ttf"))));
     fonts.font_data.insert("fredoka".into(), Arc::new(FontData::from_static(include_bytes!("../../assets/fonts/Fredoka-SemiBold.ttf"))));
     let mut fallback: Vec<String> = fonts.families.get(&FontFamily::Proportional).cloned().unwrap_or_default();
-    if has_script {
-        fallback.insert(0, "system-script".into());
-    }
+    // after egui's defaults: they cover Cyrillic/Greek with proper metrics,
+    // the system fonts then fill in CJK, Arabic, Indic scripts and Thai
+    fallback.extend(script_names);
     let mut prop = vec!["inter".to_string()];
     prop.extend(fallback.iter().cloned());
     fonts.families.insert(FontFamily::Proportional, prop);
@@ -342,7 +356,7 @@ impl App {
         }
         let lang = crate::i18n::resolve(&std::env::var("SQUIRRELDISK_LANG").unwrap_or_else(|_| settings.language.clone()));
         crate::i18n::set_language(lang);
-        install_fonts(&cc.egui_ctx, lang);
+        install_fonts(&cc.egui_ctx, lang, false);
         let theme = theme::by_name(&settings.theme);
         let (gl, gl_error) = match cc.gl.as_ref().map(|gl| SunburstGl::new(gl)) {
             Some(Ok(r)) => (Some(Arc::new(Mutex::new(r))), None),
@@ -483,7 +497,7 @@ impl App {
         self.settings.language = setting.to_string();
         let code = crate::i18n::resolve(setting);
         crate::i18n::set_language(code);
-        install_fonts(ctx, code);
+        install_fonts(ctx, code, false);
         self.settings.save();
     }
 

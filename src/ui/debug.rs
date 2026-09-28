@@ -72,6 +72,11 @@ impl App {
             self.debug.modal_done = true;
             match std::env::var("SQD_MODAL").as_deref() {
                 Ok("settings") => self.open_modal(Modal::Settings),
+                Ok("languages") => {
+                    self.open_modal(Modal::Settings);
+                    self.lang_picker = true;
+                    super::app::install_fonts(ctx, crate::i18n::current(), true);
+                }
                 Ok("ssh") => self.open_modal(Modal::Ssh { host: String::new(), path: "/".into() }),
                 Ok("sshauth") => self.open_modal(Modal::SshAuth { host: "user@server".into(), path: "/".into(), secret: String::new(), retry: false }),
                 Ok("rclone") => self.open_modal(Modal::Rclone { path: String::new() }),

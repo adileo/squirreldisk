@@ -1,4 +1,10 @@
-## SquirrelDisk 2.2
+## SquirrelDisk 2.2.1
+
+- The language picker in Settings shows every language in its own script (no more empty boxes) and closes when you click outside it.
+- The "Check for updates" button fits its label in every language.
+- The treemap shows scan progress while scanning.
+
+### From 2.2
 
 - **Treemap view.** Prefer boxes to rings? Pick "Treemap" in Settings → Chart style: every folder becomes a box inside its parent, with names and sizes. Zooming, hovering, collecting and deleting work just like in the sunburst.
 - **⌘, opens Settings** from anywhere (Ctrl+, on Windows and Linux).

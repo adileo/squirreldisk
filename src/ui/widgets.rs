@@ -130,9 +130,19 @@ pub fn button_ex(ui: &mut Ui, rect: Rect, id: Id, label: &str, icon: Option<Icon
     if matches!(style, BtnStyle::Subtle | BtnStyle::Ghost) {
         painter.rect_stroke(r, cr(radius), Stroke::new(1.0, with_alpha(theme.stroke, 0.6 + 0.4 * h)), StrokeKind::Inside);
     }
-    let f = bold(13.0);
-    let galley = painter.layout_no_wrap(label.to_string(), f, text);
     let icon_w = if icon.is_some() { 16.0 + if label.is_empty() { 0.0 } else { 6.0 } } else { 0.0 };
+    // Fit long (translated) labels: shrink the font a little, then truncate.
+    let room = (r.width() - 24.0 - icon_w).max(10.0);
+    let mut size = 13.0;
+    let mut galley = painter.layout_no_wrap(label.to_string(), bold(size), text);
+    while galley.size().x > room && size > 10.5 {
+        size -= 0.5;
+        galley = painter.layout_no_wrap(label.to_string(), bold(size), text);
+    }
+    if galley.size().x > room {
+        let fitted = truncate(painter, label, &bold(size), room);
+        galley = painter.layout_no_wrap(fitted, bold(size), text);
+    }
     let total = galley.size().x + icon_w;
     let mut x = r.center().x - total / 2.0;
     if let Some(ic) = icon {

@@ -512,6 +512,10 @@ impl App {
             let msg = if scanning { tr("Scanning…") } else { tr("Empty") };
             ui.painter().text(area.center(), Align2::CENTER_CENTER, msg, font(13.0), theme.text_faint);
         }
+        if scanning {
+            let p = ui.painter().clone();
+            self.scan_pill(&p, chart, si);
+        }
         let _ = lighten;
     }
 }
