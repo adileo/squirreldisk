@@ -78,6 +78,10 @@ pub struct Session {
     /// Free bytes on the scanned volume (disk scans only), refreshed periodically.
     pub free_space: u64,
     pub free_at: Instant,
+    /// Nodes whose names have been checked for the fonts they need, and the
+    /// scripts found in them (see [`crate::i18n::scripts_of`]).
+    pub names_checked: usize,
+    pub name_scripts: u32,
 }
 
 impl Session {
@@ -124,6 +128,8 @@ impl Session {
             geo: None,
             free_space: 0,
             free_at: Instant::now() - Duration::from_secs(60),
+            names_checked: 0,
+            name_scripts: 0,
         }
     }
 
@@ -321,32 +327,52 @@ pub struct App {
     pub director: Option<super::director::Director>,
     /// Named rects of clickable things, for the demo director.
     pub marks: std::collections::HashMap<String, Rect>,
+    /// Scripts of file names that the installed fonts cover.
+    pub font_scripts: u32,
+}
+
+/// The system font for `code`'s script. Fonts still installed are reused
+/// rather than read again from disk (installs happen on the UI thread, e.g.
+/// each time a scan meets a new script); the cache holds weak references so
+/// a font is freed once no installed font set uses it.
+fn system_font_data(code: &str) -> Option<Arc<FontData>> {
+    static CACHE: Mutex<Vec<(String, std::sync::Weak<FontData>)>> = Mutex::new(Vec::new());
+    let mut cache = CACHE.lock().unwrap();
+    cache.retain(|(_, w)| w.strong_count() > 0);
+    if let Some(fd) = cache.iter().find(|(c, _)| c == code).and_then(|(_, w)| w.upgrade()) {
+        return Some(fd);
+    }
+    let (bytes, index) = crate::i18n::system_font(code)?;
+    let mut fd = FontData::from_owned(bytes);
+    fd.index = index;
+    let fd = Arc::new(fd);
+    cache.push((code.to_string(), Arc::downgrade(&fd)));
+    Some(fd)
 }
 
 /// Installs the bundled fonts plus, for non-Latin languages, a system font
-/// that covers the script (loaded at runtime to keep the app small).
+/// that covers the script (loaded at runtime to keep the app small). The
+/// scripts used by file names get a font too, whatever the UI language.
 pub fn install_fonts(ctx: &egui::Context, lang: &str, all_scripts: bool) {
     let mut fonts = FontDefinitions::default();
-    // The current language's script first; with `all_scripts` (language
-    // picker open) one font per script so every native name renders.
+    // The current language's script first, then the ones file names use;
+    // with `all_scripts` (language picker open) one font per script so every
+    // native name renders.
+    let name_scripts = crate::i18n::name_scripts();
     let mut codes: Vec<&str> = vec![lang];
-    if all_scripts {
-        let mut seen = vec![crate::i18n::lang(lang).script];
-        for l in crate::i18n::LANGS.iter() {
-            let windows_ja = cfg!(windows) && l.code == "ja";
-            if !seen.contains(&l.script) || windows_ja {
-                seen.push(l.script);
-                codes.push(l.code);
-            }
+    let mut seen = vec![crate::i18n::lang(lang).script];
+    for l in crate::i18n::LANGS.iter() {
+        let windows_ja = all_scripts && cfg!(windows) && l.code == "ja";
+        if (all_scripts || name_scripts & l.script.bit() != 0) && (!seen.contains(&l.script) || windows_ja) {
+            seen.push(l.script);
+            codes.push(l.code);
         }
     }
     let mut script_names: Vec<String> = Vec::new();
     for (k, code) in codes.iter().enumerate() {
-        if let Some((bytes, index)) = crate::i18n::system_font(code) {
-            let mut fd = FontData::from_owned(bytes);
-            fd.index = index;
+        if let Some(fd) = system_font_data(code) {
             let name = format!("system-script-{k}");
-            fonts.font_data.insert(name.clone(), Arc::new(fd));
+            fonts.font_data.insert(name.clone(), fd);
             script_names.push(name);
         }
     }
@@ -436,6 +462,7 @@ impl App {
             dock: DockState::default(),
             director: super::director::Director::from_env(),
             marks: Default::default(),
+            font_scripts: 0,
             chrome: if cfg!(target_os = "macos") { (15.0, 68.0) } else { (22.0, 0.0) },
             settings,
         }
@@ -518,6 +545,28 @@ impl App {
         crate::i18n::set_language(code);
         install_fonts(ctx, code, false);
         self.settings.save();
+    }
+
+    /// File and volume names can be in any script: loads fonts for the ones
+    /// they use, else e.g. Chinese folder names show as boxes in English.
+    fn fonts_for_names(&mut self, ctx: &egui::Context) {
+        use crate::i18n::scripts_of;
+        let mut scripts = self.volumes.iter().fold(0, |bits, v| bits | scripts_of(&v.name));
+        for s in self.sessions.iter_mut() {
+            let t = s.tree.read().unwrap();
+            // nodes are only ever appended: each name is checked once
+            let new = t.nodes.get(s.names_checked..).unwrap_or_default();
+            s.name_scripts = new.iter().fold(s.name_scripts | scripts_of(&t.root_path), |bits, n| bits | scripts_of(&n.name));
+            s.names_checked = t.nodes.len();
+            scripts |= s.name_scripts;
+        }
+        // recomputed from what is open, so closing a session frees its fonts
+        if scripts != self.font_scripts {
+            self.font_scripts = scripts;
+            crate::i18n::set_name_scripts(scripts);
+            install_fonts(ctx, crate::i18n::current(), self.lang_picker);
+            ctx.request_repaint(); // the new fonts apply from the next frame
+        }
     }
 
     /// Keeps the app current: checks every 6 hours and, if allowed, downloads
@@ -761,6 +810,7 @@ impl eframe::App for App {
         self.marks.clear();
         self.debug_hooks(&ctx);
         self.poll_sessions();
+        self.fonts_for_names(&ctx);
         self.update_dock(&ctx);
         self.auto_update(&ctx);
         if self.volumes_at.elapsed() > Duration::from_secs(5) && self.screen == Screen::Home {
