@@ -7,6 +7,7 @@
 //! * `SQD_MODAL=settings|ssh|sshauth|rclone|delete` open a modal before shooting
 //! * `SQD_COLLECT=2`         collect the N biggest children of the root
 //! * `SQD_QUIT=1`            quit after the last screenshot
+//! * `SQD_UPDATE=available|downloading|ready` fake an update, to see the button
 
 use super::app::{App, Modal, Target};
 use eframe::egui;
@@ -35,6 +36,15 @@ impl Debug {
 
 impl App {
     pub fn debug_hooks(&mut self, ctx: &egui::Context) {
+        if let Ok(u) = std::env::var("SQD_UPDATE") {
+            use crate::update::{Release, State};
+            let release = Release { version: "9.9.9".into(), notes: String::new(), asset_url: None };
+            *self.updater.state.lock().unwrap() = match u.as_str() {
+                "available" => State::Available(release),
+                "downloading" => State::Downloading,
+                _ => State::Ready("9.9.9".into()),
+            };
+        }
         if !self.debug.started {
             self.debug.started = true;
             if let Ok(p) = std::env::var("SQD_SCAN") {
