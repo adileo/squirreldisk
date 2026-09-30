@@ -276,5 +276,6 @@
   "Linked at {path}, but that folder isn't on your PATH": "Ditautkan di {path}, tetapi folder itu tidak ada di PATH Anda",
   "Scan folders from a terminal, without the window: {command}": "Pindai folder dari terminal, tanpa jendela: {command}",
   "{path} already belongs to another program": "{path} sudah dimiliki program lain",
-  "Couldn't install the command: {error}": "Tidak dapat menginstal perintah: {error}"
+  "Couldn't install the command: {error}": "Tidak dapat menginstal perintah: {error}",
+  "Not available in development builds": "Tidak tersedia di build pengembangan"
 }

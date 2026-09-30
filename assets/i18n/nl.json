@@ -276,5 +276,6 @@
   "Linked at {path}, but that folder isn't on your PATH": "Gekoppeld in {path}, maar die map staat niet in je PATH",
   "Scan folders from a terminal, without the window: {command}": "Scan mappen vanuit een terminal, zonder venster: {command}",
   "{path} already belongs to another program": "{path} is al van een ander programma",
-  "Couldn't install the command: {error}": "Kan de opdracht niet installeren: {error}"
+  "Couldn't install the command: {error}": "Kan de opdracht niet installeren: {error}",
+  "Not available in development builds": "Niet beschikbaar in ontwikkelbuilds"
 }

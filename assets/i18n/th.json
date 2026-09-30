@@ -276,5 +276,6 @@
   "Linked at {path}, but that folder isn't on your PATH": "ลิงก์ไว้ที่ {path} แต่โฟลเดอร์นั้นไม่อยู่ใน PATH",
   "Scan folders from a terminal, without the window: {command}": "สแกนโฟลเดอร์จากเทอร์มินัลโดยไม่ต้องเปิดหน้าต่าง: {command}",
   "{path} already belongs to another program": "{path} เป็นของโปรแกรมอื่นอยู่แล้ว",
-  "Couldn't install the command: {error}": "ติดตั้งคำสั่งไม่ได้: {error}"
+  "Couldn't install the command: {error}": "ติดตั้งคำสั่งไม่ได้: {error}",
+  "Not available in development builds": "ไม่พร้อมใช้งานในบิลด์สำหรับการพัฒนา"
 }

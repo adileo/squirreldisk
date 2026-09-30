@@ -276,5 +276,6 @@
   "Linked at {path}, but that folder isn't on your PATH": "{path} konumuna bağlandı, ancak bu klasör PATH'inizde değil",
   "Scan folders from a terminal, without the window: {command}": "Klasörleri terminalden, pencere olmadan tarayın: {command}",
   "{path} already belongs to another program": "{path} zaten başka bir programa ait",
-  "Couldn't install the command: {error}": "Komut yüklenemedi: {error}"
+  "Couldn't install the command: {error}": "Komut yüklenemedi: {error}",
+  "Not available in development builds": "Geliştirme sürümlerinde kullanılamaz"
 }

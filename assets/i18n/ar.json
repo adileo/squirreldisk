@@ -276,5 +276,6 @@
   "Linked at {path}, but that folder isn't on your PATH": "تم الربط في {path}، لكن هذا المجلد ليس ضمن PATH",
   "Scan folders from a terminal, without the window: {command}": "افحص المجلدات من الطرفية دون نافذة: {command}",
   "{path} already belongs to another program": "{path} يخص برنامجًا آخر بالفعل",
-  "Couldn't install the command: {error}": "تعذّر تثبيت الأمر: {error}"
+  "Couldn't install the command: {error}": "تعذّر تثبيت الأمر: {error}",
+  "Not available in development builds": "غير متاح في إصدارات التطوير"
 }

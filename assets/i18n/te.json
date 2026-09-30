@@ -276,5 +276,6 @@
   "Linked at {path}, but that folder isn't on your PATH": "{path}లో లింక్ చేయబడింది, కానీ ఆ ఫోల్డర్ మీ PATHలో లేదు",
   "Scan folders from a terminal, without the window: {command}": "విండో లేకుండా టెర్మినల్ నుండి ఫోల్డర్‌లను స్కాన్ చేయండి: {command}",
   "{path} already belongs to another program": "{path} ఇప్పటికే మరో ప్రోగ్రామ్‌కు చెందినది",
-  "Couldn't install the command: {error}": "కమాండ్‌ను ఇన్‌స్టాల్ చేయలేకపోయాము: {error}"
+  "Couldn't install the command: {error}": "కమాండ్‌ను ఇన్‌స్టాల్ చేయలేకపోయాము: {error}",
+  "Not available in development builds": "డెవలప్‌మెంట్ బిల్డ్‌లలో అందుబాటులో లేదు"
 }

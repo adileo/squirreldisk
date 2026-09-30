@@ -276,5 +276,6 @@
   "Linked at {path}, but that folder isn't on your PATH": "{path}-இல் இணைக்கப்பட்டது, ஆனால் அந்தக் கோப்புறை உங்கள் PATH-இல் இல்லை",
   "Scan folders from a terminal, without the window: {command}": "சாளரம் இல்லாமல் டெர்மினலில் இருந்து கோப்புறைகளை ஸ்கேன் செய்: {command}",
   "{path} already belongs to another program": "{path} ஏற்கனவே வேறொரு நிரலுக்குச் சொந்தமானது",
-  "Couldn't install the command: {error}": "கட்டளையை நிறுவ முடியவில்லை: {error}"
+  "Couldn't install the command: {error}": "கட்டளையை நிறுவ முடியவில்லை: {error}",
+  "Not available in development builds": "மேம்பாட்டு பில்டுகளில் கிடைக்காது"
 }

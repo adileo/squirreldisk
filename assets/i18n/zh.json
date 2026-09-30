@@ -276,5 +276,6 @@
   "Linked at {path}, but that folder isn't on your PATH": "已链接到 {path}，但该文件夹不在 PATH 中",
   "Scan folders from a terminal, without the window: {command}": "在终端中扫描文件夹，无需打开窗口：{command}",
   "{path} already belongs to another program": "{path} 已被其他程序占用",
-  "Couldn't install the command: {error}": "无法安装命令：{error}"
+  "Couldn't install the command: {error}": "无法安装命令：{error}",
+  "Not available in development builds": "开发版本中不可用"
 }

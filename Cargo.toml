@@ -32,7 +32,7 @@ tiny-skia = { version = "0.12", optional = true, default-features = false, featu
 embed-resource = "3"
 
 [target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.61", features = ["Win32_Storage_FileSystem", "Win32_Foundation", "Win32_Globalization", "Win32_Graphics_Gdi", "Win32_UI_HiDpi", "Win32_UI_WindowsAndMessaging"] }
+windows-sys = { version = "0.61", features = ["Win32_Storage_FileSystem", "Win32_Foundation", "Win32_Globalization", "Win32_Graphics_Gdi", "Win32_UI_HiDpi", "Win32_UI_WindowsAndMessaging", "Win32_System_Registry", "Win32_Security"] }
 raw-window-handle = "0.6"
 
 [target.'cfg(unix)'.dependencies]

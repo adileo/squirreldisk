@@ -276,5 +276,6 @@
   "Linked at {path}, but that folder isn't on your PATH": "Посилання створено в {path}, але цієї теки немає в PATH",
   "Scan folders from a terminal, without the window: {command}": "Скануйте теки з термінала, без вікна: {command}",
   "{path} already belongs to another program": "{path} уже належить іншій програмі",
-  "Couldn't install the command: {error}": "Не вдалося встановити команду: {error}"
+  "Couldn't install the command: {error}": "Не вдалося встановити команду: {error}",
+  "Not available in development builds": "Недоступно у збірках для розробки"
 }

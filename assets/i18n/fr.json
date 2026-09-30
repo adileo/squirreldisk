@@ -276,5 +276,6 @@
   "Linked at {path}, but that folder isn't on your PATH": "Lien créé dans {path}, mais ce dossier n'est pas dans votre PATH",
   "Scan folders from a terminal, without the window: {command}": "Analysez des dossiers depuis un terminal, sans fenêtre : {command}",
   "{path} already belongs to another program": "{path} appartient déjà à un autre programme",
-  "Couldn't install the command: {error}": "Impossible d'installer la commande : {error}"
+  "Couldn't install the command: {error}": "Impossible d'installer la commande : {error}",
+  "Not available in development builds": "Indisponible dans les versions de développement"
 }

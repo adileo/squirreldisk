@@ -276,5 +276,6 @@
   "Linked at {path}, but that folder isn't on your PATH": "در {path} پیوند داده شد، اما آن پوشه در PATH شما نیست",
   "Scan folders from a terminal, without the window: {command}": "اسکن پوشه‌ها از ترمینال، بدون پنجره: {command}",
   "{path} already belongs to another program": "{path} از قبل متعلق به برنامه دیگری است",
-  "Couldn't install the command: {error}": "نصب فرمان ممکن نشد: {error}"
+  "Couldn't install the command: {error}": "نصب فرمان ممکن نشد: {error}",
+  "Not available in development builds": "در نسخه‌های توسعه در دسترس نیست"
 }

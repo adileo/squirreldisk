@@ -276,5 +276,6 @@
   "Linked at {path}, but that folder isn't on your PATH": "{path}-এ লিঙ্ক করা হয়েছে, কিন্তু ফোল্ডারটি আপনার PATH-এ নেই",
   "Scan folders from a terminal, without the window: {command}": "উইন্ডো ছাড়াই টার্মিনাল থেকে ফোল্ডার স্ক্যান করুন: {command}",
   "{path} already belongs to another program": "{path} ইতিমধ্যে অন্য একটি প্রোগ্রামের",
-  "Couldn't install the command: {error}": "কমান্ড ইনস্টল করা যায়নি: {error}"
+  "Couldn't install the command: {error}": "কমান্ড ইনস্টল করা যায়নি: {error}",
+  "Not available in development builds": "ডেভেলপমেন্ট বিল্ডে উপলব্ধ নয়"
 }

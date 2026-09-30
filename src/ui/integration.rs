@@ -243,6 +243,7 @@ fn shell_quote(s: &str) -> String {
 // Command line
 
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(windows, allow(dead_code))]
 pub enum Cli {
     /// `squirreldisk` runs this app, from this path.
     Installed(PathBuf),
@@ -279,6 +280,10 @@ pub fn cli_status() -> Cli {
     {
         let (Some(link), Some(t)) = (cli_link(), target()) else { return Cli::Unavailable("no home folder".into()) };
         let exe = cli_exe(&t);
+        if dev_build(&t) {
+            // a link into target/ breaks as soon as the next build replaces it
+            return Cli::Unavailable(tr("Not available in development builds").to_string());
+        }
         match std::fs::read_link(&link) {
             Ok(to) if to == exe => Cli::Installed(link),
             _ if link.symlink_metadata().is_ok() => Cli::Taken(link),
@@ -337,11 +342,16 @@ pub fn install_cli(quiet: bool) -> Result<(), String> {
     }
 }
 
-/// First launch: installs the command where no password is needed. Not
-/// for development builds, which would leave links into `target/`.
+/// A build run from a cargo `target/` folder.
+#[cfg(unix)]
+fn dev_build(t: &Path) -> bool {
+    t.components().any(|c| c.as_os_str() == "target")
+}
+
+/// First launch: installs the command where no password is needed (not for
+/// development builds, see [`cli_status`]).
 pub fn install_cli_first_launch() {
-    let dev = target().is_some_and(|t| t.components().any(|c| c.as_os_str() == "target"));
-    if !dev && matches!(cli_status(), Cli::Missing(_)) {
+    if matches!(cli_status(), Cli::Missing(_)) {
         std::thread::spawn(|| install_cli(true));
     }
 }

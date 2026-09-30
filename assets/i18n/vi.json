@@ -276,5 +276,6 @@
   "Linked at {path}, but that folder isn't on your PATH": "Đã liên kết tại {path}, nhưng thư mục đó không có trong PATH",
   "Scan folders from a terminal, without the window: {command}": "Quét thư mục từ terminal, không cần cửa sổ: {command}",
   "{path} already belongs to another program": "{path} đã thuộc về một chương trình khác",
-  "Couldn't install the command: {error}": "Không thể cài đặt lệnh: {error}"
+  "Couldn't install the command: {error}": "Không thể cài đặt lệnh: {error}",
+  "Not available in development builds": "Không khả dụng trong bản dựng phát triển"
 }

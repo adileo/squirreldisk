@@ -276,5 +276,6 @@
   "Linked at {path}, but that folder isn't on your PATH": "{path} にリンクしましたが、そのフォルダは PATH にありません",
   "Scan folders from a terminal, without the window: {command}": "ウィンドウを開かずにターミナルからフォルダをスキャン：{command}",
   "{path} already belongs to another program": "{path} は既に別のプログラムが使用しています",
-  "Couldn't install the command: {error}": "コマンドをインストールできませんでした：{error}"
+  "Couldn't install the command: {error}": "コマンドをインストールできませんでした：{error}",
+  "Not available in development builds": "開発ビルドでは利用できません"
 }

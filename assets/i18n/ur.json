@@ -276,5 +276,6 @@
   "Linked at {path}, but that folder isn't on your PATH": "{path} پر لنک ہو گیا، لیکن وہ فولڈر آپ کے PATH میں نہیں ہے",
   "Scan folders from a terminal, without the window: {command}": "ونڈو کے بغیر ٹرمینل سے فولڈرز اسکین کریں: {command}",
   "{path} already belongs to another program": "{path} پہلے سے کسی اور پروگرام کا ہے",
-  "Couldn't install the command: {error}": "کمانڈ انسٹال نہیں ہو سکی: {error}"
+  "Couldn't install the command: {error}": "کمانڈ انسٹال نہیں ہو سکی: {error}",
+  "Not available in development builds": "ڈیولپمنٹ بلڈز میں دستیاب نہیں"
 }

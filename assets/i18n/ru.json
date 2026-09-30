@@ -276,5 +276,6 @@
   "Linked at {path}, but that folder isn't on your PATH": "Ссылка создана в {path}, но этой папки нет в PATH",
   "Scan folders from a terminal, without the window: {command}": "Сканируйте папки из терминала, без окна: {command}",
   "{path} already belongs to another program": "{path} уже принадлежит другой программе",
-  "Couldn't install the command: {error}": "Не удалось установить команду: {error}"
+  "Couldn't install the command: {error}": "Не удалось установить команду: {error}",
+  "Not available in development builds": "Недоступно в сборках для разработки"
 }
