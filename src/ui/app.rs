@@ -78,8 +78,10 @@ pub struct Session {
     /// Free bytes on the scanned volume (disk scans only), refreshed periodically.
     pub free_space: u64,
     pub free_at: Instant,
-    /// Nodes whose names have been checked for the fonts they need.
+    /// Nodes whose names have been checked for the fonts they need, and the
+    /// scripts found in them (see [`crate::i18n::scripts_of`]).
     pub names_checked: usize,
+    pub name_scripts: u32,
 }
 
 impl Session {
@@ -127,6 +129,7 @@ impl Session {
             free_space: 0,
             free_at: Instant::now() - Duration::from_secs(60),
             names_checked: 0,
+            name_scripts: 0,
         }
     }
 
@@ -328,6 +331,25 @@ pub struct App {
     pub font_scripts: u32,
 }
 
+/// The system font for `code`'s script. Fonts still installed are reused
+/// rather than read again from disk (installs happen on the UI thread, e.g.
+/// each time a scan meets a new script); the cache holds weak references so
+/// a font is freed once no installed font set uses it.
+fn system_font_data(code: &str) -> Option<Arc<FontData>> {
+    static CACHE: Mutex<Vec<(String, std::sync::Weak<FontData>)>> = Mutex::new(Vec::new());
+    let mut cache = CACHE.lock().unwrap();
+    cache.retain(|(_, w)| w.strong_count() > 0);
+    if let Some(fd) = cache.iter().find(|(c, _)| c == code).and_then(|(_, w)| w.upgrade()) {
+        return Some(fd);
+    }
+    let (bytes, index) = crate::i18n::system_font(code)?;
+    let mut fd = FontData::from_owned(bytes);
+    fd.index = index;
+    let fd = Arc::new(fd);
+    cache.push((code.to_string(), Arc::downgrade(&fd)));
+    Some(fd)
+}
+
 /// Installs the bundled fonts plus, for non-Latin languages, a system font
 /// that covers the script (loaded at runtime to keep the app small). The
 /// scripts used by file names get a font too, whatever the UI language.
@@ -348,11 +370,9 @@ pub fn install_fonts(ctx: &egui::Context, lang: &str, all_scripts: bool) {
     }
     let mut script_names: Vec<String> = Vec::new();
     for (k, code) in codes.iter().enumerate() {
-        if let Some((bytes, index)) = crate::i18n::system_font(code) {
-            let mut fd = FontData::from_owned(bytes);
-            fd.index = index;
+        if let Some(fd) = system_font_data(code) {
             let name = format!("system-script-{k}");
-            fonts.font_data.insert(name.clone(), Arc::new(fd));
+            fonts.font_data.insert(name.clone(), fd);
             script_names.push(name);
         }
     }
@@ -530,21 +550,20 @@ impl App {
     /// File and volume names can be in any script: loads fonts for the ones
     /// they use, else e.g. Chinese folder names show as boxes in English.
     fn fonts_for_names(&mut self, ctx: &egui::Context) {
-        for v in &self.volumes {
-            crate::i18n::note_scripts(&v.name);
-        }
+        use crate::i18n::scripts_of;
+        let mut scripts = self.volumes.iter().fold(0, |bits, v| bits | scripts_of(&v.name));
         for s in self.sessions.iter_mut() {
             let t = s.tree.read().unwrap();
-            crate::i18n::note_scripts(&t.root_path);
             // nodes are only ever appended: each name is checked once
-            for n in t.nodes.get(s.names_checked..).unwrap_or_default() {
-                crate::i18n::note_scripts(&n.name);
-            }
+            let new = t.nodes.get(s.names_checked..).unwrap_or_default();
+            s.name_scripts = new.iter().fold(s.name_scripts | scripts_of(&t.root_path), |bits, n| bits | scripts_of(&n.name));
             s.names_checked = t.nodes.len();
+            scripts |= s.name_scripts;
         }
-        let scripts = crate::i18n::name_scripts();
+        // recomputed from what is open, so closing a session frees its fonts
         if scripts != self.font_scripts {
             self.font_scripts = scripts;
+            crate::i18n::set_name_scripts(scripts);
             install_fonts(ctx, crate::i18n::current(), self.lang_picker);
             ctx.request_repaint(); // the new fonts apply from the next frame
         }

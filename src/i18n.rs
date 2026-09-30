@@ -45,22 +45,23 @@ impl Script {
     }
 }
 
-/// Scripts used by file and volume names, one [`Script::bit`] each.
+/// Scripts used by the file and volume names on screen, one [`Script::bit`]
+/// each. Set by the UI from the open sessions, read by the font installer.
 static NAME_SCRIPTS: AtomicU32 = AtomicU32::new(0);
 
-/// Notes the scripts `name` is written in. Names can be in any language,
-/// whatever the UI language, and each script needs its own font.
-pub fn note_scripts(name: &str) {
+/// The scripts `name` is written in, as [`Script::bit`]s. Names can be in any
+/// language, whatever the UI language, and each script needs its own font.
+pub fn scripts_of(name: &str) -> u32 {
     if name.is_ascii() {
-        return;
+        return 0;
     }
-    let bits = name.chars().filter_map(Script::of).fold(0, |bits, s| bits | s.bit());
-    if bits != 0 {
-        NAME_SCRIPTS.fetch_or(bits, Ordering::Relaxed);
-    }
+    name.chars().filter_map(Script::of).fold(0, |bits, s| bits | s.bit())
 }
 
-/// The scripts noted so far by [`note_scripts`] (the set only grows).
+pub fn set_name_scripts(bits: u32) {
+    NAME_SCRIPTS.store(bits, Ordering::Relaxed);
+}
+
 pub fn name_scripts() -> u32 {
     NAME_SCRIPTS.load(Ordering::Relaxed)
 }
@@ -364,7 +365,8 @@ mod tests {
         assert_eq!(Script::of('ع'), Some(Script::Arabic));
         assert_eq!(Script::of('é'), None);
         assert_eq!(Script::of('Ж'), None);
-        note_scripts("照片（2024）");
-        assert_ne!(name_scripts() & Script::Cjk.bit(), 0);
+        assert_eq!(scripts_of("照片（2024）"), Script::Cjk.bit());
+        assert_eq!(scripts_of("사진 ภาพ"), Script::Hangul.bit() | Script::Thai.bit());
+        assert_eq!(scripts_of("Photos été"), 0);
     }
 }
