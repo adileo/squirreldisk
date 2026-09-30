@@ -1,4 +1,13 @@
-## SquirrelDisk 2.4
+## SquirrelDisk 2.5
+
+- **Scan from the terminal.** `squirreldisk <folder>` opens SquirrelDisk on that folder, and `squirreldisk scan <folder>` prints the biggest items without opening a window: as a tree (`--depth`, `--top`) or as JSON (`--json`) for your scripts. The Windows installer adds the command for you; on macOS and Linux SquirrelDisk sets it up on first launch when it can, or from Settings → Command-line tool.
+- **"Scan with SquirrelDisk" on any folder.** Turn on Settings → Folder menu and right-click a folder: in Finder's Quick Actions on macOS, in Explorer on Windows (under "Show more options" on Windows 11), and in Dolphin, Nemo, Nautilus or "Open with" on Linux. It's off unless you turn it on.
+- **Chinese, Japanese, Korean, Thai, Arabic and Indian file names** now show whatever the app's language, instead of empty boxes. Thanks @ryerwera!
+- The window opens centred on the screen you're using, at a comfortable size.
+- The update button now hangs from the top of the window, on every screen.
+- Fixed: Hindi, Bengali, Tamil and Telugu text on recent Windows 11 builds; a crash in the background with some non-Latin folder names.
+
+### From 2.4
 
 - **Portable mode (Windows and Linux).** Create a folder named `portable` next to the `.exe`, the `.AppImage` or the `squirreldisk` binary, and SquirrelDisk keeps everything there: settings, the rclone it installs and your cloud accounts. Perfect for a USB stick. You can also pick any folder with the `SQUIRRELDISK_CONFIG_DIR` environment variable, on every platform.
 
