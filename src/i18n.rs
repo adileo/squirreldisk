@@ -6,6 +6,7 @@
 //! Placeholders use `{name}` and are filled by [`trf`].
 
 use std::collections::HashMap;
+use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::RwLock;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -20,6 +21,48 @@ pub enum Script {
     Tamil,
     Telugu,
     Thai,
+}
+
+impl Script {
+    /// The script of `c`, among the ones the bundled fonts don't cover.
+    fn of(c: char) -> Option<Script> {
+        Some(match c {
+            '\u{0600}'..='\u{06FF}' | '\u{0750}'..='\u{077F}' | '\u{08A0}'..='\u{08FF}' | '\u{FB50}'..='\u{FDFF}' | '\u{FE70}'..='\u{FEFC}' => Script::Arabic,
+            '\u{0900}'..='\u{097F}' | '\u{A8E0}'..='\u{A8FF}' => Script::Devanagari,
+            '\u{0980}'..='\u{09FF}' => Script::Bengali,
+            '\u{0B80}'..='\u{0BFF}' => Script::Tamil,
+            '\u{0C00}'..='\u{0C7F}' => Script::Telugu,
+            '\u{0E00}'..='\u{0E7F}' => Script::Thai,
+            '\u{1100}'..='\u{11FF}' | '\u{3130}'..='\u{318F}' | '\u{A960}'..='\u{A97F}' | '\u{AC00}'..='\u{D7FF}' => Script::Hangul,
+            // ideographs, kana, bopomofo, CJK punctuation and full-width forms
+            '\u{2E80}'..='\u{2FDF}' | '\u{3000}'..='\u{9FFF}' | '\u{F900}'..='\u{FAFF}' | '\u{FE30}'..='\u{FE4F}' | '\u{FF00}'..='\u{FFEF}' | '\u{20000}'..='\u{3FFFF}' => Script::Cjk,
+            _ => return None,
+        })
+    }
+
+    pub fn bit(self) -> u32 {
+        1 << self as u32
+    }
+}
+
+/// Scripts used by file and volume names, one [`Script::bit`] each.
+static NAME_SCRIPTS: AtomicU32 = AtomicU32::new(0);
+
+/// Notes the scripts `name` is written in. Names can be in any language,
+/// whatever the UI language, and each script needs its own font.
+pub fn note_scripts(name: &str) {
+    if name.is_ascii() {
+        return;
+    }
+    let bits = name.chars().filter_map(Script::of).fold(0, |bits, s| bits | s.bit());
+    if bits != 0 {
+        NAME_SCRIPTS.fetch_or(bits, Ordering::Relaxed);
+    }
+}
+
+/// The scripts noted so far by [`note_scripts`] (the set only grows).
+pub fn name_scripts() -> u32 {
+    NAME_SCRIPTS.load(Ordering::Relaxed)
 }
 
 pub struct Lang {
@@ -309,5 +352,19 @@ mod tests {
     fn fallback_is_english() {
         assert_eq!(resolve("xx"), "en");
         assert_eq!(lang("it").native, "Italiano");
+    }
+
+    #[test]
+    fn scripts_of_names() {
+        assert_eq!(Script::of('照'), Some(Script::Cjk));
+        assert_eq!(Script::of('の'), Some(Script::Cjk));
+        assert_eq!(Script::of('（'), Some(Script::Cjk));
+        assert_eq!(Script::of('한'), Some(Script::Hangul));
+        assert_eq!(Script::of('ก'), Some(Script::Thai));
+        assert_eq!(Script::of('ع'), Some(Script::Arabic));
+        assert_eq!(Script::of('é'), None);
+        assert_eq!(Script::of('Ж'), None);
+        note_scripts("照片（2024）");
+        assert_ne!(name_scripts() & Script::Cjk.bit(), 0);
     }
 }
