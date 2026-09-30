@@ -112,7 +112,8 @@ const MARKERS: &[(&str, Interest)] = &[
 fn classify(name: &str) -> Option<Interest> {
     for (m, i) in MARKERS {
         let hit = match m.strip_prefix('*') {
-            Some(suffix) => name.len() > suffix.len() && name[name.len() - suffix.len()..].eq_ignore_ascii_case(suffix),
+            // compare bytes: the cut may fall inside a multi-byte character
+            Some(suffix) => name.len() > suffix.len() && name.as_bytes()[name.len() - suffix.len()..].eq_ignore_ascii_case(suffix.as_bytes()),
             None => name.eq_ignore_ascii_case(m),
         };
         if hit {
@@ -167,5 +168,7 @@ mod tests {
         let got = infer(&t);
         assert_eq!(got, vec![Interest::Developer]); // nested counted once, Steam too small
         assert_eq!(classify("Library.photoslibrary"), Some(Interest::Creator));
+        assert_eq!(classify("เอกสาร"), None); // used to panic: not a char boundary
+        assert_eq!(classify("写真.photoslibrary"), Some(Interest::Creator));
     }
 }
