@@ -1,7 +1,11 @@
 <!--
   Per-user MSI (no admin rights needed; lets the built-in updater replace the exe).
   Build (WiX 5):  wix build packaging/windows/squirreldisk.wxs -arch x64
-                  -d Version=2.0.1 -d ExePath=target\release\squirreldisk.exe -o SquirrelDisk-Windows.msi
+                  -d Version=2.0.1 -d ExePath=target\release\squirreldisk.exe
+                  -d ComPath=squirreldisk.com -o SquirrelDisk-Windows.msi
+  ComPath is the headless build (without the "gui" feature), a console
+  program: typed in a terminal, `squirreldisk` finds it first and it runs the
+  .exe with the terminal attached (see console_shim in src/main.rs).
 -->
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
   <Package Name="SquirrelDisk"
@@ -27,6 +31,19 @@
             <RemoveFolder Id="RemoveInstallFolder" On="uninstall" />
             <RemoveFolder Id="RemoveProgramsFolder" Directory="ProgramsFolder" On="uninstall" />
           </Component>
+          <!-- The `squirreldisk` command: the console shim, and this folder on the user's PATH -->
+          <Component Id="CommandLine" Guid="b7e4a1c2-6d3f-4f8a-9e25-1c0d8b3f6a47">
+            <File Id="SquirrelDiskCom" Name="squirreldisk.com" Source="$(ComPath)" />
+            <Environment Id="UserPath" Name="PATH" Value="[INSTALLFOLDER]" Part="last" Action="set" System="no" Permanent="no" />
+            <RegistryValue Root="HKCU" Key="Software\SquirrelDisk" Name="CommandLine" Type="integer" Value="1" KeyPath="yes" />
+          </Component>
+          <!-- "Scan with SquirrelDisk", added by the app when turned on in Settings -->
+          <Component Id="FolderMenuCleanup" Guid="4f2c9d81-3a6e-4b17-8d50-7e9a2c1b5f63">
+            <RemoveRegistryKey Id="RemoveDirMenu" Root="HKCU" Key="Software\Classes\Directory\shell\SquirrelDisk" Action="removeOnUninstall" />
+            <RemoveRegistryKey Id="RemoveDirBgMenu" Root="HKCU" Key="Software\Classes\Directory\Background\shell\SquirrelDisk" Action="removeOnUninstall" />
+            <RemoveRegistryKey Id="RemoveDriveMenu" Root="HKCU" Key="Software\Classes\Drive\shell\SquirrelDisk" Action="removeOnUninstall" />
+            <RegistryValue Root="HKCU" Key="Software\SquirrelDisk" Name="FolderMenuCleanup" Type="integer" Value="1" KeyPath="yes" />
+          </Component>
         </Directory>
       </Directory>
     </StandardDirectory>
@@ -42,6 +59,8 @@
     <Feature Id="Main" Title="SquirrelDisk">
       <ComponentRef Id="MainExecutable" />
       <ComponentRef Id="StartMenuShortcut" />
+      <ComponentRef Id="CommandLine" />
+      <ComponentRef Id="FolderMenuCleanup" />
     </Feature>
 
     <!-- Offer to start the app at the end of the install -->

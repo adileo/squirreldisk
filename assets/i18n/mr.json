@@ -261,5 +261,21 @@
   "Key file": "की फाइल",
   "Vendor": "विक्रेता",
   "Email": "ईमेल",
-  "Provider": "प्रदाता"
+  "Provider": "प्रदाता",
+  "Scan with SquirrelDisk": "SquirrelDisk ने स्कॅन करा",
+  "Folder menu": "फोल्डर मेनू",
+  "Command-line tool": "कमांड-लाइन टूल",
+  "Install": "इन्स्टॉल करा",
+  "Installing…": "इन्स्टॉल होत आहे…",
+  "Move SquirrelDisk to Applications first": "आधी SquirrelDisk Applications मध्ये हलवा",
+  "Comes with the installer (the .msi)": "इन्स्टॉलरसोबत (.msi) येते",
+  "Adds “Scan with SquirrelDisk” to Quick Actions when you right-click a folder in Finder": "Finder मध्ये फोल्डरवर राइट-क्लिक केल्यावर Quick Actions मध्ये “SquirrelDisk ने स्कॅन करा” जोडते",
+  "Adds “Scan with SquirrelDisk” when you right-click a folder (under “Show more options” on Windows 11)": "फोल्डरवर राइट-क्लिक केल्यावर “SquirrelDisk ने स्कॅन करा” जोडते (Windows 11 मध्ये “अधिक पर्याय दाखवा” खाली)",
+  "Adds “Scan with SquirrelDisk” to your file manager, or to its “Open with” menu": "तुमच्या फाइल मॅनेजरमध्ये किंवा त्याच्या “यासह उघडा” मेनूमध्ये “SquirrelDisk ने स्कॅन करा” जोडते",
+  "Type {command} in a terminal": "टर्मिनलमध्ये {command} टाइप करा",
+  "Linked at {path}, but that folder isn't on your PATH": "{path} येथे लिंक केले, पण ते फोल्डर तुमच्या PATH मध्ये नाही",
+  "Scan folders from a terminal, without the window: {command}": "विंडोशिवाय टर्मिनलमधून फोल्डर स्कॅन करा: {command}",
+  "{path} already belongs to another program": "{path} आधीच दुसऱ्या प्रोग्रामचे आहे",
+  "Couldn't install the command: {error}": "कमांड इन्स्टॉल करता आली नाही: {error}",
+  "Not available in development builds": "डेव्हलपमेंट बिल्डमध्ये उपलब्ध नाही"
 }

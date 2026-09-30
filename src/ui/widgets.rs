@@ -103,6 +103,12 @@ pub fn button(ui: &mut Ui, rect: Rect, id: Id, label: &str, icon: Option<Icon>, 
 
 #[allow(clippy::too_many_arguments)]
 pub fn button_ex(ui: &mut Ui, rect: Rect, id: Id, label: &str, icon: Option<Icon>, style: BtnStyle, theme: &Theme, enabled: bool) -> Response {
+    button_shaped(ui, rect, id, label, icon, style, theme, enabled, cr(7.0))
+}
+
+/// [`button_ex`] with custom corners (e.g. square top corners for a ribbon).
+#[allow(clippy::too_many_arguments)]
+pub fn button_shaped(ui: &mut Ui, rect: Rect, id: Id, label: &str, icon: Option<Icon>, style: BtnStyle, theme: &Theme, enabled: bool, radius: CornerRadius) -> Response {
     let sense = if enabled { Sense::click() } else { Sense::hover() };
     let resp = ui.interact(rect, id, sense);
     let ctx = ui.ctx();
@@ -113,7 +119,6 @@ pub fn button_ex(ui: &mut Ui, rect: Rect, id: Id, label: &str, icon: Option<Icon
     }
     let painter = ui.painter();
     let r = rect.shrink(p * 0.6);
-    let radius = 7.0;
     let (fill, text) = match style {
         BtnStyle::Primary => (lerp_color(theme.accent, lighten(theme.accent, 0.08), h), Color32::WHITE),
         BtnStyle::Danger => (lerp_color(theme.danger, lighten(theme.danger, 0.08), h), Color32::WHITE),
@@ -124,11 +129,11 @@ pub fn button_ex(ui: &mut Ui, rect: Rect, id: Id, label: &str, icon: Option<Icon
     if matches!(style, BtnStyle::Primary | BtnStyle::Danger) && enabled {
         let glow_c = with_alpha(Color32::BLACK, 0.18);
         let s = Shadow { offset: [0, 1], blur: 3, spread: 0, color: glow_c };
-        painter.add(s.as_shape(r, cr(radius)));
+        painter.add(s.as_shape(r, radius));
     }
-    painter.rect_filled(r, cr(radius), fill);
+    painter.rect_filled(r, radius, fill);
     if matches!(style, BtnStyle::Subtle | BtnStyle::Ghost) {
-        painter.rect_stroke(r, cr(radius), Stroke::new(1.0, with_alpha(theme.stroke, 0.6 + 0.4 * h)), StrokeKind::Inside);
+        painter.rect_stroke(r, radius, Stroke::new(1.0, with_alpha(theme.stroke, 0.6 + 0.4 * h)), StrokeKind::Inside);
     }
     let icon_w = if icon.is_some() { 16.0 + if label.is_empty() { 0.0 } else { 6.0 } } else { 0.0 };
     // Fit long (translated) labels: shrink the font a little, then truncate.

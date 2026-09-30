@@ -261,5 +261,21 @@
   "Key file": "Sleutelbestand",
   "Vendor": "Leverancier",
   "Email": "E-mail",
-  "Provider": "Provider"
+  "Provider": "Provider",
+  "Scan with SquirrelDisk": "Scannen met SquirrelDisk",
+  "Folder menu": "Mapmenu",
+  "Command-line tool": "Opdrachtregelprogramma",
+  "Install": "Installeren",
+  "Installing…": "Installeren…",
+  "Move SquirrelDisk to Applications first": "Zet SquirrelDisk eerst in Apps",
+  "Comes with the installer (the .msi)": "Wordt meegeleverd met het installatieprogramma (de .msi)",
+  "Adds “Scan with SquirrelDisk” to Quick Actions when you right-click a folder in Finder": "Voegt ‘Scannen met SquirrelDisk’ toe aan Snelle acties als je in de Finder met rechts op een map klikt",
+  "Adds “Scan with SquirrelDisk” when you right-click a folder (under “Show more options” on Windows 11)": "Voegt ‘Scannen met SquirrelDisk’ toe aan rechtsklikken op een map (onder ‘Meer opties weergeven’ in Windows 11)",
+  "Adds “Scan with SquirrelDisk” to your file manager, or to its “Open with” menu": "Voegt ‘Scannen met SquirrelDisk’ toe aan je bestandsbeheerder, of aan het menu ‘Openen met’",
+  "Type {command} in a terminal": "Typ {command} in een terminal",
+  "Linked at {path}, but that folder isn't on your PATH": "Gekoppeld in {path}, maar die map staat niet in je PATH",
+  "Scan folders from a terminal, without the window: {command}": "Scan mappen vanuit een terminal, zonder venster: {command}",
+  "{path} already belongs to another program": "{path} is al van een ander programma",
+  "Couldn't install the command: {error}": "Kan de opdracht niet installeren: {error}",
+  "Not available in development builds": "Niet beschikbaar in ontwikkelbuilds"
 }

@@ -261,5 +261,21 @@
   "Key file": "Файл ключа",
   "Vendor": "Виробник",
   "Email": "Ел. пошта",
-  "Provider": "Провайдер"
+  "Provider": "Провайдер",
+  "Scan with SquirrelDisk": "Сканувати в SquirrelDisk",
+  "Folder menu": "Меню тек",
+  "Command-line tool": "Інструмент командного рядка",
+  "Install": "Встановити",
+  "Installing…": "Встановлення…",
+  "Move SquirrelDisk to Applications first": "Спершу перемістіть SquirrelDisk у «Програми»",
+  "Comes with the installer (the .msi)": "Постачається з інсталятором (файл .msi)",
+  "Adds “Scan with SquirrelDisk” to Quick Actions when you right-click a folder in Finder": "Додає «Сканувати в SquirrelDisk» до «Швидких дій» при клацанні правою кнопкою по теці у Finder",
+  "Adds “Scan with SquirrelDisk” when you right-click a folder (under “Show more options” on Windows 11)": "Додає «Сканувати в SquirrelDisk» у меню правої кнопки для тек (у «Показати додаткові параметри» у Windows 11)",
+  "Adds “Scan with SquirrelDisk” to your file manager, or to its “Open with” menu": "Додає «Сканувати в SquirrelDisk» у файловий менеджер або в його меню «Відкрити за допомогою»",
+  "Type {command} in a terminal": "Введіть {command} у терміналі",
+  "Linked at {path}, but that folder isn't on your PATH": "Посилання створено в {path}, але цієї теки немає в PATH",
+  "Scan folders from a terminal, without the window: {command}": "Скануйте теки з термінала, без вікна: {command}",
+  "{path} already belongs to another program": "{path} уже належить іншій програмі",
+  "Couldn't install the command: {error}": "Не вдалося встановити команду: {error}",
+  "Not available in development builds": "Недоступно у збірках для розробки"
 }

@@ -68,6 +68,10 @@ pub struct Settings {
     pub personalized_sponsors: bool,
     /// Send anonymous daily view totals / count clicks.
     pub sponsor_measurement: bool,
+    /// "Scan with SquirrelDisk" in the file manager's menu for folders.
+    pub folder_menu: bool,
+    /// The `squirreldisk` command was set up (or tried) at first launch.
+    pub cli_offered: bool,
 }
 
 impl Default for Settings {
@@ -89,6 +93,8 @@ impl Default for Settings {
             skipped_version: None,
             personalized_sponsors: true,
             sponsor_measurement: true,
+            folder_menu: false,
+            cli_offered: false,
         }
     }
 }

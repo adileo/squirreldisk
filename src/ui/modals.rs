@@ -12,6 +12,7 @@ use crate::update::State as UpState;
 use eframe::egui::{self, Align2, Color32, Id, Pos2, Rect, Sense, Shape, Stroke, Ui, Vec2};
 use std::f32::consts::TAU;
 use std::sync::atomic::Ordering;
+use std::sync::{Arc, Mutex};
 use std::time::Instant;
 
 thread_local! {
@@ -288,6 +289,52 @@ impl App {
                 widgets::stepper(ui, sr, Id::new("rings"), &mut s.rings, 3, 9, &theme);
                 y += 50.0;
 
+                // system integration: the folder menu and the terminal command
+                let folder_menu = if cfg!(target_os = "macos") {
+                    tr("Adds “Scan with SquirrelDisk” to Quick Actions when you right-click a folder in Finder")
+                } else if cfg!(windows) {
+                    tr("Adds “Scan with SquirrelDisk” when you right-click a folder (under “Show more options” on Windows 11)")
+                } else {
+                    tr("Adds “Scan with SquirrelDisk” to your file manager, or to its “Open with” menu")
+                };
+                let p = ui.painter();
+                p.text(Pos2::new(x0, y + 12.0), Align2::LEFT_CENTER, tr("Folder menu"), bold(13.5), theme.text);
+                let sub = widgets::truncate(p, folder_menu, &font(11.5), w - 60.0);
+                p.text(Pos2::new(x0, y + 30.0), Align2::LEFT_CENTER, sub, font(11.5), theme.text_dim);
+                let tgl = Rect::from_center_size(Pos2::new(x0 + w - 22.0, y + 22.0), Vec2::new(44.0, 26.0));
+                widgets::toggle(ui, tgl, Id::new("set-folder-menu"), &mut s.folder_menu, &theme);
+                y += 46.0;
+
+                use super::integration::Cli;
+                let status = super::integration::cli_status();
+                let installing = self.cli_job.is_some();
+                let sub = match &status {
+                    Cli::Installed(link) if !cfg!(target_os = "linux") || super::integration::cli_on_path(link) => trf("Type {command} in a terminal", &[("command", &"squirreldisk scan <folder>")]),
+                    Cli::Installed(link) => trf("Linked at {path}, but that folder isn't on your PATH", &[("path", &link.display())]),
+                    Cli::Missing(_) => trf("Scan folders from a terminal, without the window: {command}", &[("command", &"squirreldisk scan <folder>")]),
+                    Cli::Taken(link) => trf("{path} already belongs to another program", &[("path", &link.display())]),
+                    Cli::Unavailable(why) => why.clone(),
+                };
+                let p = ui.painter();
+                p.text(Pos2::new(x0, y + 12.0), Align2::LEFT_CENTER, tr("Command-line tool"), bold(13.5), theme.text);
+                let room = if matches!(status, Cli::Missing(_)) { w - 130.0 } else { w };
+                let sub = widgets::truncate(p, &sub, &font(11.5), room);
+                p.text(Pos2::new(x0, y + 30.0), Align2::LEFT_CENTER, sub, font(11.5), theme.text_dim);
+                if matches!(status, Cli::Missing(_)) {
+                    let b = Rect::from_min_size(Pos2::new(x0 + w - 116.0, y + 6.0), Vec2::new(116.0, 32.0));
+                    let label = if installing { tr("Installing…") } else { tr("Install") };
+                    if widgets::button_ex(ui, b, Id::new("cli-install"), label, None, BtnStyle::Subtle, &theme, !installing).clicked() {
+                        let job = Arc::new(Mutex::new(None));
+                        let (slot, ctx) = (job.clone(), ui.ctx().clone());
+                        std::thread::spawn(move || {
+                            *slot.lock().unwrap() = Some(super::integration::install_cli(false));
+                            ctx.request_repaint();
+                        });
+                        self.cli_job = Some(job);
+                    }
+                }
+                y += 50.0;
+
                 end_y = y - top + 16.0;
             });
             content_h = end_y;
@@ -412,6 +459,18 @@ impl App {
             s.theme = n.clone();
             self.theme = super::theme::by_name(&n);
             self.sfx(Sfx::Blip);
+        }
+        if s.folder_menu != self.settings.folder_menu {
+            if let Err(e) = super::integration::set_folder_menu(s.folder_menu) {
+                s.folder_menu = self.settings.folder_menu;
+                self.toasts.push(e, self.theme.danger);
+            }
+        }
+        if let Some(Some(done)) = self.cli_job.as_ref().map(|j| j.lock().unwrap().take()) {
+            self.cli_job = None;
+            if let Err(e) = done {
+                self.toasts.push(trf("Couldn't install the command: {error}", &[("error", &e)]), self.theme.danger);
+            }
         }
         if !s.personalized_sponsors && self.settings.personalized_sponsors {
             self.sponsors.forget_interests();

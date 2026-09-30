@@ -261,5 +261,21 @@
   "Key file": "Fichier de clé",
   "Vendor": "Éditeur",
   "Email": "E-mail",
-  "Provider": "Fournisseur"
+  "Provider": "Fournisseur",
+  "Scan with SquirrelDisk": "Analyser avec SquirrelDisk",
+  "Folder menu": "Menu des dossiers",
+  "Command-line tool": "Outil en ligne de commande",
+  "Install": "Installer",
+  "Installing…": "Installation…",
+  "Move SquirrelDisk to Applications first": "Déplacez d'abord SquirrelDisk dans Applications",
+  "Comes with the installer (the .msi)": "Fourni avec le programme d'installation (le .msi)",
+  "Adds “Scan with SquirrelDisk” to Quick Actions when you right-click a folder in Finder": "Ajoute « Analyser avec SquirrelDisk » aux Actions rapides quand vous faites un clic droit sur un dossier dans le Finder",
+  "Adds “Scan with SquirrelDisk” when you right-click a folder (under “Show more options” on Windows 11)": "Ajoute « Analyser avec SquirrelDisk » au clic droit sur un dossier (dans « Afficher d'autres options » sous Windows 11)",
+  "Adds “Scan with SquirrelDisk” to your file manager, or to its “Open with” menu": "Ajoute « Analyser avec SquirrelDisk » à votre gestionnaire de fichiers, ou à son menu « Ouvrir avec »",
+  "Type {command} in a terminal": "Tapez {command} dans un terminal",
+  "Linked at {path}, but that folder isn't on your PATH": "Lien créé dans {path}, mais ce dossier n'est pas dans votre PATH",
+  "Scan folders from a terminal, without the window: {command}": "Analysez des dossiers depuis un terminal, sans fenêtre : {command}",
+  "{path} already belongs to another program": "{path} appartient déjà à un autre programme",
+  "Couldn't install the command: {error}": "Impossible d'installer la commande : {error}",
+  "Not available in development builds": "Indisponible dans les versions de développement"
 }

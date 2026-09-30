@@ -261,5 +261,21 @@
   "Key file": "کلید فائل",
   "Vendor": "وینڈر",
   "Email": "ای میل",
-  "Provider": "فراہم کنندہ"
+  "Provider": "فراہم کنندہ",
+  "Scan with SquirrelDisk": "SquirrelDisk سے اسکین کریں",
+  "Folder menu": "فولڈر مینو",
+  "Command-line tool": "کمانڈ لائن ٹول",
+  "Install": "انسٹال کریں",
+  "Installing…": "انسٹال ہو رہا ہے…",
+  "Move SquirrelDisk to Applications first": "پہلے SquirrelDisk کو Applications میں منتقل کریں",
+  "Comes with the installer (the .msi)": "انسٹالر (‎.msi) کے ساتھ آتا ہے",
+  "Adds “Scan with SquirrelDisk” to Quick Actions when you right-click a folder in Finder": "Finder میں فولڈر پر رائٹ کلک کرنے پر Quick Actions میں ”SquirrelDisk سے اسکین کریں“ شامل کرتا ہے",
+  "Adds “Scan with SquirrelDisk” when you right-click a folder (under “Show more options” on Windows 11)": "فولڈر پر رائٹ کلک کرنے پر ”SquirrelDisk سے اسکین کریں“ شامل کرتا ہے (Windows 11 میں ”مزید اختیارات دکھائیں“ کے تحت)",
+  "Adds “Scan with SquirrelDisk” to your file manager, or to its “Open with” menu": "آپ کے فائل مینیجر یا اس کے ”اس کے ساتھ کھولیں“ مینو میں ”SquirrelDisk سے اسکین کریں“ شامل کرتا ہے",
+  "Type {command} in a terminal": "ٹرمینل میں {command} لکھیں",
+  "Linked at {path}, but that folder isn't on your PATH": "{path} پر لنک ہو گیا، لیکن وہ فولڈر آپ کے PATH میں نہیں ہے",
+  "Scan folders from a terminal, without the window: {command}": "ونڈو کے بغیر ٹرمینل سے فولڈرز اسکین کریں: {command}",
+  "{path} already belongs to another program": "{path} پہلے سے کسی اور پروگرام کا ہے",
+  "Couldn't install the command: {error}": "کمانڈ انسٹال نہیں ہو سکی: {error}",
+  "Not available in development builds": "ڈیولپمنٹ بلڈز میں دستیاب نہیں"
 }

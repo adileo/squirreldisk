@@ -329,6 +329,12 @@ pub struct App {
     pub marks: std::collections::HashMap<String, Rect>,
     /// Scripts of file names that the installed fonts cover.
     pub font_scripts: u32,
+    /// Frames spent placing the window on the screen (done at 255).
+    pub placing: u8,
+    /// Folder to scan once the window is up (`squirreldisk <folder>`).
+    pub open_at_start: Option<PathBuf>,
+    /// Installing the `squirreldisk` command from Settings: the outcome.
+    pub cli_job: Option<Arc<Mutex<Option<Result<(), String>>>>>,
 }
 
 /// The system font for `code`'s script. Fonts still installed are reused
@@ -422,6 +428,18 @@ impl App {
         if settings.auto_update && !scan::demo::enabled() {
             updater.check(cc.egui_ctx.clone());
         }
+        // system hooks: keep the folder menu pointing at this copy of the
+        // app, and set up the `squirreldisk` command once
+        if !scan::demo::enabled() {
+            if settings.folder_menu {
+                let _ = super::integration::set_folder_menu(true);
+            }
+            if !settings.cli_offered {
+                settings.cli_offered = true;
+                settings.save();
+                super::integration::install_cli_first_launch();
+            }
+        }
         App {
             themes: theme::all(),
             theme,
@@ -462,6 +480,9 @@ impl App {
             dock: DockState::default(),
             director: super::director::Director::from_env(),
             marks: Default::default(),
+            open_at_start: None,
+            cli_job: None,
+            placing: if std::env::var("SQD_WINDOW").is_ok() { u8::MAX } else { 0 },
             font_scripts: 0,
             chrome: if cfg!(target_os = "macos") { (15.0, 68.0) } else { (22.0, 0.0) },
             settings,
@@ -566,6 +587,44 @@ impl App {
             crate::i18n::set_name_scripts(scripts);
             install_fonts(ctx, crate::i18n::current(), self.lang_picker);
             ctx.request_repaint(); // the new fonts apply from the next frame
+        }
+    }
+
+    /// Opens the window centred on the screen the user is working on and
+    /// sized to it (see [`super::placement`]). The screen is only known once
+    /// the window exists, hence here, on the first frames.
+    fn place_window(&mut self, ctx: &egui::Context, frame: &eframe::Frame) {
+        use super::placement::{fit, on_active_screen, Placed};
+        if self.placing == u8::MAX {
+            return;
+        }
+        self.placing = self.placing.saturating_add(1);
+        ctx.request_repaint();
+        match on_active_screen(frame) {
+            Placed::Done => self.placing = u8::MAX,
+            Placed::Again if self.placing < 5 => {}
+            _ => {
+                // fallback: the screen egui reports (the primary one, where
+                // `centered` opened the window), in points
+                let (monitor, inner, outer) = ctx.input(|i| (i.viewport().monitor_size, i.viewport().inner_rect, i.viewport().outer_rect));
+                let (Some(monitor), Some(inner), Some(outer)) = (monitor, inner, outer) else {
+                    // not reported yet: try again for a few frames, then keep the default
+                    if self.placing > 30 {
+                        self.placing = u8::MAX;
+                    }
+                    return;
+                };
+                self.placing = u8::MAX;
+                if monitor.x < 1.0 || monitor.y < 1.0 {
+                    return;
+                }
+                let (w, h) = fit((monitor.x as f64, monitor.y as f64), 1.0);
+                let size = egui::vec2(w as f32, h as f32);
+                let frame = outer.size() - inner.size(); // title bar and borders
+                let pos = ((monitor - size - frame) / 2.0).max(egui::Vec2::ZERO);
+                ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize(size));
+                ctx.send_viewport_cmd(egui::ViewportCommand::OuterPosition(pos.to_pos2()));
+            }
         }
     }
 
@@ -798,6 +857,14 @@ impl eframe::App for App {
             self.chrome = c;
         }
         let _ = &frame;
+        self.place_window(&ctx, frame);
+        if let Some(folder) = self.open_at_start.take() {
+            let mount = folder.to_string_lossy();
+            match self.volumes.iter().find(|v| v.mount == mount).cloned() {
+                Some(v) => self.start_session(Target::Volume(v)),
+                None => self.start_session(Target::Folder(folder)),
+            }
+        }
         let now = Instant::now();
         self.dt = now.duration_since(self.last_frame).as_secs_f32().clamp(0.001, 0.1);
         self.last_frame = now;

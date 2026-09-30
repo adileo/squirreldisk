@@ -261,5 +261,21 @@
   "Key file": "ملف المفتاح",
   "Vendor": "المورّد",
   "Email": "البريد الإلكتروني",
-  "Provider": "مزوّد الخدمة"
+  "Provider": "مزوّد الخدمة",
+  "Scan with SquirrelDisk": "الفحص باستخدام SquirrelDisk",
+  "Folder menu": "قائمة المجلدات",
+  "Command-line tool": "أداة سطر الأوامر",
+  "Install": "تثبيت",
+  "Installing…": "جارٍ التثبيت…",
+  "Move SquirrelDisk to Applications first": "انقل SquirrelDisk إلى التطبيقات أولاً",
+  "Comes with the installer (the .msi)": "يأتي مع برنامج التثبيت (ملف ‎.msi)",
+  "Adds “Scan with SquirrelDisk” to Quick Actions when you right-click a folder in Finder": "يضيف ”الفحص باستخدام SquirrelDisk“ إلى الإجراءات السريعة عند النقر بزر الماوس الأيمن على مجلد في Finder",
+  "Adds “Scan with SquirrelDisk” when you right-click a folder (under “Show more options” on Windows 11)": "يضيف ”الفحص باستخدام SquirrelDisk“ عند النقر بزر الماوس الأيمن على مجلد (ضمن ”إظهار المزيد من الخيارات“ في Windows 11)",
+  "Adds “Scan with SquirrelDisk” to your file manager, or to its “Open with” menu": "يضيف ”الفحص باستخدام SquirrelDisk“ إلى مدير الملفات، أو إلى قائمة ”فتح باستخدام“",
+  "Type {command} in a terminal": "اكتب {command} في الطرفية",
+  "Linked at {path}, but that folder isn't on your PATH": "تم الربط في {path}، لكن هذا المجلد ليس ضمن PATH",
+  "Scan folders from a terminal, without the window: {command}": "افحص المجلدات من الطرفية دون نافذة: {command}",
+  "{path} already belongs to another program": "{path} يخص برنامجًا آخر بالفعل",
+  "Couldn't install the command: {error}": "تعذّر تثبيت الأمر: {error}",
+  "Not available in development builds": "غير متاح في إصدارات التطوير"
 }

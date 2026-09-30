@@ -261,5 +261,21 @@
   "Key file": "Tệp khóa",
   "Vendor": "Nhà sản xuất",
   "Email": "Email",
-  "Provider": "Nhà cung cấp"
+  "Provider": "Nhà cung cấp",
+  "Scan with SquirrelDisk": "Quét bằng SquirrelDisk",
+  "Folder menu": "Menu thư mục",
+  "Command-line tool": "Công cụ dòng lệnh",
+  "Install": "Cài đặt",
+  "Installing…": "Đang cài đặt…",
+  "Move SquirrelDisk to Applications first": "Hãy chuyển SquirrelDisk vào Ứng dụng trước",
+  "Comes with the installer (the .msi)": "Đi kèm trình cài đặt (tệp .msi)",
+  "Adds “Scan with SquirrelDisk” to Quick Actions when you right-click a folder in Finder": "Thêm “Quét bằng SquirrelDisk” vào Tác vụ nhanh khi bạn bấm chuột phải vào thư mục trong Finder",
+  "Adds “Scan with SquirrelDisk” when you right-click a folder (under “Show more options” on Windows 11)": "Thêm “Quét bằng SquirrelDisk” khi bấm chuột phải vào thư mục (trong “Hiển thị thêm tùy chọn” trên Windows 11)",
+  "Adds “Scan with SquirrelDisk” to your file manager, or to its “Open with” menu": "Thêm “Quét bằng SquirrelDisk” vào trình quản lý tệp, hoặc vào menu “Mở bằng”",
+  "Type {command} in a terminal": "Gõ {command} trong terminal",
+  "Linked at {path}, but that folder isn't on your PATH": "Đã liên kết tại {path}, nhưng thư mục đó không có trong PATH",
+  "Scan folders from a terminal, without the window: {command}": "Quét thư mục từ terminal, không cần cửa sổ: {command}",
+  "{path} already belongs to another program": "{path} đã thuộc về một chương trình khác",
+  "Couldn't install the command: {error}": "Không thể cài đặt lệnh: {error}",
+  "Not available in development builds": "Không khả dụng trong bản dựng phát triển"
 }

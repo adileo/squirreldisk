@@ -22,3 +22,23 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libasound2-dev libxkbcommon-dev libwayland-dev libx11-dev
       - run: cargo test --release
       - run: cargo build --release --no-default-features
+      # Windows: the `squirreldisk` command goes through squirreldisk.com, a
+      # console shim that runs the GUI exe with the terminal's handles; check
+      # its output does come through, and that the installer still builds.
+      - if: runner.os == 'Windows'
+        name: Command line shim and installer
+        shell: pwsh
+        run: |
+          cargo build --release
+          cargo build --release --no-default-features --target-dir target-cli
+          New-Item -ItemType Directory dist | Out-Null
+          Copy-Item target\release\squirreldisk.exe dist\
+          Copy-Item target-cli\release\squirreldisk.exe dist\squirreldisk.com
+          $out = & dist\squirreldisk.com scan src -n 3 | Out-String
+          Write-Output $out
+          if ($LASTEXITCODE -ne 0 -or $out -notmatch 'ui/') { throw "squirreldisk.com scan printed nothing useful" }
+          if ($out.Contains('\?')) { throw "verbatim \?\ path in the output" }
+          $v = & dist\squirreldisk.com --version | Out-String
+          if ($v -notmatch 'squirreldisk \d') { throw "squirreldisk.com --version printed '$v'" }
+          dotnet tool install --global wix --version 5.0.2
+          wix build packaging/windows/squirreldisk.wxs -arch x64 -d Version=0.0.1 -d ExePath=dist\squirreldisk.exe -d ComPath=dist\squirreldisk.com -o test.msi

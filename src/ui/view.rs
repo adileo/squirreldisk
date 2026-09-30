@@ -188,7 +188,7 @@ impl App {
         let rs = Rect::from_center_size(Pos2::new(gear.left() - 18.0, cy), Vec2::splat(nav));
         // an update is downloaded and waiting: offer the restart here too
         if matches!(self.updater.state(), crate::update::State::Ready(_)) {
-            self.update_pill(ui, Pos2::new(rs.left() - 10.0, cy));
+            self.update_pill(ui, bar, rs.left() - 10.0);
         }
         if widgets::icon_button(ui, rs, Id::new("rescan"), if scanning { Icon::Close } else { Icon::Refresh }, &theme, true).clicked() {
             if scanning {

@@ -261,5 +261,21 @@
   "Key file": "密钥文件",
   "Vendor": "厂商",
   "Email": "邮箱",
-  "Provider": "服务商"
+  "Provider": "服务商",
+  "Scan with SquirrelDisk": "用 SquirrelDisk 扫描",
+  "Folder menu": "文件夹菜单",
+  "Command-line tool": "命令行工具",
+  "Install": "安装",
+  "Installing…": "正在安装…",
+  "Move SquirrelDisk to Applications first": "请先将 SquirrelDisk 移到“应用程序”文件夹",
+  "Comes with the installer (the .msi)": "随安装程序（.msi）提供",
+  "Adds “Scan with SquirrelDisk” to Quick Actions when you right-click a folder in Finder": "在访达中右键点按文件夹时，在“快速操作”中添加“用 SquirrelDisk 扫描”",
+  "Adds “Scan with SquirrelDisk” when you right-click a folder (under “Show more options” on Windows 11)": "右键点击文件夹时添加“用 SquirrelDisk 扫描”（Windows 11 中位于“显示更多选项”下）",
+  "Adds “Scan with SquirrelDisk” to your file manager, or to its “Open with” menu": "在文件管理器或其“打开方式”菜单中添加“用 SquirrelDisk 扫描”",
+  "Type {command} in a terminal": "在终端中输入 {command}",
+  "Linked at {path}, but that folder isn't on your PATH": "已链接到 {path}，但该文件夹不在 PATH 中",
+  "Scan folders from a terminal, without the window: {command}": "在终端中扫描文件夹，无需打开窗口：{command}",
+  "{path} already belongs to another program": "{path} 已被其他程序占用",
+  "Couldn't install the command: {error}": "无法安装命令：{error}",
+  "Not available in development builds": "开发版本中不可用"
 }

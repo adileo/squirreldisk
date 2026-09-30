@@ -261,5 +261,21 @@
   "Key file": "কী ফাইল",
   "Vendor": "বিক্রেতা",
   "Email": "ইমেল",
-  "Provider": "প্রদানকারী"
+  "Provider": "প্রদানকারী",
+  "Scan with SquirrelDisk": "SquirrelDisk দিয়ে স্ক্যান করুন",
+  "Folder menu": "ফোল্ডার মেনু",
+  "Command-line tool": "কমান্ড-লাইন টুল",
+  "Install": "ইনস্টল করুন",
+  "Installing…": "ইনস্টল হচ্ছে…",
+  "Move SquirrelDisk to Applications first": "আগে SquirrelDisk-কে Applications-এ সরান",
+  "Comes with the installer (the .msi)": "ইনস্টলারের (.msi) সঙ্গে আসে",
+  "Adds “Scan with SquirrelDisk” to Quick Actions when you right-click a folder in Finder": "Finder-এ ফোল্ডারে রাইট-ক্লিক করলে Quick Actions-এ “SquirrelDisk দিয়ে স্ক্যান করুন” যোগ করে",
+  "Adds “Scan with SquirrelDisk” when you right-click a folder (under “Show more options” on Windows 11)": "ফোল্ডারে রাইট-ক্লিক করলে “SquirrelDisk দিয়ে স্ক্যান করুন” যোগ করে (Windows 11-এ “আরও বিকল্প দেখান”-এর নিচে)",
+  "Adds “Scan with SquirrelDisk” to your file manager, or to its “Open with” menu": "আপনার ফাইল ম্যানেজারে বা তার “এর মাধ্যমে খুলুন” মেনুতে “SquirrelDisk দিয়ে স্ক্যান করুন” যোগ করে",
+  "Type {command} in a terminal": "টার্মিনালে {command} লিখুন",
+  "Linked at {path}, but that folder isn't on your PATH": "{path}-এ লিঙ্ক করা হয়েছে, কিন্তু ফোল্ডারটি আপনার PATH-এ নেই",
+  "Scan folders from a terminal, without the window: {command}": "উইন্ডো ছাড়াই টার্মিনাল থেকে ফোল্ডার স্ক্যান করুন: {command}",
+  "{path} already belongs to another program": "{path} ইতিমধ্যে অন্য একটি প্রোগ্রামের",
+  "Couldn't install the command: {error}": "কমান্ড ইনস্টল করা যায়নি: {error}",
+  "Not available in development builds": "ডেভেলপমেন্ট বিল্ডে উপলব্ধ নয়"
 }

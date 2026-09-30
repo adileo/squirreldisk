@@ -261,5 +261,21 @@
   "Key file": "Anahtar dosyası",
   "Vendor": "Satıcı",
   "Email": "E-posta",
-  "Provider": "Sağlayıcı"
+  "Provider": "Sağlayıcı",
+  "Scan with SquirrelDisk": "SquirrelDisk ile tara",
+  "Folder menu": "Klasör menüsü",
+  "Command-line tool": "Komut satırı aracı",
+  "Install": "Yükle",
+  "Installing…": "Yükleniyor…",
+  "Move SquirrelDisk to Applications first": "Önce SquirrelDisk'i Uygulamalar'a taşıyın",
+  "Comes with the installer (the .msi)": "Yükleyiciyle birlikte gelir (.msi)",
+  "Adds “Scan with SquirrelDisk” to Quick Actions when you right-click a folder in Finder": "Finder'da bir klasöre sağ tıkladığınızda Hızlı Eylemler'e “SquirrelDisk ile tara” ekler",
+  "Adds “Scan with SquirrelDisk” when you right-click a folder (under “Show more options” on Windows 11)": "Bir klasöre sağ tıkladığınızda “SquirrelDisk ile tara” ekler (Windows 11'de “Daha fazla seçenek göster” altında)",
+  "Adds “Scan with SquirrelDisk” to your file manager, or to its “Open with” menu": "Dosya yöneticinize veya “Birlikte aç” menüsüne “SquirrelDisk ile tara” ekler",
+  "Type {command} in a terminal": "Bir terminalde {command} yazın",
+  "Linked at {path}, but that folder isn't on your PATH": "{path} konumuna bağlandı, ancak bu klasör PATH'inizde değil",
+  "Scan folders from a terminal, without the window: {command}": "Klasörleri terminalden, pencere olmadan tarayın: {command}",
+  "{path} already belongs to another program": "{path} zaten başka bir programa ait",
+  "Couldn't install the command: {error}": "Komut yüklenemedi: {error}",
+  "Not available in development builds": "Geliştirme sürümlerinde kullanılamaz"
 }

@@ -60,7 +60,7 @@ impl App {
         if widgets::icon_button(ui, gear, Id::new("settings"), Icon::Gear, &theme, true).clicked() {
             self.open_modal(Modal::Settings);
         }
-        self.update_pill(ui, Pos2::new(gear.left() - 12.0, gear.center().y));
+        self.update_pill(ui, screen, gear.right());
         y += 92.0;
 
         // --- disks
@@ -152,9 +152,12 @@ impl App {
         }
     }
 
-    pub fn update_pill(&mut self, ui: &mut Ui, right_center: Pos2) {
+    /// The update button, as a ribbon hanging from the top edge of the
+    /// window: it slides down when it appears. `right` is its right edge.
+    pub fn update_pill(&mut self, ui: &mut Ui, screen: Rect, right: f32) {
         let theme = self.theme.clone();
         let state = self.updater.state();
+        let id = Id::new("update-pill");
         let (label, style, icon) = match &state {
             UpState::Available(r) => (trf("Update to {version}", &[("version", &r.version)]), BtnStyle::Primary, Icon::Download),
             UpState::Downloading => {
@@ -163,11 +166,16 @@ impl App {
                 (trf("Downloading {percent}%", &[("percent", &(d * 100 / tot))]), BtnStyle::Subtle, Icon::Download)
             }
             UpState::Ready(_) => (tr("Restart to update").to_string(), BtnStyle::Primary, Icon::Refresh),
-            _ => return,
+            _ => {
+                ui.ctx().animate_bool_with_time(id.with("in"), false, 0.0);
+                return;
+            }
         };
-        let w = ui.painter().layout_no_wrap(label.clone(), bold(13.0), Color32::WHITE).size().x + 50.0;
-        let rect = Rect::from_min_size(Pos2::new(right_center.x - w, right_center.y - 16.0), Vec2::new(w, 32.0));
-        if widgets::button(ui, rect, Id::new("update-pill"), &label, Some(icon), style, &theme).clicked() {
+        let shown = super::sunburst::ease(ui.ctx().animate_bool_with_time(id.with("in"), true, 0.45));
+        let (w, h) = (ui.painter().layout_no_wrap(label.clone(), bold(13.0), Color32::WHITE).size().x + 50.0, 30.0);
+        let rect = Rect::from_min_size(Pos2::new(right - w, screen.top() - h * (1.0 - shown)), Vec2::new(w, h));
+        let corners = egui::CornerRadius { nw: 0, ne: 0, sw: 9, se: 9 };
+        if widgets::button_shaped(ui, rect, id, &label, Some(icon), style, &theme, true, corners).clicked() {
             match state {
                 UpState::Available(r) => self.updater.install(r, ui.ctx().clone()),
                 UpState::Ready(_) => crate::update::restart(),
