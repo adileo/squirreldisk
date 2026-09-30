@@ -64,7 +64,7 @@ fn main() {
     // Anything else opens the app, scanning the folder given if any (from a
     // terminal, the file manager's menu or `open --args`; macOS may add a
     // `-psn_…` argument, hence skipping flags).
-    let folder = args.iter().find(|a| !a.starts_with('-')).map(|a| std::fs::canonicalize(a).unwrap_or_else(|_| a.into()));
+    let folder = args.iter().find(|a| !a.starts_with('-')).map(|a| cli::absolute(std::path::Path::new(a)));
     if let Some(f) = folder.as_ref().filter(|f| !f.is_dir()) {
         eprintln!("squirreldisk: {}: not a folder\n\n{}", f.display(), cli::USAGE);
         std::process::exit(2);

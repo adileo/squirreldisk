@@ -25,6 +25,21 @@ Options for scan:
   squirreldisk --help
 ";
 
+/// `path` made absolute, links resolved. On Windows without the `\\?\`
+/// prefix `canonicalize` adds, which would show up in names and paths.
+pub fn absolute(path: &std::path::Path) -> PathBuf {
+    let p = std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
+    #[cfg(windows)]
+    if let Some(rest) = p.to_str().and_then(|s| s.strip_prefix(r"\\?\")) {
+        // `\\?\C:\…` becomes `C:\…`; `\\?\UNC\server\share` becomes `\\server\share`
+        return match rest.strip_prefix(r"UNC\") {
+            Some(unc) => PathBuf::from(format!(r"\\{unc}")),
+            None => PathBuf::from(rest),
+        };
+    }
+    p
+}
+
 /// True for the arguments this module handles (the rest opens the app).
 pub fn handles(args: &[String]) -> bool {
     matches!(args.first().map(|s| s.as_str()), Some("scan" | "help" | "--help" | "-h" | "--version" | "-V"))
@@ -81,7 +96,7 @@ impl Options {
 }
 
 fn scan(o: Options) -> i32 {
-    let path = std::fs::canonicalize(&o.path).unwrap_or_else(|_| o.path.clone());
+    let path = absolute(&o.path);
     if !path.is_dir() {
         eprintln!("squirreldisk: {}: not a folder", o.path.display());
         return 1;
@@ -130,6 +145,9 @@ fn shown(tree: &Tree, id: u32, top: usize) -> (Vec<u32>, usize, u64) {
 
 fn label(tree: &Tree, id: u32) -> String {
     let n = tree.get(id);
+    if n.kind == Kind::SmallFiles {
+        return format!("({} smaller files)", fmt_count(n.files as u64));
+    }
     let mut s = n.name.to_string();
     if matches!(n.kind, Kind::Dir | Kind::Mount) {
         s.push('/');

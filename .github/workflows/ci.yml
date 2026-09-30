@@ -37,6 +37,7 @@ jobs:
           $out = & dist\squirreldisk.com scan src -n 3 | Out-String
           Write-Output $out
           if ($LASTEXITCODE -ne 0 -or $out -notmatch 'ui/') { throw "squirreldisk.com scan printed nothing useful" }
+          if ($out.Contains('\?')) { throw "verbatim \?\ path in the output" }
           $v = & dist\squirreldisk.com --version | Out-String
           if ($v -notmatch 'squirreldisk \d') { throw "squirreldisk.com --version printed '$v'" }
           dotnet tool install --global wix --version 5.0.2
