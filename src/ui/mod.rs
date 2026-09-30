@@ -3,6 +3,7 @@ pub mod cloud;
 pub mod fx;
 pub mod home;
 pub mod modals;
+pub mod placement;
 pub mod shader;
 pub mod sunburst;
 pub mod theme;

@@ -84,7 +84,8 @@ fn run_gui() {
     if cfg!(target_os = "macos") {
         viewport = viewport.with_fullsize_content_view(true).with_titlebar_shown(false).with_title_shown(false);
     }
-    let options = eframe::NativeOptions { viewport, multisampling: 0, ..Default::default() };
+    // centred at the default size; the app then sizes it to the screen
+    let options = eframe::NativeOptions { viewport, multisampling: 0, centered: true, ..Default::default() };
     if let Err(e) = eframe::run_native("SquirrelDisk", options, Box::new(|cc| Ok(Box::new(ui::app::App::new(cc))))) {
         eprintln!("SquirrelDisk failed to start: {e}");
         std::process::exit(1);
