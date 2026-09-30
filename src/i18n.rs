@@ -268,7 +268,7 @@ pub fn system_font(code: &str) -> Option<(Vec<u8>, u32)> {
         (_, true, Script::Cjk) => &["C:\\Windows\\Fonts\\msyh.ttc", "C:\\Windows\\Fonts\\simsun.ttc"],
         (_, true, Script::Hangul) => &["C:\\Windows\\Fonts\\malgun.ttf", "C:\\Windows\\Fonts\\gulim.ttc"],
         (_, true, Script::Arabic) => &["C:\\Windows\\Fonts\\segoeui.ttf", "C:\\Windows\\Fonts\\tahoma.ttf"],
-        (_, true, Script::Devanagari | Script::Bengali | Script::Tamil | Script::Telugu) => &["C:\\Windows\\Fonts\\Nirmala.ttf", "C:\\Windows\\Fonts\\NirmalaUI.ttf"],
+        (_, true, Script::Devanagari | Script::Bengali | Script::Tamil | Script::Telugu) => &["C:\\Windows\\Fonts\\Nirmala.ttf", "C:\\Windows\\Fonts\\NirmalaUI.ttf", "C:\\Windows\\Fonts\\Nirmala.ttc"],
         (_, true, Script::Thai) => &["C:\\Windows\\Fonts\\leelawui.ttf", "C:\\Windows\\Fonts\\tahoma.ttf"],
         _ => &[],
     };
