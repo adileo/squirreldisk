@@ -65,12 +65,15 @@ jobs:
       - run: cargo test --release
       - run: cargo build --release
       - run: copy target\release\squirreldisk.exe squirreldisk-x86_64-pc-windows-msvc.exe
+      # the headless build, a console program: the `squirreldisk` command (see console_shim)
+      - run: cargo build --release --no-default-features --target-dir target-cli
+      - run: copy target-cli\release\squirreldisk.exe squirreldisk.com
       - name: Build MSI installer
         shell: pwsh
         run: |
           dotnet tool install --global wix --version 5.0.2
           $version = (Select-String -Path Cargo.toml -Pattern '^version = "(.+)"').Matches[0].Groups[1].Value
-          wix build packaging/windows/squirreldisk.wxs -arch x64 -d Version=$version -d ExePath=target\release\squirreldisk.exe -o SquirrelDisk-Windows.msi
+          wix build packaging/windows/squirreldisk.wxs -arch x64 -d Version=$version -d ExePath=target\release\squirreldisk.exe -d ComPath=squirreldisk.com -o SquirrelDisk-Windows.msi
       - name: Check the embedded icon
         shell: pwsh
         run: |
