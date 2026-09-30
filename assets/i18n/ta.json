@@ -261,5 +261,20 @@
   "Key file": "விசைக் கோப்பு",
   "Vendor": "விற்பனையாளர்",
   "Email": "மின்னஞ்சல்",
-  "Provider": "வழங்குநர்"
+  "Provider": "வழங்குநர்",
+  "Scan with SquirrelDisk": "SquirrelDisk மூலம் ஸ்கேன் செய்",
+  "Folder menu": "கோப்புறை மெனு",
+  "Command-line tool": "கட்டளை வரி கருவி",
+  "Install": "நிறுவு",
+  "Installing…": "நிறுவுகிறது…",
+  "Move SquirrelDisk to Applications first": "முதலில் SquirrelDisk-ஐ Applications-க்கு நகர்த்தவும்",
+  "Comes with the installer (the .msi)": "நிறுவியுடன் (.msi) வருகிறது",
+  "Adds “Scan with SquirrelDisk” to Quick Actions when you right-click a folder in Finder": "Finder-இல் கோப்புறையை வலது கிளிக் செய்யும்போது Quick Actions-இல் “SquirrelDisk மூலம் ஸ்கேன் செய்” சேர்க்கும்",
+  "Adds “Scan with SquirrelDisk” when you right-click a folder (under “Show more options” on Windows 11)": "கோப்புறையை வலது கிளிக் செய்யும்போது “SquirrelDisk மூலம் ஸ்கேன் செய்” சேர்க்கும் (Windows 11-இல் “கூடுதல் விருப்பங்களைக் காட்டு” கீழ்)",
+  "Adds “Scan with SquirrelDisk” to your file manager, or to its “Open with” menu": "உங்கள் கோப்பு மேலாளரில் அல்லது அதன் “இதனுடன் திற” மெனுவில் “SquirrelDisk மூலம் ஸ்கேன் செய்” சேர்க்கும்",
+  "Type {command} in a terminal": "டெர்மினலில் {command} என தட்டச்சு செய்யவும்",
+  "Linked at {path}, but that folder isn't on your PATH": "{path}-இல் இணைக்கப்பட்டது, ஆனால் அந்தக் கோப்புறை உங்கள் PATH-இல் இல்லை",
+  "Scan folders from a terminal, without the window: {command}": "சாளரம் இல்லாமல் டெர்மினலில் இருந்து கோப்புறைகளை ஸ்கேன் செய்: {command}",
+  "{path} already belongs to another program": "{path} ஏற்கனவே வேறொரு நிரலுக்குச் சொந்தமானது",
+  "Couldn't install the command: {error}": "கட்டளையை நிறுவ முடியவில்லை: {error}"
 }

@@ -261,5 +261,20 @@
   "Key file": "キーファイル",
   "Vendor": "ベンダー",
   "Email": "メールアドレス",
-  "Provider": "プロバイダー"
+  "Provider": "プロバイダー",
+  "Scan with SquirrelDisk": "SquirrelDisk でスキャン",
+  "Folder menu": "フォルダメニュー",
+  "Command-line tool": "コマンドラインツール",
+  "Install": "インストール",
+  "Installing…": "インストール中…",
+  "Move SquirrelDisk to Applications first": "まず SquirrelDisk を「アプリケーション」に移動してください",
+  "Comes with the installer (the .msi)": "インストーラ（.msi）に含まれています",
+  "Adds “Scan with SquirrelDisk” to Quick Actions when you right-click a folder in Finder": "Finder でフォルダを右クリックしたときのクイックアクションに「SquirrelDisk でスキャン」を追加します",
+  "Adds “Scan with SquirrelDisk” when you right-click a folder (under “Show more options” on Windows 11)": "フォルダの右クリックメニューに「SquirrelDisk でスキャン」を追加します（Windows 11 では「その他のオプションを確認」内）",
+  "Adds “Scan with SquirrelDisk” to your file manager, or to its “Open with” menu": "ファイルマネージャー、またはその「このアプリケーションで開く」メニューに「SquirrelDisk でスキャン」を追加します",
+  "Type {command} in a terminal": "ターミナルで {command} と入力します",
+  "Linked at {path}, but that folder isn't on your PATH": "{path} にリンクしましたが、そのフォルダは PATH にありません",
+  "Scan folders from a terminal, without the window: {command}": "ウィンドウを開かずにターミナルからフォルダをスキャン：{command}",
+  "{path} already belongs to another program": "{path} は既に別のプログラムが使用しています",
+  "Couldn't install the command: {error}": "コマンドをインストールできませんでした：{error}"
 }

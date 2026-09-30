@@ -98,6 +98,22 @@ To use a specific folder instead, set the `SQUIRRELDISK_CONFIG_DIR` environment 
 
 **Servers and cloud storage too.** Scan any machine you can reach over SSH, or S3 buckets, Google Drive, Dropbox, FTP and many more cloud services through [rclone](https://rclone.org). No rclone yet? SquirrelDisk installs it with one click, and you can add, edit and remove your cloud accounts right from the app.
 
+**Right from your folders.** Turn on "Folder menu" in Settings and right-clicking a folder offers "Scan with SquirrelDisk": in Finder's Quick Actions on macOS, in Explorer on Windows (under "Show more options" on Windows 11), and in Dolphin, Nemo, Nautilus (Scripts) or any file manager's "Open with" on Linux.
+
+**From the terminal too.** `squirreldisk <folder>` opens the app on that folder, and `squirreldisk scan <folder>` prints the biggest items without opening a window, as a tree (`--depth`, `--top`) or as JSON (`--json`) for scripts. The Windows installer puts the command on your PATH; on macOS and Linux SquirrelDisk sets it up on first launch when it can, or from Settings → Command-line tool.
+
+```
+$ squirreldisk scan ~/Projects --depth 2 --top 3
+/Users/me/Projects  48.2 GB · 912,044 files · 3.1s
+
+  21.4 GB   44%  squirreldisk/
+  19.8 GB   41%  ├─ target/
+   1.2 GB    2%  ├─ node_modules/
+   402 MB    1%  └─ … 38 more
+  12.0 GB   25%  website/
+  …
+```
+
 **Light on your machine.** The app is about 8 MB, starts instantly, and maps millions of files with a small amount of memory. It runs smoothly on older computers too.
 
 **Speaks your language.** SquirrelDisk is available in 25 languages, including English, 简体中文, हिन्दी, Español, Français, العربية, Português, Русский, Deutsch, 日本語, 한국어 and Italiano. It picks your system language automatically, and you can change it in Settings.

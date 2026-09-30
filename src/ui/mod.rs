@@ -2,6 +2,7 @@ pub mod app;
 pub mod cloud;
 pub mod fx;
 pub mod home;
+pub mod integration;
 pub mod modals;
 pub mod placement;
 pub mod shader;

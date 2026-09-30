@@ -261,5 +261,20 @@
   "Key file": "키 파일",
   "Vendor": "벤더",
   "Email": "이메일",
-  "Provider": "제공업체"
+  "Provider": "제공업체",
+  "Scan with SquirrelDisk": "SquirrelDisk로 스캔",
+  "Folder menu": "폴더 메뉴",
+  "Command-line tool": "명령줄 도구",
+  "Install": "설치",
+  "Installing…": "설치 중…",
+  "Move SquirrelDisk to Applications first": "먼저 SquirrelDisk를 응용 프로그램 폴더로 옮기세요",
+  "Comes with the installer (the .msi)": "설치 프로그램(.msi)에 포함되어 있습니다",
+  "Adds “Scan with SquirrelDisk” to Quick Actions when you right-click a folder in Finder": "Finder에서 폴더를 오른쪽 클릭할 때 빠른 동작에 “SquirrelDisk로 스캔”을(를) 추가합니다",
+  "Adds “Scan with SquirrelDisk” when you right-click a folder (under “Show more options” on Windows 11)": "폴더를 오른쪽 클릭할 때 “SquirrelDisk로 스캔”을(를) 추가합니다(Windows 11에서는 “추가 옵션 표시” 아래)",
+  "Adds “Scan with SquirrelDisk” to your file manager, or to its “Open with” menu": "파일 관리자 또는 “다음으로 열기” 메뉴에 “SquirrelDisk로 스캔”을(를) 추가합니다",
+  "Type {command} in a terminal": "터미널에 {command}을(를) 입력하세요",
+  "Linked at {path}, but that folder isn't on your PATH": "{path}에 연결했지만 해당 폴더가 PATH에 없습니다",
+  "Scan folders from a terminal, without the window: {command}": "창 없이 터미널에서 폴더 스캔: {command}",
+  "{path} already belongs to another program": "{path}은(는) 이미 다른 프로그램이 사용 중입니다",
+  "Couldn't install the command: {error}": "명령을 설치하지 못했습니다: {error}"
 }

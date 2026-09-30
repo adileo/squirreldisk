@@ -261,5 +261,20 @@
   "Key file": "ไฟล์คีย์",
   "Vendor": "ผู้จำหน่าย",
   "Email": "อีเมล",
-  "Provider": "ผู้ให้บริการ"
+  "Provider": "ผู้ให้บริการ",
+  "Scan with SquirrelDisk": "สแกนด้วย SquirrelDisk",
+  "Folder menu": "เมนูโฟลเดอร์",
+  "Command-line tool": "เครื่องมือบรรทัดคำสั่ง",
+  "Install": "ติดตั้ง",
+  "Installing…": "กำลังติดตั้ง…",
+  "Move SquirrelDisk to Applications first": "ย้าย SquirrelDisk ไปไว้ในแอปพลิเคชันก่อน",
+  "Comes with the installer (the .msi)": "มาพร้อมกับตัวติดตั้ง (.msi)",
+  "Adds “Scan with SquirrelDisk” to Quick Actions when you right-click a folder in Finder": "เพิ่ม “สแกนด้วย SquirrelDisk” ในการทำงานด่วนเมื่อคลิกขวาที่โฟลเดอร์ใน Finder",
+  "Adds “Scan with SquirrelDisk” when you right-click a folder (under “Show more options” on Windows 11)": "เพิ่ม “สแกนด้วย SquirrelDisk” เมื่อคลิกขวาที่โฟลเดอร์ (ใน “แสดงตัวเลือกเพิ่มเติม” บน Windows 11)",
+  "Adds “Scan with SquirrelDisk” to your file manager, or to its “Open with” menu": "เพิ่ม “สแกนด้วย SquirrelDisk” ในตัวจัดการไฟล์ หรือในเมนู “เปิดด้วย”",
+  "Type {command} in a terminal": "พิมพ์ {command} ในเทอร์มินัล",
+  "Linked at {path}, but that folder isn't on your PATH": "ลิงก์ไว้ที่ {path} แต่โฟลเดอร์นั้นไม่อยู่ใน PATH",
+  "Scan folders from a terminal, without the window: {command}": "สแกนโฟลเดอร์จากเทอร์มินัลโดยไม่ต้องเปิดหน้าต่าง: {command}",
+  "{path} already belongs to another program": "{path} เป็นของโปรแกรมอื่นอยู่แล้ว",
+  "Couldn't install the command: {error}": "ติดตั้งคำสั่งไม่ได้: {error}"
 }

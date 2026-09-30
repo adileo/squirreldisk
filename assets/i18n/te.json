@@ -261,5 +261,20 @@
   "Key file": "కీ ఫైల్",
   "Vendor": "విక్రేత",
   "Email": "ఈమెయిల్",
-  "Provider": "ప్రొవైడర్"
+  "Provider": "ప్రొవైడర్",
+  "Scan with SquirrelDisk": "SquirrelDiskతో స్కాన్ చేయండి",
+  "Folder menu": "ఫోల్డర్ మెనూ",
+  "Command-line tool": "కమాండ్-లైన్ టూల్",
+  "Install": "ఇన్‌స్టాల్ చేయండి",
+  "Installing…": "ఇన్‌స్టాల్ అవుతోంది…",
+  "Move SquirrelDisk to Applications first": "ముందుగా SquirrelDiskను Applicationsకు తరలించండి",
+  "Comes with the installer (the .msi)": "ఇన్‌స్టాలర్‌తో (.msi) వస్తుంది",
+  "Adds “Scan with SquirrelDisk” to Quick Actions when you right-click a folder in Finder": "Finderలో ఫోల్డర్‌పై రైట్-క్లిక్ చేసినప్పుడు Quick Actionsలో “SquirrelDiskతో స్కాన్ చేయండి” జోడిస్తుంది",
+  "Adds “Scan with SquirrelDisk” when you right-click a folder (under “Show more options” on Windows 11)": "ఫోల్డర్‌పై రైట్-క్లిక్ చేసినప్పుడు “SquirrelDiskతో స్కాన్ చేయండి” జోడిస్తుంది (Windows 11లో “మరిన్ని ఎంపికలను చూపించు” కింద)",
+  "Adds “Scan with SquirrelDisk” to your file manager, or to its “Open with” menu": "మీ ఫైల్ మేనేజర్‌లో లేదా దాని “దీనితో తెరువు” మెనూలో “SquirrelDiskతో స్కాన్ చేయండి” జోడిస్తుంది",
+  "Type {command} in a terminal": "టెర్మినల్‌లో {command} టైప్ చేయండి",
+  "Linked at {path}, but that folder isn't on your PATH": "{path}లో లింక్ చేయబడింది, కానీ ఆ ఫోల్డర్ మీ PATHలో లేదు",
+  "Scan folders from a terminal, without the window: {command}": "విండో లేకుండా టెర్మినల్ నుండి ఫోల్డర్‌లను స్కాన్ చేయండి: {command}",
+  "{path} already belongs to another program": "{path} ఇప్పటికే మరో ప్రోగ్రామ్‌కు చెందినది",
+  "Couldn't install the command: {error}": "కమాండ్‌ను ఇన్‌స్టాల్ చేయలేకపోయాము: {error}"
 }

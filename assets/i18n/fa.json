@@ -261,5 +261,20 @@
   "Key file": "فایل کلید",
   "Vendor": "سازنده",
   "Email": "ایمیل",
-  "Provider": "ارائه‌دهنده"
+  "Provider": "ارائه‌دهنده",
+  "Scan with SquirrelDisk": "اسکن با SquirrelDisk",
+  "Folder menu": "منوی پوشه",
+  "Command-line tool": "ابزار خط فرمان",
+  "Install": "نصب",
+  "Installing…": "در حال نصب…",
+  "Move SquirrelDisk to Applications first": "ابتدا SquirrelDisk را به Applications منتقل کنید",
+  "Comes with the installer (the .msi)": "همراه نصب‌کننده (فایل ‎.msi) ارائه می‌شود",
+  "Adds “Scan with SquirrelDisk” to Quick Actions when you right-click a folder in Finder": "«اسکن با SquirrelDisk» را هنگام کلیک راست روی پوشه در Finder به Quick Actions اضافه می‌کند",
+  "Adds “Scan with SquirrelDisk” when you right-click a folder (under “Show more options” on Windows 11)": "«اسکن با SquirrelDisk» را هنگام کلیک راست روی پوشه اضافه می‌کند (در Windows 11 زیر «نمایش گزینه‌های بیشتر»)",
+  "Adds “Scan with SquirrelDisk” to your file manager, or to its “Open with” menu": "«اسکن با SquirrelDisk» را به مدیر فایل یا منوی «باز کردن با» اضافه می‌کند",
+  "Type {command} in a terminal": "در ترمینال {command} را بنویسید",
+  "Linked at {path}, but that folder isn't on your PATH": "در {path} پیوند داده شد، اما آن پوشه در PATH شما نیست",
+  "Scan folders from a terminal, without the window: {command}": "اسکن پوشه‌ها از ترمینال، بدون پنجره: {command}",
+  "{path} already belongs to another program": "{path} از قبل متعلق به برنامه دیگری است",
+  "Couldn't install the command: {error}": "نصب فرمان ممکن نشد: {error}"
 }

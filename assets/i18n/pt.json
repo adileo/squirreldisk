@@ -261,5 +261,20 @@
   "Key file": "Arquivo de chave",
   "Vendor": "Fornecedor",
   "Email": "E-mail",
-  "Provider": "Provedor"
+  "Provider": "Provedor",
+  "Scan with SquirrelDisk": "Analisar com o SquirrelDisk",
+  "Folder menu": "Menu de pastas",
+  "Command-line tool": "Ferramenta de linha de comando",
+  "Install": "Instalar",
+  "Installing…": "Instalando…",
+  "Move SquirrelDisk to Applications first": "Mova primeiro o SquirrelDisk para Aplicativos",
+  "Comes with the installer (the .msi)": "Vem com o instalador (o .msi)",
+  "Adds “Scan with SquirrelDisk” to Quick Actions when you right-click a folder in Finder": "Adiciona “Analisar com o SquirrelDisk” às Ações Rápidas ao clicar com o botão direito numa pasta no Finder",
+  "Adds “Scan with SquirrelDisk” when you right-click a folder (under “Show more options” on Windows 11)": "Adiciona “Analisar com o SquirrelDisk” ao clicar com o botão direito numa pasta (em “Mostrar mais opções” no Windows 11)",
+  "Adds “Scan with SquirrelDisk” to your file manager, or to its “Open with” menu": "Adiciona “Analisar com o SquirrelDisk” ao seu gerenciador de arquivos, ou ao menu “Abrir com”",
+  "Type {command} in a terminal": "Digite {command} num terminal",
+  "Linked at {path}, but that folder isn't on your PATH": "Vinculado em {path}, mas essa pasta não está no seu PATH",
+  "Scan folders from a terminal, without the window: {command}": "Analise pastas pelo terminal, sem janela: {command}",
+  "{path} already belongs to another program": "{path} já pertence a outro programa",
+  "Couldn't install the command: {error}": "Não foi possível instalar o comando: {error}"
 }

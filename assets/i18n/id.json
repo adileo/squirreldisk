@@ -261,5 +261,20 @@
   "Key file": "File kunci",
   "Vendor": "Vendor",
   "Email": "Email",
-  "Provider": "Penyedia"
+  "Provider": "Penyedia",
+  "Scan with SquirrelDisk": "Pindai dengan SquirrelDisk",
+  "Folder menu": "Menu folder",
+  "Command-line tool": "Alat baris perintah",
+  "Install": "Instal",
+  "Installing…": "Menginstal…",
+  "Move SquirrelDisk to Applications first": "Pindahkan SquirrelDisk ke Aplikasi terlebih dahulu",
+  "Comes with the installer (the .msi)": "Disertakan dalam penginstal (.msi)",
+  "Adds “Scan with SquirrelDisk” to Quick Actions when you right-click a folder in Finder": "Menambahkan “Pindai dengan SquirrelDisk” ke Tindakan Cepat saat Anda mengeklik kanan folder di Finder",
+  "Adds “Scan with SquirrelDisk” when you right-click a folder (under “Show more options” on Windows 11)": "Menambahkan “Pindai dengan SquirrelDisk” saat Anda mengeklik kanan folder (di “Tampilkan opsi lainnya” pada Windows 11)",
+  "Adds “Scan with SquirrelDisk” to your file manager, or to its “Open with” menu": "Menambahkan “Pindai dengan SquirrelDisk” ke pengelola file, atau ke menu “Buka dengan”",
+  "Type {command} in a terminal": "Ketik {command} di terminal",
+  "Linked at {path}, but that folder isn't on your PATH": "Ditautkan di {path}, tetapi folder itu tidak ada di PATH Anda",
+  "Scan folders from a terminal, without the window: {command}": "Pindai folder dari terminal, tanpa jendela: {command}",
+  "{path} already belongs to another program": "{path} sudah dimiliki program lain",
+  "Couldn't install the command: {error}": "Tidak dapat menginstal perintah: {error}"
 }

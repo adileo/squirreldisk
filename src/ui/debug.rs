@@ -4,7 +4,7 @@
 //! * `SQD_SCAN=<path>`       start scanning a folder at launch
 //! * `SQD_SHOT=<prefix>`     save screenshots as `<prefix>-<n>.bmp`
 //! * `SQD_SHOT_AT=3,8`       seconds after launch at which to shoot
-//! * `SQD_MODAL=settings|ssh|sshauth|rclone|delete` open a modal before shooting
+//! * `SQD_MODAL=settings|settings-end|ssh|sshauth|rclone|delete` open a modal before shooting
 //! * `SQD_COLLECT=2`         collect the N biggest children of the root
 //! * `SQD_QUIT=1`            quit after the last screenshot
 //! * `SQD_UPDATE=available|downloading|ready` fake an update, to see the button
@@ -78,10 +78,14 @@ impl App {
             }
         }
         let Some(prefix) = self.debug.prefix.clone() else { return };
+        if self.debug.modal_done && std::env::var("SQD_MODAL").as_deref() == Ok("settings-end") {
+            self.settings_scroll = f32::MAX; // clamped to the end once the height is known
+        }
         if !self.debug.modal_done && self.time > self.debug.shots.first().copied().unwrap_or(3.0) - 1.0 {
             self.debug.modal_done = true;
             match std::env::var("SQD_MODAL").as_deref() {
                 Ok("settings") => self.open_modal(Modal::Settings),
+                Ok("settings-end") => self.open_modal(Modal::Settings),
                 Ok("languages") => {
                     self.open_modal(Modal::Settings);
                     self.lang_picker = true;
