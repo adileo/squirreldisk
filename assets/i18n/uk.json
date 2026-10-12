@@ -281,5 +281,9 @@
   "{name} (system volume)": "{name} (системний том)",
   "Reserved by the file system": "Зарезервовано файловою системою",
   "Unreadable folders and file system data": "Нечитабельні папки та дані файлової системи",
-  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "Зайняте місце на диску, якого немає у файлах, прочитаних під час сканування. Його не можна відкрити чи видалити звідси."
+  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "Зайняте місце на диску, якого немає у файлах, прочитаних під час сканування. Його не можна відкрити чи видалити звідси.",
+  "WHAT'S NEW": "ЩО НОВОГО",
+  "Later": "Пізніше",
+  "Restart now": "Перезапустити зараз",
+  "Update now": "Оновити зараз"
 }

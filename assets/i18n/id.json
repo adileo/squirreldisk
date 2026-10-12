@@ -281,5 +281,9 @@
   "{name} (system volume)": "{name} (volume sistem)",
   "Reserved by the file system": "Dicadangkan oleh sistem berkas",
   "Unreadable folders and file system data": "Folder yang tidak terbaca dan data sistem berkas",
-  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "Ruang terpakai di disk yang tidak berada dalam berkas yang dapat dibaca pemindaian. Tidak dapat dibuka atau dihapus dari sini."
+  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "Ruang terpakai di disk yang tidak berada dalam berkas yang dapat dibaca pemindaian. Tidak dapat dibuka atau dihapus dari sini.",
+  "WHAT'S NEW": "YANG BARU",
+  "Later": "Nanti",
+  "Restart now": "Mulai ulang sekarang",
+  "Update now": "Perbarui sekarang"
 }

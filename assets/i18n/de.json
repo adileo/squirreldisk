@@ -281,5 +281,9 @@
   "{name} (system volume)": "{name} (Systemvolume)",
   "Reserved by the file system": "Vom Dateisystem reserviert",
   "Unreadable folders and file system data": "Nicht lesbare Ordner und Dateisystemdaten",
-  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "Belegter Speicher auf dem Datenträger, der nicht in Dateien liegt, die der Scan lesen konnte. Er lässt sich von hier aus weder öffnen noch löschen."
+  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "Belegter Speicher auf dem Datenträger, der nicht in Dateien liegt, die der Scan lesen konnte. Er lässt sich von hier aus weder öffnen noch löschen.",
+  "WHAT'S NEW": "NEUIGKEITEN",
+  "Later": "Später",
+  "Restart now": "Jetzt neu starten",
+  "Update now": "Jetzt aktualisieren"
 }

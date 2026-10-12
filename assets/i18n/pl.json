@@ -281,5 +281,9 @@
   "{name} (system volume)": "{name} (wolumin systemowy)",
   "Reserved by the file system": "Zarezerwowane przez system plików",
   "Unreadable folders and file system data": "Nieczytelne foldery i dane systemu plików",
-  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "Zajęte miejsce na dysku, które nie znajduje się w plikach odczytanych podczas skanowania. Nie można go stąd otworzyć ani usunąć."
+  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "Zajęte miejsce na dysku, które nie znajduje się w plikach odczytanych podczas skanowania. Nie można go stąd otworzyć ani usunąć.",
+  "WHAT'S NEW": "CO NOWEGO",
+  "Later": "Później",
+  "Restart now": "Uruchom ponownie teraz",
+  "Update now": "Zaktualizuj teraz"
 }

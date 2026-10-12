@@ -281,5 +281,9 @@
   "{name} (system volume)": "{name}(시스템 볼륨)",
   "Reserved by the file system": "파일 시스템 예약 공간",
   "Unreadable folders and file system data": "읽을 수 없는 폴더 및 파일 시스템 데이터",
-  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "디스크에서 사용 중이지만 스캔이 읽을 수 있었던 파일에는 들어 있지 않은 공간입니다. 여기에서 열거나 삭제할 수 없습니다."
+  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "디스크에서 사용 중이지만 스캔이 읽을 수 있었던 파일에는 들어 있지 않은 공간입니다. 여기에서 열거나 삭제할 수 없습니다.",
+  "WHAT'S NEW": "새로운 기능",
+  "Later": "나중에",
+  "Restart now": "지금 다시 시작",
+  "Update now": "지금 업데이트"
 }

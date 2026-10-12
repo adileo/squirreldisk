@@ -281,5 +281,9 @@
   "{name} (system volume)": "{name} (volume do sistema)",
   "Reserved by the file system": "Reservado pelo sistema de arquivos",
   "Unreadable folders and file system data": "Pastas ilegíveis e dados do sistema de arquivos",
-  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "Espaço em uso no disco que não está em arquivos que a análise conseguiu ler. Não pode ser aberto nem excluído daqui."
+  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "Espaço em uso no disco que não está em arquivos que a análise conseguiu ler. Não pode ser aberto nem excluído daqui.",
+  "WHAT'S NEW": "NOVIDADES",
+  "Later": "Mais tarde",
+  "Restart now": "Reiniciar agora",
+  "Update now": "Atualizar agora"
 }

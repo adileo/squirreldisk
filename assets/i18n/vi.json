@@ -281,5 +281,9 @@
   "{name} (system volume)": "{name} (ổ đĩa hệ thống)",
   "Reserved by the file system": "Được hệ thống tệp dành riêng",
   "Unreadable folders and file system data": "Thư mục không đọc được và dữ liệu hệ thống tệp",
-  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "Dung lượng đang dùng trên ổ đĩa nhưng không nằm trong các tệp mà quá trình quét đọc được. Không thể mở hoặc xóa từ đây."
+  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "Dung lượng đang dùng trên ổ đĩa nhưng không nằm trong các tệp mà quá trình quét đọc được. Không thể mở hoặc xóa từ đây.",
+  "WHAT'S NEW": "CÓ GÌ MỚI",
+  "Later": "Để sau",
+  "Restart now": "Khởi động lại ngay",
+  "Update now": "Cập nhật ngay"
 }

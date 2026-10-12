@@ -281,5 +281,9 @@
   "{name} (system volume)": "{name} (సిస్టమ్ వాల్యూమ్)",
   "Reserved by the file system": "ఫైల్ సిస్టమ్ రిజర్వ్ చేసినది",
   "Unreadable folders and file system data": "చదవలేని ఫోల్డర్లు మరియు ఫైల్ సిస్టమ్ డేటా",
-  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "డిస్క్‌లో వాడుకలో ఉన్నా, స్కాన్ చదవగలిగిన ఫైళ్లలో లేని స్థలం. దీన్ని ఇక్కడి నుండి తెరవడం లేదా తొలగించడం సాధ్యం కాదు."
+  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "డిస్క్‌లో వాడుకలో ఉన్నా, స్కాన్ చదవగలిగిన ఫైళ్లలో లేని స్థలం. దీన్ని ఇక్కడి నుండి తెరవడం లేదా తొలగించడం సాధ్యం కాదు.",
+  "WHAT'S NEW": "కొత్తవి",
+  "Later": "తర్వాత",
+  "Restart now": "ఇప్పుడే రీస్టార్ట్ చేయి",
+  "Update now": "ఇప్పుడే అప్‌డేట్ చేయి"
 }

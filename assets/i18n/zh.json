@@ -281,5 +281,9 @@
   "{name} (system volume)": "{name}（系统宗卷）",
   "Reserved by the file system": "文件系统保留",
   "Unreadable folders and file system data": "无法读取的文件夹和文件系统数据",
-  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "磁盘上已使用、但不在扫描可读取文件中的空间。无法从这里打开或删除。"
+  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "磁盘上已使用、但不在扫描可读取文件中的空间。无法从这里打开或删除。",
+  "WHAT'S NEW": "新功能",
+  "Later": "稍后",
+  "Restart now": "立即重新启动",
+  "Update now": "立即更新"
 }

@@ -208,6 +208,7 @@ pub struct Sponsors {
 
 impl Sponsors {
     /// Downloads the catalog and, if allowed, flushes yesterday's view totals.
+    /// The catalog is then refreshed every hour while the app is open.
     pub fn start(measurement: bool) -> Sponsors {
         let catalog = Arc::new(Mutex::new(Vec::new()));
         let signals = Arc::new(Mutex::new(Signals { os: "", ..Default::default() }));
@@ -220,11 +221,17 @@ impl Sponsors {
                 sig.os = detected.os;
                 sig.lang = detected.lang;
             }
-            if let Some(ads) = wire::fetch_catalog() {
+            if let Some(ads) = wire::fetch_catalog(false) {
                 *c.lock().unwrap() = ads;
             }
             if measurement {
                 wire::report_counts_if_due(&p);
+            }
+            loop {
+                std::thread::sleep(std::time::Duration::from_secs(3600));
+                if let Some(ads) = wire::fetch_catalog(true) {
+                    *c.lock().unwrap() = ads;
+                }
             }
         });
         let seed = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_nanos() as u64).unwrap_or(7);

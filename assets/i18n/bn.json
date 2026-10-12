@@ -281,5 +281,9 @@
   "{name} (system volume)": "{name} (সিস্টেম ভলিউম)",
   "Reserved by the file system": "ফাইল সিস্টেমের জন্য সংরক্ষিত",
   "Unreadable folders and file system data": "অপঠনযোগ্য ফোল্ডার ও ফাইল সিস্টেমের ডেটা",
-  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "ডিস্কে ব্যবহৃত এমন জায়গা যা স্ক্যানে পড়া ফাইলগুলোর মধ্যে নেই। এখান থেকে এটি খোলা বা মুছে ফেলা যায় না।"
+  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "ডিস্কে ব্যবহৃত এমন জায়গা যা স্ক্যানে পড়া ফাইলগুলোর মধ্যে নেই। এখান থেকে এটি খোলা বা মুছে ফেলা যায় না।",
+  "WHAT'S NEW": "নতুন কী আছে",
+  "Later": "পরে",
+  "Restart now": "এখনই রিস্টার্ট করুন",
+  "Update now": "এখনই আপডেট করুন"
 }

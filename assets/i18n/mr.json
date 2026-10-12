@@ -281,5 +281,9 @@
   "{name} (system volume)": "{name} (सिस्टम व्हॉल्यूम)",
   "Reserved by the file system": "फाइल सिस्टमने राखीव ठेवलेली",
   "Unreadable folders and file system data": "वाचता न येणारे फोल्डर आणि फाइल सिस्टम डेटा",
-  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "डिस्कवर वापरात असलेली अशी जागा जी स्कॅनला वाचता आलेल्या फाइल्समध्ये नाही. ती येथून उघडता किंवा हटवता येत नाही."
+  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "डिस्कवर वापरात असलेली अशी जागा जी स्कॅनला वाचता आलेल्या फाइल्समध्ये नाही. ती येथून उघडता किंवा हटवता येत नाही.",
+  "WHAT'S NEW": "नवीन काय आहे",
+  "Later": "नंतर",
+  "Restart now": "आता रीस्टार्ट करा",
+  "Update now": "आता अपडेट करा"
 }

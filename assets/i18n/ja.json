@@ -281,5 +281,9 @@
   "{name} (system volume)": "{name}（システムボリューム）",
   "Reserved by the file system": "ファイルシステムによる予約領域",
   "Unreadable folders and file system data": "読み取れないフォルダとファイルシステムのデータ",
-  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "ディスク上で使用中の領域のうち、スキャンで読み取れたファイルに含まれないものです。ここから開いたり削除したりすることはできません。"
+  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "ディスク上で使用中の領域のうち、スキャンで読み取れたファイルに含まれないものです。ここから開いたり削除したりすることはできません。",
+  "WHAT'S NEW": "新機能",
+  "Later": "あとで",
+  "Restart now": "今すぐ再起動",
+  "Update now": "今すぐアップデート"
 }

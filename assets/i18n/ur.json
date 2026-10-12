@@ -281,5 +281,9 @@
   "{name} (system volume)": "{name} (سسٹم والیوم)",
   "Reserved by the file system": "فائل سسٹم کے لیے مخصوص",
   "Unreadable folders and file system data": "ناقابلِ مطالعہ فولڈرز اور فائل سسٹم کا ڈیٹا",
-  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "ڈسک پر استعمال شدہ وہ جگہ جو اسکین کی پڑھی گئی فائلوں میں نہیں ہے۔ اسے یہاں سے کھولا یا حذف نہیں کیا جا سکتا۔"
+  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "ڈسک پر استعمال شدہ وہ جگہ جو اسکین کی پڑھی گئی فائلوں میں نہیں ہے۔ اسے یہاں سے کھولا یا حذف نہیں کیا جا سکتا۔",
+  "WHAT'S NEW": "نیا کیا ہے",
+  "Later": "بعد میں",
+  "Restart now": "ابھی ری اسٹارٹ کریں",
+  "Update now": "ابھی اپ ڈیٹ کریں"
 }

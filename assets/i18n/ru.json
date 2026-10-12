@@ -281,5 +281,9 @@
   "{name} (system volume)": "{name} (системный том)",
   "Reserved by the file system": "Зарезервировано файловой системой",
   "Unreadable folders and file system data": "Нечитаемые папки и данные файловой системы",
-  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "Занятое место на диске, которое не находится в файлах, прочитанных при сканировании. Его нельзя открыть или удалить отсюда."
+  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "Занятое место на диске, которое не находится в файлах, прочитанных при сканировании. Его нельзя открыть или удалить отсюда.",
+  "WHAT'S NEW": "ЧТО НОВОГО",
+  "Later": "Позже",
+  "Restart now": "Перезапустить сейчас",
+  "Update now": "Обновить сейчас"
 }

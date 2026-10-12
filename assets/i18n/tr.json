@@ -281,5 +281,9 @@
   "{name} (system volume)": "{name} (sistem birimi)",
   "Reserved by the file system": "Dosya sistemi tarafından ayrılmış",
   "Unreadable folders and file system data": "Okunamayan klasörler ve dosya sistemi verileri",
-  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "Diskte kullanılan, ancak taramanın okuyabildiği dosyalarda bulunmayan alan. Buradan açılamaz veya silinemez."
+  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "Diskte kullanılan, ancak taramanın okuyabildiği dosyalarda bulunmayan alan. Buradan açılamaz veya silinemez.",
+  "WHAT'S NEW": "YENİLİKLER",
+  "Later": "Sonra",
+  "Restart now": "Şimdi yeniden başlat",
+  "Update now": "Şimdi güncelle"
 }

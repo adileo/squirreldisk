@@ -281,5 +281,9 @@
   "{name} (system volume)": "{name} (وحدة تخزين النظام)",
   "Reserved by the file system": "محجوزة من نظام الملفات",
   "Unreadable folders and file system data": "مجلدات غير قابلة للقراءة وبيانات نظام الملفات",
-  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "مساحة مستخدمة على القرص ليست ضمن ملفات استطاع الفحص قراءتها. لا يمكن فتحها أو حذفها من هنا."
+  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "مساحة مستخدمة على القرص ليست ضمن ملفات استطاع الفحص قراءتها. لا يمكن فتحها أو حذفها من هنا.",
+  "WHAT'S NEW": "ما الجديد",
+  "Later": "لاحقًا",
+  "Restart now": "أعد التشغيل الآن",
+  "Update now": "حدّث الآن"
 }

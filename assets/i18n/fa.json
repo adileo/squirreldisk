@@ -281,5 +281,9 @@
   "{name} (system volume)": "{name} (درایو سیستم)",
   "Reserved by the file system": "رزروشده توسط سیستم فایل",
   "Unreadable folders and file system data": "پوشه‌های غیرقابل خواندن و داده‌های سیستم فایل",
-  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "فضای استفاده‌شده روی دیسک که در فایل‌های خوانده‌شده توسط اسکن نیست. از اینجا نمی‌توان آن را باز یا حذف کرد."
+  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "فضای استفاده‌شده روی دیسک که در فایل‌های خوانده‌شده توسط اسکن نیست. از اینجا نمی‌توان آن را باز یا حذف کرد.",
+  "WHAT'S NEW": "چه چیزی تازه است",
+  "Later": "بعداً",
+  "Restart now": "اکنون راه‌اندازی مجدد",
+  "Update now": "اکنون به‌روزرسانی"
 }

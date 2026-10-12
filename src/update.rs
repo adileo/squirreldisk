@@ -28,7 +28,7 @@ pub fn current_target() -> &'static str {
 #[derive(Clone, Debug)]
 pub struct Release {
     pub version: String,
-    #[allow(dead_code)]
+    /// The release's description on GitHub, as Markdown.
     pub notes: String,
     pub asset_url: Option<String>,
 }
@@ -48,6 +48,64 @@ pub struct Updater {
     pub state: Arc<Mutex<State>>,
     pub downloaded: Arc<AtomicU64>,
     pub total: Arc<AtomicU64>,
+    /// The newer release last found, kept while it downloads and installs.
+    pub latest: Arc<Mutex<Option<Release>>>,
+}
+
+/// A line of release notes, ready to show.
+#[derive(Debug, PartialEq)]
+pub enum Note {
+    Heading(String),
+    /// A list item: its opening words in bold, if any, and the rest.
+    Bullet(String, String),
+    Text(String),
+}
+
+/// Release notes as plain lines: what is new, without the Markdown marks and
+/// without the sections on how to download and first open the app.
+pub fn notes(markdown: &str) -> Vec<Note> {
+    // `[text](url)` becomes text; emphasis and code marks go
+    fn plain(s: &str) -> String {
+        let mut out = String::new();
+        let mut rest = s;
+        while let Some(open) = rest.find('[') {
+            let link = rest[open..].find("](").and_then(|mid| rest[open + mid..].find(')').map(|end| (open + mid, open + mid + end)));
+            match link {
+                Some((mid, end)) => {
+                    out.push_str(&rest[..open]);
+                    out.push_str(&rest[open + 1..mid]);
+                    rest = &rest[end + 1..];
+                }
+                None => break,
+            }
+        }
+        out.push_str(rest);
+        // (the bundled fonts have no arrow)
+        out.replace("**", "").replace("__", "").replace('`', "").replace('→', ">").trim().to_string()
+    }
+    let mut lines = Vec::new();
+    for line in markdown.lines() {
+        let line = line.trim();
+        if line.is_empty() || line.starts_with("```") || line.starts_with("![") || line.starts_with("<!--") {
+            continue;
+        }
+        if let Some(h) = line.strip_prefix('#') {
+            let h = plain(h.trim_start_matches('#'));
+            if matches!(h.to_lowercase().as_str(), "downloads" | "download" | "first launch" | "install" | "installation") {
+                break;
+            }
+            lines.push(Note::Heading(h));
+        } else if let Some(item) = ["- ", "* ", "+ "].iter().find_map(|m| line.strip_prefix(m)) {
+            let lead = item.strip_prefix("**").and_then(|r| r.split_once("**"));
+            lines.push(match lead {
+                Some((lead, rest)) => Note::Bullet(plain(lead), plain(rest)),
+                None => Note::Bullet(String::new(), plain(item)),
+            });
+        } else if !line.to_lowercase().contains("full changelog") {
+            lines.push(Note::Text(plain(line)));
+        }
+    }
+    lines
 }
 
 #[derive(serde::Deserialize)]
@@ -105,6 +163,7 @@ impl Updater {
             state: Arc::new(Mutex::new(State::Idle)),
             downloaded: Arc::new(AtomicU64::new(0)),
             total: Arc::new(AtomicU64::new(0)),
+            latest: Arc::new(Mutex::new(None)),
         }
     }
 
@@ -113,7 +172,7 @@ impl Updater {
     }
 
     pub fn check(&self, ctx: eframe::egui::Context) {
-        let st = self.state.clone();
+        let (st, latest) = (self.state.clone(), self.latest.clone());
         *st.lock().unwrap() = State::Checking;
         std::thread::spawn(move || {
             let r = (|| -> Result<State, String> {
@@ -145,6 +204,9 @@ impl Updater {
                     asset_url: asset,
                 }))
             })();
+            if let Ok(State::Available(release)) = &r {
+                *latest.lock().unwrap() = Some(release.clone());
+            }
             *st.lock().unwrap() = r.unwrap_or_else(State::Failed);
             ctx.request_repaint();
         });
@@ -237,6 +299,22 @@ pub fn restart() {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn release_notes_become_plain_lines() {
+        use super::{notes, Note};
+        let md = "## App 2.6\n\n- **Faster scans.** Now with `--fresh`, see [the docs](https://x.y/z) → here.\n* plain item\n\nA [link](https://a.b) and **bold**.\n**Full Changelog**: https://github.com/a/b/compare/1...2\n\n### Downloads\n- **macOS:** the dmg\n";
+        assert_eq!(
+            notes(md),
+            [
+                Note::Heading("App 2.6".into()),
+                Note::Bullet("Faster scans.".into(), "Now with --fresh, see the docs > here.".into()),
+                Note::Bullet(String::new(), "plain item".into()),
+                Note::Text("A link and bold.".into()),
+            ]
+        );
+        assert!(notes("").is_empty());
+    }
+
     #[test]
     fn versions() {
         assert!(super::is_newer("v2.1.0", "2.0.9"));

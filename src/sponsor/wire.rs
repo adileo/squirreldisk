@@ -2,13 +2,22 @@
 //!
 //! | When                        | Request                                   | Contains                          |
 //! |-----------------------------|-------------------------------------------|-----------------------------------|
-//! | at launch                   | `GET  /ads.json?v=<app version>`          | the app version, nothing else     |
+//! | at launch                   | `GET  /ads.json?v=<app version>`          | app version, OS and CPU type      |
+//! | every hour while open       | `GET  /ads.json?v=<app version>&ping=1`   | the same, marked as not a launch  |
 //! | when you click the banner   | browser opens `GET /c/<ad id>?p=<place>`  | ad id + "home"/"panel"            |
 //! | at most once a day          | `POST /impressions`                       | `{v, counts:[{ad, placement, n}]}`|
+//!
+//! Every request carries the User-Agent `SquirrelDisk/<version> (<os>; <arch>)`,
+//! for example `SquirrelDisk/2.5.1 (macos; aarch64)`.
 //!
 //! No user id, device id, cookie, timestamp, path, file name, interest or disk
 //! information is ever included. Interests are only used locally to choose
 //! among ads that were all downloaded anyway.
+//!
+//! The server counts `/ads.json` requests without `ping` as launches, and
+//! all of them to know how many copies are open. From the IP address it
+//! derives the country and city and a monthly pseudonymous code to count daily
+//! users; the address itself is not stored (see web/lib/analytics.ts).
 
 use super::Ad;
 use std::collections::HashMap;
@@ -16,7 +25,21 @@ use std::sync::Mutex;
 
 pub const API: &str = "https://www.squirreldisk.com";
 
-const UA: &str = concat!("SquirrelDisk/", env!("CARGO_PKG_VERSION"));
+#[cfg(target_os = "macos")]
+macro_rules! os { () => { "macos" } }
+#[cfg(target_os = "windows")]
+macro_rules! os { () => { "windows" } }
+#[cfg(not(any(target_os = "macos", target_os = "windows")))]
+macro_rules! os { () => { "linux" } }
+
+#[cfg(target_arch = "aarch64")]
+macro_rules! arch { () => { "aarch64" } }
+#[cfg(target_arch = "x86_64")]
+macro_rules! arch { () => { "x86_64" } }
+#[cfg(not(any(target_arch = "aarch64", target_arch = "x86_64")))]
+macro_rules! arch { () => { "other" } }
+
+const UA: &str = concat!("SquirrelDisk/", env!("CARGO_PKG_VERSION"), " (", os!(), "; ", arch!(), ")");
 
 #[derive(serde::Deserialize)]
 struct Catalog {
@@ -24,9 +47,10 @@ struct Catalog {
     ads: Vec<Ad>,
 }
 
-/// `GET /ads.json`: the same request for every user.
-pub fn fetch_catalog() -> Option<Vec<Ad>> {
-    let url = format!("{API}/ads.json?v={}", env!("CARGO_PKG_VERSION"));
+/// `GET /ads.json`: the same request for every user. `still_open` marks the
+/// hourly refresh of an app that is still open, so it isn't counted as a launch.
+pub fn fetch_catalog(still_open: bool) -> Option<Vec<Ad>> {
+    let url = format!("{API}/ads.json?v={}{}", env!("CARGO_PKG_VERSION"), if still_open { "&ping=1" } else { "" });
     let mut resp = ureq::get(&url).header("User-Agent", UA).call().ok()?;
     let catalog: Catalog = resp.body_mut().read_json().ok()?;
     Some(
