@@ -337,6 +337,32 @@ pub struct App {
     pub cli_job: Option<Arc<Mutex<Option<Result<(), String>>>>>,
 }
 
+const INTER: &[u8] = include_bytes!("../../assets/fonts/Inter-Regular.ttf");
+
+/// Where a font's baseline sits below the middle of its line box, in ems.
+/// Read the way egui reads it, so the two agree.
+fn baseline_drop(bytes: &[u8], index: u32) -> Option<f32> {
+    use skrifa::MetadataProvider;
+    let font = skrifa::FontRef::from_index(bytes, index).ok()?;
+    let m = font.metrics(skrifa::instance::Size::unscaled(), skrifa::instance::LocationRef::default());
+    if m.units_per_em == 0 {
+        return None;
+    }
+    Some((m.ascent + m.descent - m.leading) / 2.0 / m.units_per_em as f32)
+}
+
+/// How far down to draw a system font's glyphs, as a fraction of the font
+/// size, so they share Inter's baseline. egui lines a fallback font up by the
+/// middle of its line box, and system fonts split theirs differently from
+/// Inter (a tall line gap, a deep descent), which left their text a few
+/// pixels too high or too low next to Latin.
+fn baseline_shift(bytes: &[u8], index: u32) -> f32 {
+    match (baseline_drop(INTER, 0), baseline_drop(bytes, index)) {
+        (Some(inter), Some(font)) => inter - font,
+        _ => 0.0,
+    }
+}
+
 /// The system font for `code`'s script. Fonts still installed are reused
 /// rather than read again from disk (installs happen on the UI thread, e.g.
 /// each time a scan meets a new script); the cache holds weak references so
@@ -349,8 +375,10 @@ fn system_font_data(code: &str) -> Option<Arc<FontData>> {
         return Some(fd);
     }
     let (bytes, index) = crate::i18n::system_font(code)?;
+    let shift = baseline_shift(&bytes, index);
     let mut fd = FontData::from_owned(bytes);
     fd.index = index;
+    fd.tweak.y_offset_factor = shift;
     let fd = Arc::new(fd);
     cache.push((code.to_string(), Arc::downgrade(&fd)));
     Some(fd)
@@ -382,7 +410,7 @@ pub fn install_fonts(ctx: &egui::Context, lang: &str, all_scripts: bool) {
             script_names.push(name);
         }
     }
-    fonts.font_data.insert("inter".into(), Arc::new(FontData::from_static(include_bytes!("../../assets/fonts/Inter-Regular.ttf"))));
+    fonts.font_data.insert("inter".into(), Arc::new(FontData::from_static(INTER)));
     fonts.font_data.insert("inter-bold".into(), Arc::new(FontData::from_static(include_bytes!("../../assets/fonts/Inter-SemiBold.ttf"))));
     fonts.font_data.insert("fredoka".into(), Arc::new(FontData::from_static(include_bytes!("../../assets/fonts/Fredoka-SemiBold.ttf"))));
     let mut fallback: Vec<String> = fonts.families.get(&FontFamily::Proportional).cloned().unwrap_or_default();
@@ -1017,4 +1045,22 @@ pub fn os_open(path: &str, reveal: bool) {
         }
     }
     let _ = cmd.spawn();
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn system_fonts_share_inters_baseline() {
+        assert_eq!(baseline_shift(INTER, 0), 0.0);
+        assert_eq!(baseline_shift(b"not a font", 0), 0.0);
+        // every script's font on this machine: a shift is a fraction of an em
+        for l in crate::i18n::LANGS.iter() {
+            if let Some((bytes, index)) = crate::i18n::system_font(l.code) {
+                let shift = baseline_shift(&bytes, index);
+                assert!(shift.abs() < 0.5, "{}: {shift}", l.code);
+            }
+        }
+    }
 }

@@ -10,7 +10,7 @@ repository = "https://github.com/adileo/squirreldisk"
 default = ["gui"]
 # Everything needed for the desktop app. Build with --no-default-features
 # to get the tiny headless agent used on remote servers.
-gui = ["dep:eframe", "dep:egui_glow", "dep:notify", "dep:sysinfo", "dep:rodio", "dep:ureq", "dep:self-replace", "dep:rfd", "dep:tiny-skia", "dep:miniz_oxide", "dep:ring"]
+gui = ["dep:eframe", "dep:egui_glow", "dep:notify", "dep:sysinfo", "dep:rodio", "dep:ureq", "dep:self-replace", "dep:rfd", "dep:tiny-skia", "dep:miniz_oxide", "dep:ring", "dep:skrifa"]
 
 [dependencies]
 eframe = { optional = true, version = "0.36", default-features = false, features = ["glow", "default_fonts", "wayland", "x11"] }
@@ -26,6 +26,8 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 miniz_oxide = { version = "0.8", optional = true }
 ring = { version = "0.17", optional = true, default-features = false }
+# the font reader egui itself uses: same version, so nothing extra is built
+skrifa = { version = "0.44", optional = true, default-features = false, features = ["std"] }
 tiny-skia = { version = "0.12", optional = true, default-features = false, features = ["std", "simd", "png-format"] }
 
 [target.'cfg(windows)'.build-dependencies]

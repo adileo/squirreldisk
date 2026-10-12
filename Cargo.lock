@@ -2792,6 +2792,7 @@ dependencies = [
  "self-replace",
  "serde",
  "serde_json",
+ "skrifa",
  "sysinfo",
  "tiny-skia",
  "trash",
