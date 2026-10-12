@@ -22,8 +22,15 @@ pub enum Kind {
     /// Another filesystem mounted inside the scanned one (not descended).
     Mount,
     /// Space used on the volume that could not be attributed to any file.
+    /// The item itself, and the parts it is made of.
     Hidden,
 }
+
+/// Names of the hidden space item and of its parts (see [`Tree::add_hidden`]).
+pub const HIDDEN: &str = "Hidden space";
+pub const HIDDEN_VOLUME_SUFFIX: &str = " (system volume)";
+pub const HIDDEN_RESERVED: &str = "Reserved by the file system";
+pub const HIDDEN_REST: &str = "Unreadable folders and file system data";
 
 pub const F_DONE: u8 = 1; // directory fully listed
 pub const F_DENIED: u8 = 2; // permission denied / unreadable
@@ -163,6 +170,32 @@ impl Tree {
         let id = self.add_child(parent, name, kind, 0, 0);
         self.add_size(id, size as i64, files as i64);
         id
+    }
+
+    /// Adds the "Hidden space" item to the root: `size` bytes the volume
+    /// reports as used that no scanned file accounts for. `parts` are the
+    /// pieces of it that can be named, largest first as far as they fit; what
+    /// is left goes to [`HIDDEN_REST`].
+    pub fn add_hidden(&mut self, size: u64, mut parts: Vec<(String, u64)>) -> u32 {
+        let id = self.add_child(self.root, HIDDEN, Kind::Hidden, 0, 0);
+        parts.sort_by(|a, b| b.1.cmp(&a.1));
+        let mut left = size;
+        for (name, bytes) in parts {
+            if bytes > 0 && bytes <= left {
+                self.add_child_sized(id, &name, Kind::Hidden, bytes, 0);
+                left -= bytes;
+            }
+        }
+        if left > 0 {
+            self.add_child_sized(id, HIDDEN_REST, Kind::Hidden, left, 0);
+        }
+        id
+    }
+
+    /// Can the view go into this node? Folders, and hidden space with parts.
+    pub fn can_enter(&self, id: u32) -> bool {
+        let n = self.get(id);
+        n.kind == Kind::Dir || (n.kind == Kind::Hidden && n.first_child != NONE)
     }
 
     pub fn children(&self, id: u32) -> ChildIter<'_> {
@@ -376,6 +409,18 @@ pub fn fmt_count(n: u64) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn hidden_space_is_split_in_named_parts() {
+        let mut t = Tree::new("/r", "r", Source::Local);
+        t.add_child_sized(0, "file", Kind::File, 10, 1);
+        // parts that fit are named, the too big one is left out, the rest is unnamed
+        let h = t.add_hidden(100, vec![("small".into(), 20), ("too big".into(), 500), ("big".into(), 50), ("nothing".into(), 0)]);
+        assert_eq!((t.get(0).size, t.get(h).size, t.get(h).files), (110, 100, 0));
+        let parts: Vec<(String, u64)> = t.sorted_children(h).iter().map(|&c| (t.get(c).name.to_string(), t.get(c).size)).collect();
+        assert_eq!(parts, [("big".to_string(), 50), (HIDDEN_REST.to_string(), 30), ("small".to_string(), 20)]);
+        assert!(t.can_enter(h) && t.sorted_children(h).iter().all(|&c| t.get(c).kind == Kind::Hidden && !t.can_enter(c)));
+    }
 
     #[test]
     fn sizes_propagate_and_remove() {

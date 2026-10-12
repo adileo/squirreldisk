@@ -87,6 +87,10 @@ fn script(name: &str) -> Vec<Step> {
         "home-scanned" => {
             s.extend([Scan("/"), WaitScan, Home, Wait(0.8)]);
         }
+        // Hidden space and what it is made of (for layout checks)
+        "hidden" => {
+            s.extend([Scan("/"), WaitScan, Record(true), Wait(0.6), Navigate("Hidden space"), Wait(1.6)]);
+        }
         // Themes
         "themes" => {
             s.extend([Scan("/"), WaitScan, Wait(1.0), Record(true), Wait(0.6), Move(Aim::Mark("settings"), 0.9), Wait(0.2)]);

@@ -141,6 +141,12 @@ impl Session {
         self.tree.read().unwrap().source.clone()
     }
 
+    /// Can the view go into `node`? (see [`crate::tree::Tree::can_enter`])
+    pub fn can_enter(&self, node: u32) -> bool {
+        let t = self.tree.read().unwrap();
+        t.is_alive(node) && t.can_enter(node)
+    }
+
     pub fn navigate(&mut self, v: View) {
         if v != self.view {
             self.back.push(self.view);

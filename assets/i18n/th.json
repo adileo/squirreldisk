@@ -277,5 +277,9 @@
   "Scan folders from a terminal, without the window: {command}": "สแกนโฟลเดอร์จากเทอร์มินัลโดยไม่ต้องเปิดหน้าต่าง: {command}",
   "{path} already belongs to another program": "{path} เป็นของโปรแกรมอื่นอยู่แล้ว",
   "Couldn't install the command: {error}": "ติดตั้งคำสั่งไม่ได้: {error}",
-  "Not available in development builds": "ไม่พร้อมใช้งานในบิลด์สำหรับการพัฒนา"
+  "Not available in development builds": "ไม่พร้อมใช้งานในบิลด์สำหรับการพัฒนา",
+  "{name} (system volume)": "{name} (วอลุ่มระบบ)",
+  "Reserved by the file system": "สงวนไว้โดยระบบไฟล์",
+  "Unreadable folders and file system data": "โฟลเดอร์ที่อ่านไม่ได้และข้อมูลของระบบไฟล์",
+  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "พื้นที่ที่ถูกใช้บนดิสก์ซึ่งไม่ได้อยู่ในไฟล์ที่การสแกนอ่านได้ ไม่สามารถเปิดหรือลบจากที่นี่ได้"
 }

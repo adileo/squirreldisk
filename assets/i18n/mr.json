@@ -277,5 +277,9 @@
   "Scan folders from a terminal, without the window: {command}": "विंडोशिवाय टर्मिनलमधून फोल्डर स्कॅन करा: {command}",
   "{path} already belongs to another program": "{path} आधीच दुसऱ्या प्रोग्रामचे आहे",
   "Couldn't install the command: {error}": "कमांड इन्स्टॉल करता आली नाही: {error}",
-  "Not available in development builds": "डेव्हलपमेंट बिल्डमध्ये उपलब्ध नाही"
+  "Not available in development builds": "डेव्हलपमेंट बिल्डमध्ये उपलब्ध नाही",
+  "{name} (system volume)": "{name} (सिस्टम व्हॉल्यूम)",
+  "Reserved by the file system": "फाइल सिस्टमने राखीव ठेवलेली",
+  "Unreadable folders and file system data": "वाचता न येणारे फोल्डर आणि फाइल सिस्टम डेटा",
+  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "डिस्कवर वापरात असलेली अशी जागा जी स्कॅनला वाचता आलेल्या फाइल्समध्ये नाही. ती येथून उघडता किंवा हटवता येत नाही."
 }

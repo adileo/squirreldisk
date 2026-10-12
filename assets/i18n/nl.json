@@ -277,5 +277,9 @@
   "Scan folders from a terminal, without the window: {command}": "Scan mappen vanuit een terminal, zonder venster: {command}",
   "{path} already belongs to another program": "{path} is al van een ander programma",
   "Couldn't install the command: {error}": "Kan de opdracht niet installeren: {error}",
-  "Not available in development builds": "Niet beschikbaar in ontwikkelbuilds"
+  "Not available in development builds": "Niet beschikbaar in ontwikkelbuilds",
+  "{name} (system volume)": "{name} (systeemvolume)",
+  "Reserved by the file system": "Gereserveerd door het bestandssysteem",
+  "Unreadable folders and file system data": "Onleesbare mappen en bestandssysteemgegevens",
+  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "Gebruikte ruimte op de schijf die niet in bestanden zit die de scan kon lezen. Deze kan hier niet worden geopend of verwijderd."
 }

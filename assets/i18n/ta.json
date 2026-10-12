@@ -277,5 +277,9 @@
   "Scan folders from a terminal, without the window: {command}": "சாளரம் இல்லாமல் டெர்மினலில் இருந்து கோப்புறைகளை ஸ்கேன் செய்: {command}",
   "{path} already belongs to another program": "{path} ஏற்கனவே வேறொரு நிரலுக்குச் சொந்தமானது",
   "Couldn't install the command: {error}": "கட்டளையை நிறுவ முடியவில்லை: {error}",
-  "Not available in development builds": "மேம்பாட்டு பில்டுகளில் கிடைக்காது"
+  "Not available in development builds": "மேம்பாட்டு பில்டுகளில் கிடைக்காது",
+  "{name} (system volume)": "{name} (கணினி தொகுதி)",
+  "Reserved by the file system": "கோப்பு முறைமையால் ஒதுக்கப்பட்டது",
+  "Unreadable folders and file system data": "படிக்க முடியாத கோப்புறைகளும் கோப்பு முறைமைத் தரவும்",
+  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "வட்டில் பயன்பாட்டில் உள்ள, ஆனால் ஸ்கேன் படிக்க முடிந்த கோப்புகளில் இல்லாத இடம். இதை இங்கிருந்து திறக்கவோ நீக்கவோ முடியாது."
 }

@@ -10,7 +10,7 @@ use crate::i18n::{tr, tr_status, trf};
 use crate::safety::{Os, Rules};
 use crate::scan::local::expand_small;
 use crate::sound::Sfx;
-use crate::tree::{fmt_count, fmt_size, Kind, Tree, F_EXPANDABLE, NONE};
+use crate::tree::{fmt_count, fmt_size, Kind, Tree, F_EXPANDABLE, HIDDEN_RESERVED, HIDDEN_REST, HIDDEN_VOLUME_SUFFIX, NONE};
 use eframe::egui::{self, Align2, Color32, Id, Pos2, Rect, Sense, Shape, Stroke, Ui, Vec2};
 use std::f32::consts::TAU;
 use std::sync::atomic::Ordering;
@@ -22,7 +22,15 @@ pub fn node_label(t: &Tree, id: u32) -> String {
     match n.kind {
         Kind::SmallFiles => trf("{count} smaller files", &[("count", &fmt_count(n.files as u64))]),
         Kind::Mount => trf("{name} (other volume)", &[("name", &n.name)]),
-        Kind::Hidden => tr("Hidden space").to_string(),
+        // the item itself, or one of its parts (see `Tree::add_hidden`)
+        Kind::Hidden => match &*n.name {
+            HIDDEN_RESERVED => tr("Reserved by the file system").to_string(),
+            HIDDEN_REST => tr("Unreadable folders and file system data").to_string(),
+            name => match name.strip_suffix(HIDDEN_VOLUME_SUFFIX) {
+                Some(volume) => trf("{name} (system volume)", &[("name", &volume)]),
+                None => tr("Hidden space").to_string(),
+            },
+        },
         _ => n.name.to_string(),
     }
 }
@@ -123,7 +131,7 @@ impl App {
             let t = s.tree.read().unwrap();
             let mut v: Vec<(String, Option<View>)> = vec![(tr("Disks").into(), None)];
             for id in t.ancestry(s.view.node) {
-                let name = if id == t.root { s.title.clone() } else { t.get(id).name.to_string() };
+                let name = if id == t.root { s.title.clone() } else { node_label(&t, id) };
                 v.push((name, Some(View::node(id))));
             }
             if s.view.skip > 0 {
@@ -253,7 +261,7 @@ impl App {
             let in_panel = pointer.is_some_and(|p| panel.contains(p));
             if let Some(a) = &hit {
                 s.panel_view = match a.kind {
-                    SegKind::Node(Kind::Dir) if a.d > 0.5 => View::node(a.node),
+                    SegKind::Node(Kind::Dir | Kind::Hidden) if a.d > 0.5 && s.can_enter(a.node) => View::node(a.node),
                     SegKind::Group { parent, skip, .. } if a.d > 0.5 => View { node: parent, skip },
                     _ if a.d < 0.5 => s.view,
                     SegKind::Free => s.view,
@@ -474,7 +482,7 @@ impl App {
                 s.navigate(View { node: parent, skip });
                 self.sfx(Sfx::Blip);
             }
-            SegKind::Node(Kind::Dir) => {
+            SegKind::Node(Kind::Dir | Kind::Hidden) if s.can_enter(a.node) => {
                 s.navigate(View::node(a.node));
                 self.sfx(Sfx::Blip);
             }
@@ -555,9 +563,18 @@ impl App {
         let sub = trf("{files} files · {items} items", &[("files", &count(files as u64)), ("items", &count(kids.len() as u64))]);
         p.text(inner.left_top() + Vec2::new(0.0, 32.0), Align2::LEFT_TOP, sub, font(12.0), theme.text_faint);
 
+        // hidden space: say what it is
+        let mut note_h = 0.0;
+        if t.get(pv.node).kind == Kind::Hidden {
+            let text = tr("Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.");
+            let g = p.layout(text.to_string(), font(12.0), theme.text_dim, inner.width());
+            note_h = g.size().y + 10.0;
+            p.galley(inner.left_top() + Vec2::new(0.0, 56.0), g, theme.text_dim);
+        }
+
         // rows
         let row_h = 30.0;
-        let top = inner.top() + 58.0;
+        let top = inner.top() + 58.0 + note_h;
         let footer_h = if pv.node == t.root && matches!(s.target, Target::Volume(_)) { 64.0 } else { 26.0 };
         let avail = inner.bottom() - footer_h - top;
         let max_rows = ((avail / row_h).floor() as usize).max(1);
@@ -589,7 +606,7 @@ impl App {
         } else {
             None
         };
-        let hovered_path = selected.or(list_hover_before).filter(|n| t.is_alive(*n)).map(|n| t.path(n));
+        let hovered_path = selected.or(list_hover_before).filter(|n| t.is_alive(*n) && t.get(*n).kind != Kind::Hidden).map(|n| t.path(n));
         let is_root_volume = pv.node == t.root && pv.skip == 0;
         drop(t);
 
@@ -692,7 +709,7 @@ impl App {
                     let pos = ui.ctx().input(|i| i.pointer.latest_pos()).unwrap_or(panel.center());
                     self.ctx_menu = Some(CtxMenu { session: si, node, pos, opened: Instant::now() });
                 }
-                (0, Kind::Dir) => {
+                (0, Kind::Dir | Kind::Hidden) if s.can_enter(node) => {
                     s.navigate(View::node(node));
                     self.sfx(Sfx::Blip);
                 }
@@ -854,25 +871,32 @@ impl App {
             self.ctx_menu = None;
             return;
         };
-        let (path, kind, local, name) = {
+        let (path, kind, local, name, enter) = {
             let t = s.tree.read().unwrap();
             if !t.is_alive(node) {
                 self.ctx_menu = None;
                 return;
             }
-            (t.path(node), t.get(node).kind, t.source.is_local(), node_label(&t, node))
+            (t.path(node), t.get(node).kind, t.source.is_local(), node_label(&t, node), t.can_enter(node))
         };
         let mut items: Vec<(&str, Icon, u8)> = Vec::new();
-        if kind == Kind::Dir {
+        if enter {
             items.push((tr("Zoom in"), Icon::Eye, 0));
         }
-        if local && kind != Kind::SmallFiles {
-            items.push((tr("Open"), Icon::File, 1));
-            items.push((if cfg!(target_os = "macos") { tr("Reveal in Finder") } else { tr("Show in file manager") }, Icon::Folder, 2));
+        // hidden space is in no file or folder: nothing to open, no path
+        if kind != Kind::Hidden {
+            if local && kind != Kind::SmallFiles {
+                items.push((tr("Open"), Icon::File, 1));
+                items.push((if cfg!(target_os = "macos") { tr("Reveal in Finder") } else { tr("Show in file manager") }, Icon::Folder, 2));
+            }
+            items.push((tr("Copy path"), Icon::File, 3));
         }
-        items.push((tr("Copy path"), Icon::File, 3));
         if !matches!(kind, Kind::Hidden | Kind::Mount) {
             items.push((tr("Collect for deletion"), Icon::Acorn, 4));
+        }
+        if items.is_empty() {
+            self.ctx_menu = None;
+            return;
         }
         let w = 230.0;
         let h = items.len() as f32 * 32.0 + 44.0;

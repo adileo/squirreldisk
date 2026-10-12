@@ -277,5 +277,9 @@
   "Scan folders from a terminal, without the window: {command}": "ウィンドウを開かずにターミナルからフォルダをスキャン：{command}",
   "{path} already belongs to another program": "{path} は既に別のプログラムが使用しています",
   "Couldn't install the command: {error}": "コマンドをインストールできませんでした：{error}",
-  "Not available in development builds": "開発ビルドでは利用できません"
+  "Not available in development builds": "開発ビルドでは利用できません",
+  "{name} (system volume)": "{name}（システムボリューム）",
+  "Reserved by the file system": "ファイルシステムによる予約領域",
+  "Unreadable folders and file system data": "読み取れないフォルダとファイルシステムのデータ",
+  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "ディスク上で使用中の領域のうち、スキャンで読み取れたファイルに含まれないものです。ここから開いたり削除したりすることはできません。"
 }

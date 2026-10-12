@@ -277,5 +277,9 @@
   "Scan folders from a terminal, without the window: {command}": "Скануйте теки з термінала, без вікна: {command}",
   "{path} already belongs to another program": "{path} уже належить іншій програмі",
   "Couldn't install the command: {error}": "Не вдалося встановити команду: {error}",
-  "Not available in development builds": "Недоступно у збірках для розробки"
+  "Not available in development builds": "Недоступно у збірках для розробки",
+  "{name} (system volume)": "{name} (системний том)",
+  "Reserved by the file system": "Зарезервовано файловою системою",
+  "Unreadable folders and file system data": "Нечитабельні папки та дані файлової системи",
+  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "Зайняте місце на диску, якого немає у файлах, прочитаних під час сканування. Його не можна відкрити чи видалити звідси."
 }

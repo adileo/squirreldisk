@@ -277,5 +277,9 @@
   "Scan folders from a terminal, without the window: {command}": "Pindai folder dari terminal, tanpa jendela: {command}",
   "{path} already belongs to another program": "{path} sudah dimiliki program lain",
   "Couldn't install the command: {error}": "Tidak dapat menginstal perintah: {error}",
-  "Not available in development builds": "Tidak tersedia di build pengembangan"
+  "Not available in development builds": "Tidak tersedia di build pengembangan",
+  "{name} (system volume)": "{name} (volume sistem)",
+  "Reserved by the file system": "Dicadangkan oleh sistem berkas",
+  "Unreadable folders and file system data": "Folder yang tidak terbaca dan data sistem berkas",
+  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "Ruang terpakai di disk yang tidak berada dalam berkas yang dapat dibaca pemindaian. Tidak dapat dibuka atau dihapus dari sini."
 }

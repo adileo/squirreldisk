@@ -328,8 +328,7 @@ pub fn start(root: PathBuf, display_name: String) -> ScanHandle {
                     let mut tr = t.write().unwrap();
                     let seen = tr.get(tr.root).size;
                     if used > seen {
-                        let r = tr.root;
-                        tr.add_child_sized(r, "Hidden space", Kind::Hidden, used - seen, 0);
+                        tr.add_hidden(used - seen, platform::hidden_parts(&root));
                     }
                 }
             }

@@ -277,5 +277,9 @@
   "Scan folders from a terminal, without the window: {command}": "Skanuj foldery z terminala, bez okna: {command}",
   "{path} already belongs to another program": "{path} należy już do innego programu",
   "Couldn't install the command: {error}": "Nie udało się zainstalować polecenia: {error}",
-  "Not available in development builds": "Niedostępne w wersjach deweloperskich"
+  "Not available in development builds": "Niedostępne w wersjach deweloperskich",
+  "{name} (system volume)": "{name} (wolumin systemowy)",
+  "Reserved by the file system": "Zarezerwowane przez system plików",
+  "Unreadable folders and file system data": "Nieczytelne foldery i dane systemu plików",
+  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "Zajęte miejsce na dysku, które nie znajduje się w plikach odczytanych podczas skanowania. Nie można go stąd otworzyć ani usunąć."
 }

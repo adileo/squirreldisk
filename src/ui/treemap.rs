@@ -187,7 +187,7 @@ pub fn layout(tree: &Tree, view: View, area: Rect, max_depth: usize, theme: &The
             }
             let c = items[k];
             let n = tree.get(c);
-            let nest = n.kind == Kind::Dir && (depth as usize) < max_depth && r.width() >= NEST_W && r.height() >= NEST_H && n.first_child != NONE;
+            let nest = tree.can_enter(c) && (depth as usize) < max_depth && r.width() >= NEST_W && r.height() >= NEST_H && n.first_child != NONE;
             out.push(Tile {
                 key: c as u64,
                 node: c,
@@ -360,7 +360,7 @@ impl App {
             let in_panel = pointer.is_some_and(|p| panel.contains(p));
             if let Some(t) = &hit {
                 s.panel_view = match t.kind {
-                    SegKind::Node(Kind::Dir) => View::node(t.node),
+                    SegKind::Node(Kind::Dir | Kind::Hidden) if s.can_enter(t.node) => View::node(t.node),
                     SegKind::Group { parent, skip, .. } => View { node: parent, skip },
                     SegKind::Free => s.view,
                     _ => {
@@ -384,7 +384,7 @@ impl App {
                         self.sessions[si].navigate(View { node: parent, skip });
                         self.sfx(Sfx::Blip);
                     }
-                    SegKind::Node(Kind::Dir) => {
+                    SegKind::Node(Kind::Dir | Kind::Hidden) if self.sessions[si].can_enter(t.node) => {
                         self.sessions[si].navigate(View::node(t.node));
                         self.sfx(Sfx::Blip);
                     }
