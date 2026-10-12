@@ -220,6 +220,22 @@ impl App {
                 }
                 content_h = y - top + 8.0;
             });
+            // scrollbar, when the notes are longer than the window
+            let max_scroll = (content_h - body.height()).max(0.0);
+            if max_scroll > 0.0 {
+                let track = Rect::from_min_max(Pos2::new(card.right() - 11.0, body.top() + 4.0), Pos2::new(card.right() - 6.0, body.bottom() - 4.0));
+                let thumb_h = (track.height() * body.height() / content_h).max(28.0);
+                let t = scroll / max_scroll;
+                let thumb = Rect::from_min_size(Pos2::new(track.left(), track.top() + (track.height() - thumb_h) * t), Vec2::new(track.width(), thumb_h));
+                let resp = ui.interact(thumb.expand2(Vec2::new(4.0, 0.0)), Id::new("update-scroll"), Sense::drag());
+                if resp.dragged() {
+                    scroll = (scroll + resp.drag_delta().y * max_scroll / (track.height() - thumb_h).max(1.0)).clamp(0.0, max_scroll);
+                }
+                let h = ui.ctx().animate_bool_with_time(Id::new("update-scroll-h"), resp.hovered() || resp.dragged(), 0.1);
+                let p = ui.painter();
+                p.rect_filled(track, widgets::cr(3.0), with_alpha(theme.stroke, 0.35));
+                p.rect_filled(thumb, widgets::cr(3.0), lerp_color(with_alpha(theme.text_faint, 0.8), theme.text_dim, h));
+            }
             let p = ui.painter();
             p.line_segment([Pos2::new(x0, body.bottom() + 4.0), Pos2::new(x0 + w, body.bottom() + 4.0)], Stroke::new(1.0, with_alpha(theme.stroke, 0.7)));
             let width = |label: &str| p.layout_no_wrap(label.to_string(), bold(13.0), theme.text).size().x + 40.0;
