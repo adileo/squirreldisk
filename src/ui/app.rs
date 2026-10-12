@@ -853,8 +853,11 @@ impl eframe::App for App {
     fn ui(&mut self, ui: &mut egui::Ui, frame: &mut eframe::Frame) {
         let ctx = ui.ctx().clone();
         #[cfg(target_os = "macos")]
-        if let Some(c) = super::macos::traffic_lights(frame) {
-            self.chrome = c;
+        match super::macos::traffic_lights(frame) {
+            Some(Some(c)) => self.chrome = c,
+            // full screen: same bar, starting at the window's edge
+            Some(None) => self.chrome.1 = 0.0,
+            None => {}
         }
         let _ = &frame;
         self.place_window(&ctx, frame);

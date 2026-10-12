@@ -2,8 +2,10 @@
 
 /// Vertical center (points from the top of the window) and right edge of the
 /// traffic-light buttons, read from AppKit so the custom top bar lines up
-/// exactly on every macOS version.
-pub fn traffic_lights(frame: &eframe::Frame) -> Option<(f32, f32)> {
+/// exactly on every macOS version. `Some(None)` in full screen: the buttons
+/// then live in a separate title-bar window that slides in from the top, and
+/// their position says nothing about ours.
+pub fn traffic_lights(frame: &eframe::Frame) -> Option<Option<(f32, f32)>> {
     use objc2_app_kit::{NSView, NSWindowButton};
     use raw_window_handle::{HasWindowHandle, RawWindowHandle};
     let handle = frame.window_handle().ok()?;
@@ -16,10 +18,13 @@ pub fn traffic_lights(frame: &eframe::Frame) -> Option<(f32, f32)> {
     let height = content.frame().size.height;
     let close = window.standardWindowButton(NSWindowButton::CloseButton)?;
     let zoom = window.standardWindowButton(NSWindowButton::ZoomButton)?;
+    if close.window().as_deref().map(std::ptr::from_ref) != Some(std::ptr::from_ref(&*window)) {
+        return Some(None);
+    }
     let c = close.convertRect_toView(close.bounds(), None);
     let z = zoom.convertRect_toView(zoom.bounds(), None);
     let center_from_top = height - (c.origin.y + c.size.height / 2.0);
-    Some((center_from_top as f32, (z.origin.x + z.size.width) as f32))
+    Some(Some((center_from_top as f32, (z.origin.x + z.size.width) as f32)))
 }
 
 /// Replaces the Dock tile image (PNG bytes). Must run on the main thread.
