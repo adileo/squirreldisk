@@ -1,5 +1,6 @@
 //! Command line: `squirreldisk scan <folder>` prints what uses the space,
 //! without opening a window. Part of every build, the headless one too.
+//! When the app is open and one of its scans has the folder, the app answers.
 
 use crate::scan::local;
 use crate::tree::{fmt_count, fmt_size, Kind, Tree};
@@ -15,11 +16,13 @@ Usage:
   squirreldisk                        open the app
   squirreldisk <folder>               open the app and scan <folder>
   squirreldisk scan <folder> [options]
-                                      scan <folder> and print the largest items
+                                      scan <folder> and print the largest items;
+                                      the open app answers when it has scanned it
 Options for scan:
   -d, --depth <n>   levels of subfolders to show (default 1)
   -n, --top <n>     largest items shown per folder, 0 for all (default 20)
       --json        print JSON instead (the same items, as a tree)
+      --fresh       scan again, even when the open app has the folder
 
   squirreldisk --version
   squirreldisk --help
@@ -65,16 +68,20 @@ pub fn main(args: &[String]) -> i32 {
     }
 }
 
+/// Also the request to the open app, as JSON.
+#[derive(serde::Serialize, serde::Deserialize)]
 struct Options {
     path: PathBuf,
     depth: usize,
     top: usize,
     json: bool,
+    #[serde(skip)]
+    fresh: bool,
 }
 
 impl Options {
     fn parse(args: &[String]) -> Result<Options, String> {
-        let mut o = Options { path: PathBuf::new(), depth: 1, top: 20, json: false };
+        let mut o = Options { path: PathBuf::new(), depth: 1, top: 20, json: false, fresh: false };
         let mut path = None;
         let mut it = args.iter();
         while let Some(a) = it.next() {
@@ -85,6 +92,7 @@ impl Options {
                 "-d" | "--depth" => o.depth = number(a)?,
                 "-n" | "--top" => o.top = number(a)?,
                 "--json" => o.json = true,
+                "--fresh" => o.fresh = true,
                 s if s.starts_with('-') && s.len() > 1 => return Err(format!("unknown option {s}")),
                 _ if path.is_some() => return Err("scan takes one folder".into()),
                 _ => path = Some(PathBuf::from(a)),
@@ -95,11 +103,20 @@ impl Options {
     }
 }
 
-fn scan(o: Options) -> i32 {
+fn scan(mut o: Options) -> i32 {
     let path = absolute(&o.path);
     if !path.is_dir() {
         eprintln!("squirreldisk: {}: not a folder", o.path.display());
         return 1;
+    }
+    o.path = path.clone();
+    #[cfg(unix)]
+    if !o.fresh {
+        let answer = crate::ipc::socket_path().zip(serde_json::to_string(&o).ok()).and_then(|(socket, request)| crate::ipc::ask(&socket, &request));
+        if let Some(text) = answer {
+            let _ = std::io::stdout().write_all(text.as_bytes()); // no panic when piped to `head`
+            return 0;
+        }
     }
     let started = Instant::now();
     let handle = local::start(path.clone(), path.to_string_lossy().into_owned());
@@ -115,20 +132,73 @@ fn scan(o: Options) -> i32 {
         eprint!("\r\x1b[2K");
     }
     let tree = handle.tree.read().unwrap();
-    let out = std::io::stdout();
-    let mut out = std::io::BufWriter::new(out.lock());
+    let text = render(&tree, tree.root, &o, &format!("{:.1}s", started.elapsed().as_secs_f32()), None);
+    let mut out = std::io::stdout().lock();
+    let _ = out.write_all(text.as_bytes());
+    let _ = out.flush();
+    0
+}
+
+/// What `scan` prints for the folder `o.path`, node `id` of `tree`: the
+/// largest items as text, or as JSON.
+fn render(tree: &Tree, id: u32, o: &Options, note: &str, from_app: Option<FromApp>) -> String {
+    let mut out = Vec::new();
     if o.json {
-        let json = node_json(&tree, tree.root, &o, 0);
+        let mut json = node_json(tree, id, o, 0);
+        json.name = o.path.to_string_lossy().into_owned();
+        json.from_app = from_app;
         let _ = serde_json::to_writer_pretty(&mut out, &json);
         let _ = writeln!(out);
     } else {
-        let root = tree.get(tree.root);
-        let _ = writeln!(out, "{}  {} · {} files · {:.1}s", path.display(), fmt_size(root.size), fmt_count(root.files as u64), started.elapsed().as_secs_f32());
+        let n = tree.get(id);
+        let _ = writeln!(out, "{}  {} · {} files · {note}", o.path.display(), fmt_size(n.size), fmt_count(n.files as u64));
         let _ = writeln!(out);
-        print_children(&mut out, &tree, tree.root, &o, 1, "", root.size.max(1));
+        print_children(&mut out, tree, id, o, 1, "", n.size.max(1));
     }
-    let _ = out.flush();
-    0
+    String::from_utf8_lossy(&out).into_owned()
+}
+
+/// The open app's answer to a `scan` request: what `scan` prints, from the
+/// finished scan that has the folder (the one rooted closest to it). Empty
+/// when no scan has it: the command line then scans by itself.
+#[cfg(all(unix, feature = "gui"))]
+pub fn answer(scans: &std::sync::Mutex<crate::ipc::Scans>, request: &str) -> String {
+    let Ok(o) = serde_json::from_str::<Options>(request) else { return String::new() };
+    let mut names = vec![o.path.to_string_lossy().into_owned()];
+    // On macOS a startup-disk scan reaches the Data volume through its
+    // firmlinks: /System/Volumes/Data/Users is the /Users it has.
+    #[cfg(target_os = "macos")]
+    if let Some(rest) = names[0].strip_prefix("/System/Volumes/Data").filter(|r| r.is_empty() || r.starts_with('/')) {
+        names.push(if rest.is_empty() { "/".into() } else { rest.into() });
+    }
+    let found = scans
+        .lock()
+        .unwrap()
+        .0
+        .iter()
+        .filter_map(|s| {
+            let t = s.tree.read().unwrap();
+            let id = names.iter().map(|n| t.find_path(n)).find(|&(_, exact)| exact)?.0;
+            (t.get(id).kind == Kind::Dir).then(|| (t.root_path.len(), s.tree.clone(), id, s.watched, s.finished.elapsed().as_secs()))
+        })
+        .max_by_key(|f| f.0);
+    let Some((_, tree, id, watched, age)) = found else { return String::new() };
+    let tree = tree.read().unwrap();
+    if !tree.is_alive(id) {
+        return String::new();
+    }
+    // a watched scan follows the disk; any other is as old as it is
+    let note = if watched { "from the open app".to_string() } else { format!("from the open app, scanned {} ago", fmt_age(age)) };
+    render(&tree, id, &o, &note, Some(FromApp { watched, scanned_seconds_ago: age }))
+}
+
+#[cfg(all(unix, feature = "gui"))]
+fn fmt_age(secs: u64) -> String {
+    match secs {
+        0..=89 => format!("{secs} s"),
+        90..=5399 => format!("{} min", (secs + 30) / 60),
+        _ => format!("{} h", (secs + 1800) / 3600),
+    }
 }
 
 /// The children of `id` worth showing: biggest first, at most `top`, and the
@@ -191,6 +261,16 @@ struct JsonNode {
     /// The children left out by `--top`.
     #[serde(skip_serializing_if = "Option::is_none")]
     more: Option<JsonMore>,
+    /// On the first node, when the open app answered from its own scan.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    from_app: Option<FromApp>,
+}
+
+#[derive(serde::Serialize)]
+struct FromApp {
+    /// The app keeps this scan current as files change.
+    watched: bool,
+    scanned_seconds_ago: u64,
 }
 
 #[derive(serde::Serialize)]
@@ -210,7 +290,7 @@ fn node_json(tree: &Tree, id: u32, o: &Options, depth: usize) -> JsonNode {
         Kind::Link => "link",
     };
     let name = if id == tree.root { tree.root_path.clone() } else { n.name.to_string() };
-    let mut v = JsonNode { name, kind, size: n.size, files: n.files, denied: n.denied(), children: None, more: None };
+    let mut v = JsonNode { name, kind, size: n.size, files: n.files, denied: n.denied(), children: None, more: None, from_app: None };
     if depth < o.depth && n.kind == Kind::Dir {
         let (kids, more, more_size) = shown(tree, id, o.top);
         v.children = Some(kids.iter().map(|&c| node_json(tree, c, o, depth + 1)).collect());
@@ -230,7 +310,8 @@ mod tests {
     #[test]
     fn parses_scan_options() {
         let o = Options::parse(&args("some/dir -d 3 --top 5 --json")).unwrap();
-        assert_eq!((o.path, o.depth, o.top, o.json), (PathBuf::from("some/dir"), 3, 5, true));
+        assert_eq!((o.path, o.depth, o.top, o.json, o.fresh), (PathBuf::from("some/dir"), 3, 5, true, false));
+        assert!(Options::parse(&args(". --fresh")).unwrap().fresh);
         assert!(Options::parse(&args("-d x")).is_err());
         assert!(Options::parse(&args("a b")).is_err());
         assert!(Options::parse(&args("--nope a")).is_err());
@@ -244,7 +325,7 @@ mod tests {
         std::fs::create_dir_all(dir.join("big")).unwrap();
         std::fs::write(dir.join("big/a.bin"), vec![1u8; 400_000]).unwrap();
         std::fs::write(dir.join("small.bin"), vec![1u8; 50_000]).unwrap();
-        let o = Options { path: dir.clone(), depth: 2, top: 20, json: true };
+        let o = Options { path: dir.clone(), depth: 2, top: 20, json: true, fresh: false };
         let handle = local::start(dir.clone(), "x".into());
         while !handle.progress.is_done() {
             std::thread::sleep(Duration::from_millis(10));

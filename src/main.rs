@@ -6,6 +6,8 @@
 mod agent;
 mod cli;
 mod delete;
+#[cfg(unix)]
+mod ipc;
 mod rclone;
 mod safety;
 mod scan;
