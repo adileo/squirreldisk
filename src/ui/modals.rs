@@ -88,6 +88,7 @@ impl App {
             Modal::Deleting { session, finished_at } => self.deleting_modal(ctx, session, finished_at),
             Modal::Error { title: t, message } => self.error_modal(ctx, t, message),
             Modal::SshAuth { host, path, secret, retry } => self.ssh_auth_modal(ctx, host, path, secret, retry),
+            Modal::Update { scroll, content_h } => self.update_modal(ctx, scroll, content_h),
         };
         // a modal may have opened another one
         if self.modal.is_none() {
@@ -152,6 +153,100 @@ impl App {
         } else {
             Some(Modal::SshAuth { host, path, secret, retry })
         }
+    }
+
+    /// A newer version: what is new in it, and update or restart now, or later.
+    fn update_modal(&mut self, ctx: &egui::Context, mut scroll: f32, mut content_h: f32) -> Option<Modal> {
+        use crate::update::{Note, State as UpState};
+        let theme = self.theme.clone();
+        let state = self.updater.state();
+        let release = self.updater.latest.lock().unwrap().clone()?;
+        let (action, sub, enabled) = match &state {
+            UpState::Ready(_) if self.update_restart => {
+                crate::update::restart();
+                return None;
+            }
+            UpState::Ready(v) => (tr("Restart now").to_string(), Some(trf("{version} is ready — restart to update", &[("version", v)])), true),
+            UpState::Available(_) => (tr("Update now").to_string(), None, true),
+            UpState::Downloading => {
+                let d = self.updater.downloaded.load(Ordering::Relaxed);
+                let total = self.updater.total.load(Ordering::Relaxed).max(1);
+                (trf("Downloading {percent}%", &[("percent", &(d * 100 / total))]), Some(tr("Downloading update…").to_string()), false)
+            }
+            // the update failed or went away: the ribbon and Settings say so
+            _ => return None,
+        };
+        let lines = crate::update::notes(&release.notes);
+        let head = if sub.is_some() { 92.0 } else { 70.0 };
+        let (mut later, mut go) = (false, false);
+        let size = Vec2::new(560.0, (head + content_h + 78.0).clamp(230.0, 640.0));
+        let bd = modal_frame(ctx, self.modal_opened, size, &theme, |ui, card| {
+            title(ui, card, &trf("Version {version} is available", &[("version", &release.version)]), sub.as_deref(), &theme);
+            let (x0, w) = (card.left() + 28.0, card.width() - 56.0);
+            // Scrollable middle: title and buttons stay put.
+            let body = Rect::from_min_max(Pos2::new(card.left(), card.top() + head), Pos2::new(card.right(), card.bottom() - 70.0));
+            if ui.rect_contains_pointer(body) {
+                scroll -= ui.input(|i| i.smooth_scroll_delta.y);
+            }
+            scroll = scroll.clamp(0.0, (content_h - body.height()).max(0.0));
+            ui.scope_builder(egui::UiBuilder::new().max_rect(body), |ui| {
+                ui.set_clip_rect(body.intersect(ui.clip_rect()));
+                let top = body.top() + 4.0 - scroll;
+                let mut y = top;
+                let p = ui.painter().clone();
+                p.text(Pos2::new(x0, y), Align2::LEFT_TOP, tr("WHAT'S NEW"), bold(11.0), theme.text_faint);
+                y += 24.0;
+                for line in &lines {
+                    match line {
+                        Note::Heading(h) => {
+                            y += 6.0;
+                            y += wrapped(ui, Pos2::new(x0, y), w, h, bold(13.5), theme.text) + 8.0;
+                        }
+                        Note::Text(t) => y += wrapped(ui, Pos2::new(x0, y), w, t, font(13.0), theme.text_dim) + 8.0,
+                        Note::Bullet(lead, rest) => {
+                            p.circle_filled(Pos2::new(x0 + 5.0, y + 8.5), 2.2, theme.text_faint);
+                            let mut job = egui::text::LayoutJob::default();
+                            job.wrap.max_width = w - 18.0;
+                            if !lead.is_empty() {
+                                job.append(lead, 0.0, egui::TextFormat { font_id: bold(13.0), color: theme.text, ..Default::default() });
+                            }
+                            let rest = if lead.is_empty() { rest.clone() } else { format!(" {rest}") };
+                            job.append(&rest, 0.0, egui::TextFormat { font_id: font(13.0), color: theme.text_dim, ..Default::default() });
+                            let g = p.layout_job(job);
+                            y += g.size().y + 8.0;
+                            p.galley(Pos2::new(x0 + 18.0, y - g.size().y - 8.0), g, theme.text_dim);
+                        }
+                    }
+                }
+                content_h = y - top + 8.0;
+            });
+            let p = ui.painter();
+            p.line_segment([Pos2::new(x0, body.bottom() + 4.0), Pos2::new(x0 + w, body.bottom() + 4.0)], Stroke::new(1.0, with_alpha(theme.stroke, 0.7)));
+            let width = |label: &str| p.layout_no_wrap(label.to_string(), bold(13.0), theme.text).size().x + 40.0;
+            let (wa, wl) = (width(&action).max(120.0), width(tr("Later")).max(90.0));
+            let ra = Rect::from_min_size(Pos2::new(card.right() - 28.0 - wa, card.bottom() - 54.0), Vec2::new(wa, 36.0));
+            let rl = Rect::from_min_size(Pos2::new(ra.left() - 10.0 - wl, ra.top()), Vec2::new(wl, 36.0));
+            mark("update-later", rl);
+            mark("update-go", ra);
+            later = widgets::button(ui, rl, Id::new("update-later"), tr("Later"), None, BtnStyle::Subtle, &theme).clicked();
+            go = widgets::button_ex(ui, ra, Id::new("update-go"), &action, None, BtnStyle::Primary, &theme, enabled).clicked();
+        });
+        if go {
+            match state {
+                UpState::Ready(_) => crate::update::restart(),
+                UpState::Available(r) => {
+                    self.update_restart = true;
+                    self.updater.install(r, ctx.clone());
+                }
+                _ => {}
+            }
+        }
+        if later || bd {
+            // the ribbon stays; an update already started goes on in the background
+            self.update_restart = false;
+            return None;
+        }
+        Some(Modal::Update { scroll, content_h })
     }
 
     fn error_modal(&mut self, ctx: &egui::Context, t: String, message: String) -> Option<Modal> {

@@ -277,5 +277,9 @@
   "Scan folders from a terminal, without the window: {command}": "बिना विंडो के टर्मिनल से फ़ोल्डर स्कैन करें: {command}",
   "{path} already belongs to another program": "{path} पहले से किसी दूसरे प्रोग्राम का है",
   "Couldn't install the command: {error}": "कमांड इंस्टॉल नहीं हो सका: {error}",
-  "Not available in development builds": "डेवलपमेंट बिल्ड में उपलब्ध नहीं"
+  "Not available in development builds": "डेवलपमेंट बिल्ड में उपलब्ध नहीं",
+  "WHAT'S NEW": "नया क्या है",
+  "Later": "बाद में",
+  "Restart now": "अभी रीस्टार्ट करें",
+  "Update now": "अभी अपडेट करें"
 }

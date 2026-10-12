@@ -277,5 +277,9 @@
   "Scan folders from a terminal, without the window: {command}": "Scan mappen vanuit een terminal, zonder venster: {command}",
   "{path} already belongs to another program": "{path} is al van een ander programma",
   "Couldn't install the command: {error}": "Kan de opdracht niet installeren: {error}",
-  "Not available in development builds": "Niet beschikbaar in ontwikkelbuilds"
+  "Not available in development builds": "Niet beschikbaar in ontwikkelbuilds",
+  "WHAT'S NEW": "WAT IS ER NIEUW",
+  "Later": "Later",
+  "Restart now": "Nu opnieuw starten",
+  "Update now": "Nu bijwerken"
 }

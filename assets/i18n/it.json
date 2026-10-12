@@ -277,5 +277,9 @@
   "Scan folders from a terminal, without the window: {command}": "Analizza cartelle dal terminale, senza finestra: {command}",
   "{path} already belongs to another program": "{path} appartiene già a un altro programma",
   "Couldn't install the command: {error}": "Impossibile installare il comando: {error}",
-  "Not available in development builds": "Non disponibile nelle build di sviluppo"
+  "Not available in development builds": "Non disponibile nelle build di sviluppo",
+  "WHAT'S NEW": "NOVITÀ",
+  "Later": "Più tardi",
+  "Restart now": "Riavvia ora",
+  "Update now": "Aggiorna ora"
 }

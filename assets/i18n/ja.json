@@ -277,5 +277,9 @@
   "Scan folders from a terminal, without the window: {command}": "ウィンドウを開かずにターミナルからフォルダをスキャン：{command}",
   "{path} already belongs to another program": "{path} は既に別のプログラムが使用しています",
   "Couldn't install the command: {error}": "コマンドをインストールできませんでした：{error}",
-  "Not available in development builds": "開発ビルドでは利用できません"
+  "Not available in development builds": "開発ビルドでは利用できません",
+  "WHAT'S NEW": "新機能",
+  "Later": "あとで",
+  "Restart now": "今すぐ再起動",
+  "Update now": "今すぐアップデート"
 }

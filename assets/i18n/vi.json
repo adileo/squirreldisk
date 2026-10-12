@@ -277,5 +277,9 @@
   "Scan folders from a terminal, without the window: {command}": "Quét thư mục từ terminal, không cần cửa sổ: {command}",
   "{path} already belongs to another program": "{path} đã thuộc về một chương trình khác",
   "Couldn't install the command: {error}": "Không thể cài đặt lệnh: {error}",
-  "Not available in development builds": "Không khả dụng trong bản dựng phát triển"
+  "Not available in development builds": "Không khả dụng trong bản dựng phát triển",
+  "WHAT'S NEW": "CÓ GÌ MỚI",
+  "Later": "Để sau",
+  "Restart now": "Khởi động lại ngay",
+  "Update now": "Cập nhật ngay"
 }

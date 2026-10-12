@@ -277,5 +277,9 @@
   "Scan folders from a terminal, without the window: {command}": "Скануйте теки з термінала, без вікна: {command}",
   "{path} already belongs to another program": "{path} уже належить іншій програмі",
   "Couldn't install the command: {error}": "Не вдалося встановити команду: {error}",
-  "Not available in development builds": "Недоступно у збірках для розробки"
+  "Not available in development builds": "Недоступно у збірках для розробки",
+  "WHAT'S NEW": "ЩО НОВОГО",
+  "Later": "Пізніше",
+  "Restart now": "Перезапустити зараз",
+  "Update now": "Оновити зараз"
 }

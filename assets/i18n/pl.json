@@ -277,5 +277,9 @@
   "Scan folders from a terminal, without the window: {command}": "Skanuj foldery z terminala, bez okna: {command}",
   "{path} already belongs to another program": "{path} należy już do innego programu",
   "Couldn't install the command: {error}": "Nie udało się zainstalować polecenia: {error}",
-  "Not available in development builds": "Niedostępne w wersjach deweloperskich"
+  "Not available in development builds": "Niedostępne w wersjach deweloperskich",
+  "WHAT'S NEW": "CO NOWEGO",
+  "Later": "Później",
+  "Restart now": "Uruchom ponownie teraz",
+  "Update now": "Zaktualizuj teraz"
 }

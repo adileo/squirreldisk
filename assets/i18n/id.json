@@ -277,5 +277,9 @@
   "Scan folders from a terminal, without the window: {command}": "Pindai folder dari terminal, tanpa jendela: {command}",
   "{path} already belongs to another program": "{path} sudah dimiliki program lain",
   "Couldn't install the command: {error}": "Tidak dapat menginstal perintah: {error}",
-  "Not available in development builds": "Tidak tersedia di build pengembangan"
+  "Not available in development builds": "Tidak tersedia di build pengembangan",
+  "WHAT'S NEW": "YANG BARU",
+  "Later": "Nanti",
+  "Restart now": "Mulai ulang sekarang",
+  "Update now": "Perbarui sekarang"
 }

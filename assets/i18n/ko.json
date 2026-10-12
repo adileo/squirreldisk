@@ -277,5 +277,9 @@
   "Scan folders from a terminal, without the window: {command}": "창 없이 터미널에서 폴더 스캔: {command}",
   "{path} already belongs to another program": "{path}은(는) 이미 다른 프로그램이 사용 중입니다",
   "Couldn't install the command: {error}": "명령을 설치하지 못했습니다: {error}",
-  "Not available in development builds": "개발 빌드에서는 사용할 수 없습니다"
+  "Not available in development builds": "개발 빌드에서는 사용할 수 없습니다",
+  "WHAT'S NEW": "새로운 기능",
+  "Later": "나중에",
+  "Restart now": "지금 다시 시작",
+  "Update now": "지금 업데이트"
 }

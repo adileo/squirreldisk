@@ -277,5 +277,9 @@
   "Scan folders from a terminal, without the window: {command}": "สแกนโฟลเดอร์จากเทอร์มินัลโดยไม่ต้องเปิดหน้าต่าง: {command}",
   "{path} already belongs to another program": "{path} เป็นของโปรแกรมอื่นอยู่แล้ว",
   "Couldn't install the command: {error}": "ติดตั้งคำสั่งไม่ได้: {error}",
-  "Not available in development builds": "ไม่พร้อมใช้งานในบิลด์สำหรับการพัฒนา"
+  "Not available in development builds": "ไม่พร้อมใช้งานในบิลด์สำหรับการพัฒนา",
+  "WHAT'S NEW": "มีอะไรใหม่",
+  "Later": "ภายหลัง",
+  "Restart now": "รีสตาร์ตตอนนี้",
+  "Update now": "อัปเดตตอนนี้"
 }

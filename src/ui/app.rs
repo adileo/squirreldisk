@@ -258,6 +258,8 @@ pub enum Modal {
     Error { title: String, message: String },
     /// ssh needs a key passphrase or a password.
     SshAuth { host: String, path: String, secret: String, retry: bool },
+    /// A newer version: what is new, update or restart now, or later.
+    Update { scroll: f32, content_h: f32 },
 }
 
 /// Drives the animated Dock tile on macOS.
@@ -320,6 +322,10 @@ pub struct App {
     pub home_content_h: f32,
     /// Last time we asked GitHub for a new version.
     pub update_checked: Instant,
+    /// Version the update window was last shown for: once per version and launch.
+    pub update_prompted: Option<String>,
+    /// "Update now" was chosen: restart as soon as the update is installed.
+    pub update_restart: bool,
     pub sponsors: crate::sponsor::Sponsors,
     /// App icon as a texture, for the home header.
     pub logo: Option<egui::TextureHandle>,
@@ -475,6 +481,8 @@ impl App {
             home_scroll: 0.0,
             home_content_h: 0.0,
             update_checked: Instant::now(),
+            update_prompted: None,
+            update_restart: false,
             sponsors: crate::sponsor::Sponsors::start(settings.sponsor_measurement),
             logo: None,
             dock: DockState::default(),
@@ -637,19 +645,38 @@ impl App {
         use crate::update::State;
         let state = self.updater.state();
         if self.settings.auto_update
-            && self.update_checked.elapsed() > Duration::from_secs(6 * 3600)
+            && self.update_checked.elapsed() > Duration::from_secs(3600)
             && matches!(state, State::Idle | State::UpToDate | State::Failed(_))
         {
             self.update_checked = Instant::now();
             self.updater.check(ctx.clone());
         }
         if self.settings.auto_install {
-            if let State::Available(r) = state {
+            if let State::Available(r) = &state {
                 if r.asset_url.is_some() {
-                    self.updater.install(r, ctx.clone());
+                    self.updater.install(r.clone(), ctx.clone());
                 }
             }
         }
+        self.offer_update(&state);
+    }
+
+    /// Opens the update window for a version that is installed and waits for
+    /// a restart, or that waits to be installed. Once per version, and never
+    /// over a scan or another window.
+    pub fn offer_update(&mut self, state: &crate::update::State) {
+        use crate::update::State;
+        let version = match state {
+            State::Ready(v) => v,
+            State::Available(r) if !self.settings.auto_install && r.asset_url.is_some() => &r.version,
+            _ => return,
+        };
+        let busy = self.modal.is_some() || self.ctx_menu.is_some() || self.drag.is_some() || self.director.is_some() || self.sessions.iter().any(|s| s.is_scanning());
+        if busy || self.update_prompted.as_ref() == Some(version) {
+            return;
+        }
+        self.update_prompted = Some(version.clone());
+        self.open_modal(Modal::Update { scroll: 0.0, content_h: 300.0 });
     }
 
     pub fn sfx(&mut self, s: Sfx) {

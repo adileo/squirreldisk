@@ -277,5 +277,9 @@
   "Scan folders from a terminal, without the window: {command}": "ونڈو کے بغیر ٹرمینل سے فولڈرز اسکین کریں: {command}",
   "{path} already belongs to another program": "{path} پہلے سے کسی اور پروگرام کا ہے",
   "Couldn't install the command: {error}": "کمانڈ انسٹال نہیں ہو سکی: {error}",
-  "Not available in development builds": "ڈیولپمنٹ بلڈز میں دستیاب نہیں"
+  "Not available in development builds": "ڈیولپمنٹ بلڈز میں دستیاب نہیں",
+  "WHAT'S NEW": "نیا کیا ہے",
+  "Later": "بعد میں",
+  "Restart now": "ابھی ری اسٹارٹ کریں",
+  "Update now": "ابھی اپ ڈیٹ کریں"
 }

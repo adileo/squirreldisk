@@ -277,5 +277,9 @@
   "Scan folders from a terminal, without the window: {command}": "اسکن پوشه‌ها از ترمینال، بدون پنجره: {command}",
   "{path} already belongs to another program": "{path} از قبل متعلق به برنامه دیگری است",
   "Couldn't install the command: {error}": "نصب فرمان ممکن نشد: {error}",
-  "Not available in development builds": "در نسخه‌های توسعه در دسترس نیست"
+  "Not available in development builds": "در نسخه‌های توسعه در دسترس نیست",
+  "WHAT'S NEW": "چه چیزی تازه است",
+  "Later": "بعداً",
+  "Restart now": "اکنون راه‌اندازی مجدد",
+  "Update now": "اکنون به‌روزرسانی"
 }
