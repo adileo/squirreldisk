@@ -7,6 +7,7 @@
 //! * `SQD_MODAL=settings|settings-end|ssh|sshauth|rclone|delete` open a modal before shooting
 //! * `SQD_COLLECT=2`         collect the N biggest children of the root
 //! * `SQD_QUIT=1`            quit after the last screenshot
+//! * `SQD_FULLSCREEN=1`      go full screen at launch
 //! * `SQD_UPDATE=available|downloading|ready` fake an update, to see the button
 
 use super::app::{App, Modal, Target};
@@ -47,6 +48,9 @@ impl App {
         }
         if !self.debug.started {
             self.debug.started = true;
+            if std::env::var_os("SQD_FULLSCREEN").is_some() {
+                ctx.send_viewport_cmd(egui::ViewportCommand::Fullscreen(true));
+            }
             if let Ok(p) = std::env::var("SQD_SCAN") {
                 if let Some(v) = self.volumes.iter().find(|v| v.mount == p).cloned() {
                     self.start_session(Target::Volume(v));
