@@ -204,6 +204,9 @@ pub struct RawEntry {
     pub dev: u64,
     pub ino: u64,
     pub nlink: u32,
+    /// APFS: id of the data shared with this file's exact clones, when it
+    /// has any (`cp -c`, Finder duplicates, package manager caches).
+    pub clone: Option<u64>,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -224,6 +227,11 @@ pub fn list_bulk(path: &Path) -> std::io::Result<Vec<RawEntry>> {
     use std::ffi::CString;
     use std::os::unix::ffi::OsStrExt;
     const ATTR_CMN_ERROR: u32 = 0x2000_0000;
+    // "extended common" attributes, asked for in `forkattr`
+    const FSOPT_ATTR_CMN_EXTENDED: u64 = 0x20;
+    const ATTR_CMNEXT_CLONEID: u32 = 0x100;
+    const ATTR_CMNEXT_EXT_FLAGS: u32 = 0x200;
+    const EF_SHARES_ALL_BLOCKS: u64 = 0x40;
     const VREG: u32 = 1;
     const VDIR: u32 = 2;
     const VLNK: u32 = 5;
@@ -253,8 +261,9 @@ pub fn list_bulk(path: &Path) -> std::io::Result<Vec<RawEntry>> {
         volattr: 0,
         dirattr: libc::ATTR_DIR_MOUNTSTATUS,
         fileattr: libc::ATTR_FILE_LINKCOUNT | libc::ATTR_FILE_ALLOCSIZE,
-        forkattr: 0,
+        forkattr: ATTR_CMNEXT_CLONEID | ATTR_CMNEXT_EXT_FLAGS,
     };
+    let mut options = FSOPT_ATTR_CMN_EXTENDED;
     let mut buf = vec![0u8; 128 * 1024];
     let mut out = Vec::new();
     let rd_u32 = |b: &[u8], o: usize| u32::from_ne_bytes(b[o..o + 4].try_into().unwrap());
@@ -266,11 +275,18 @@ pub fn list_bulk(path: &Path) -> std::io::Result<Vec<RawEntry>> {
                 &mut al as *mut _ as *mut libc::c_void,
                 buf.as_mut_ptr() as *mut libc::c_void,
                 buf.len(),
-                0,
+                options,
             )
         };
         if n < 0 {
-            return Err(std::io::Error::last_os_error());
+            let err = std::io::Error::last_os_error();
+            // a file system that refuses the clone attributes: list without
+            if options != 0 && out.is_empty() && err.raw_os_error() == Some(libc::EINVAL) {
+                options = 0;
+                al.forkattr = 0;
+                continue;
+            }
+            return Err(err);
         }
         if n == 0 {
             break;
@@ -283,6 +299,7 @@ pub fn list_bulk(path: &Path) -> std::io::Result<Vec<RawEntry>> {
             let returned_common = rd_u32(e, p);
             let returned_dir = rd_u32(e, p + 8);
             let returned_file = rd_u32(e, p + 12);
+            let returned_ext = rd_u32(e, p + 16);
             p += 20;
             // name
             let name_ref = p;
@@ -331,7 +348,18 @@ pub fn list_bulk(path: &Path) -> std::io::Result<Vec<RawEntry>> {
             let mut alloc = 0;
             if returned_file & libc::ATTR_FILE_ALLOCSIZE != 0 && p + 8 <= e.len() {
                 alloc = rd_u64(e, p);
+                p += 8;
             }
+            let mut clone_id = 0;
+            if returned_ext & ATTR_CMNEXT_CLONEID != 0 && p + 8 <= e.len() {
+                clone_id = rd_u64(e, p);
+                p += 8;
+            }
+            let mut ext_flags = 0;
+            if returned_ext & ATTR_CMNEXT_EXT_FLAGS != 0 && p + 8 <= e.len() {
+                ext_flags = rd_u64(e, p);
+            }
+            let clone = (clone_id != 0 && ext_flags & EF_SHARES_ALL_BLOCKS != 0).then_some(clone_id);
             off += len;
             if returned_common & ATTR_CMN_ERROR != 0 && err != 0 {
                 continue;
@@ -363,6 +391,7 @@ pub fn list_bulk(path: &Path) -> std::io::Result<Vec<RawEntry>> {
                 dev,
                 ino,
                 nlink,
+                clone,
             });
         }
     }
