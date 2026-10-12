@@ -166,6 +166,63 @@ pub fn volume_space(path: &Path) -> Option<(u64, u64)> {
     }
 }
 
+/// The parts of a volume's hidden space that can be named, as (name, bytes):
+/// space the volume reports as used, but which is not in its files.
+pub fn hidden_parts(root: &Path) -> Vec<(String, u64)> {
+    #[allow(unused_mut)]
+    let mut parts: Vec<(String, u64)> = Vec::new();
+    // APFS volumes share the space of their container: the other mounted
+    // volumes of the same one (VM, Preboot, ...) take from this volume's.
+    #[cfg(target_os = "macos")]
+    {
+        use std::ffi::CStr;
+        let container = |m: &libc::statfs| -> Option<String> {
+            let text = |b: &[libc::c_char]| unsafe { CStr::from_ptr(b.as_ptr()) }.to_string_lossy().into_owned();
+            let disk = text(&m.f_mntfromname).strip_prefix("/dev/disk")?.to_string();
+            let number: String = disk.chars().take_while(|c| c.is_ascii_digit()).collect();
+            (text(&m.f_fstypename) == "apfs" && !number.is_empty()).then_some(number)
+        };
+        let scanned = allowed_devices(root);
+        let mut mounts: *mut libc::statfs = std::ptr::null_mut();
+        let n = unsafe { libc::getmntinfo(&mut mounts, libc::MNT_NOWAIT) };
+        // SAFETY: getmntinfo returns `n` entries that stay valid for this thread's next call.
+        let mounts = if n > 0 && !mounts.is_null() { unsafe { std::slice::from_raw_parts(mounts, n as usize) } } else { &[] };
+        let own = mounts.iter().find(|m| unsafe { CStr::from_ptr(m.f_mntonname.as_ptr()) }.to_bytes() == root.as_os_str().as_encoded_bytes()).and_then(container);
+        for m in mounts {
+            let at = unsafe { CStr::from_ptr(m.f_mntonname.as_ptr()) };
+            let path = Path::new(std::str::from_utf8(at.to_bytes()).unwrap_or(""));
+            if own.is_none() || container(m) != own || device_of(path).is_none_or(|d| scanned.contains(&d)) {
+                continue;
+            }
+            #[repr(C, packed)]
+            struct Used {
+                len: u32,
+                bytes: u64,
+            }
+            let mut al = libc::attrlist { bitmapcount: libc::ATTR_BIT_MAP_COUNT, reserved: 0, commonattr: 0, volattr: libc::ATTR_VOL_INFO | libc::ATTR_VOL_SPACEUSED, dirattr: 0, fileattr: 0, forkattr: 0 };
+            let mut used = Used { len: 0, bytes: 0 };
+            let ok = unsafe { libc::getattrlist(at.as_ptr(), &mut al as *mut _ as *mut libc::c_void, &mut used as *mut _ as *mut libc::c_void, std::mem::size_of::<Used>(), 0) } == 0;
+            if let (true, Some(name)) = (ok, path.file_name()) {
+                parts.push((format!("{}{}", name.to_string_lossy(), crate::tree::HIDDEN_VOLUME_SUFFIX), used.bytes));
+            }
+        }
+    }
+    // ext4 and friends keep blocks only root can use: not free, and in no file.
+    #[cfg(all(unix, not(target_os = "macos")))]
+    {
+        use std::os::unix::ffi::OsStrExt;
+        if let Ok(c) = std::ffi::CString::new(root.as_os_str().as_bytes()) {
+            let mut st: libc::statvfs = unsafe { std::mem::zeroed() };
+            if unsafe { libc::statvfs(c.as_ptr(), &mut st) } == 0 {
+                let reserved = (st.f_bfree as u64).saturating_sub(st.f_bavail as u64) * st.f_frsize as u64;
+                parts.push((crate::tree::HIDDEN_RESERVED.to_string(), reserved));
+            }
+        }
+    }
+    let _ = root;
+    parts
+}
+
 /// Is `path` the root of a volume (i.e. is the reported "hidden space" meaningful)?
 pub fn is_volume_root(path: &Path) -> bool {
     if path.parent().is_none() {

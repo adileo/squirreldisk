@@ -277,5 +277,9 @@
   "Scan folders from a terminal, without the window: {command}": "창 없이 터미널에서 폴더 스캔: {command}",
   "{path} already belongs to another program": "{path}은(는) 이미 다른 프로그램이 사용 중입니다",
   "Couldn't install the command: {error}": "명령을 설치하지 못했습니다: {error}",
-  "Not available in development builds": "개발 빌드에서는 사용할 수 없습니다"
+  "Not available in development builds": "개발 빌드에서는 사용할 수 없습니다",
+  "{name} (system volume)": "{name}(시스템 볼륨)",
+  "Reserved by the file system": "파일 시스템 예약 공간",
+  "Unreadable folders and file system data": "읽을 수 없는 폴더 및 파일 시스템 데이터",
+  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "디스크에서 사용 중이지만 스캔이 읽을 수 있었던 파일에는 들어 있지 않은 공간입니다. 여기에서 열거나 삭제할 수 없습니다."
 }

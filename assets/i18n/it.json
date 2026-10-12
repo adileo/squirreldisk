@@ -277,5 +277,9 @@
   "Scan folders from a terminal, without the window: {command}": "Analizza cartelle dal terminale, senza finestra: {command}",
   "{path} already belongs to another program": "{path} appartiene già a un altro programma",
   "Couldn't install the command: {error}": "Impossibile installare il comando: {error}",
-  "Not available in development builds": "Non disponibile nelle build di sviluppo"
+  "Not available in development builds": "Non disponibile nelle build di sviluppo",
+  "{name} (system volume)": "{name} (volume di sistema)",
+  "Reserved by the file system": "Riservato dal file system",
+  "Unreadable folders and file system data": "Cartelle non leggibili e dati del file system",
+  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "Spazio in uso sul disco che non si trova in file che la scansione ha potuto leggere. Da qui non si può aprire né eliminare."
 }

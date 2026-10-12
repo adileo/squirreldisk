@@ -277,5 +277,9 @@
   "Scan folders from a terminal, without the window: {command}": "Quét thư mục từ terminal, không cần cửa sổ: {command}",
   "{path} already belongs to another program": "{path} đã thuộc về một chương trình khác",
   "Couldn't install the command: {error}": "Không thể cài đặt lệnh: {error}",
-  "Not available in development builds": "Không khả dụng trong bản dựng phát triển"
+  "Not available in development builds": "Không khả dụng trong bản dựng phát triển",
+  "{name} (system volume)": "{name} (ổ đĩa hệ thống)",
+  "Reserved by the file system": "Được hệ thống tệp dành riêng",
+  "Unreadable folders and file system data": "Thư mục không đọc được và dữ liệu hệ thống tệp",
+  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "Dung lượng đang dùng trên ổ đĩa nhưng không nằm trong các tệp mà quá trình quét đọc được. Không thể mở hoặc xóa từ đây."
 }

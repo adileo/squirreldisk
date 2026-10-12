@@ -277,5 +277,9 @@
   "Scan folders from a terminal, without the window: {command}": "ونڈو کے بغیر ٹرمینل سے فولڈرز اسکین کریں: {command}",
   "{path} already belongs to another program": "{path} پہلے سے کسی اور پروگرام کا ہے",
   "Couldn't install the command: {error}": "کمانڈ انسٹال نہیں ہو سکی: {error}",
-  "Not available in development builds": "ڈیولپمنٹ بلڈز میں دستیاب نہیں"
+  "Not available in development builds": "ڈیولپمنٹ بلڈز میں دستیاب نہیں",
+  "{name} (system volume)": "{name} (سسٹم والیوم)",
+  "Reserved by the file system": "فائل سسٹم کے لیے مخصوص",
+  "Unreadable folders and file system data": "ناقابلِ مطالعہ فولڈرز اور فائل سسٹم کا ڈیٹا",
+  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "ڈسک پر استعمال شدہ وہ جگہ جو اسکین کی پڑھی گئی فائلوں میں نہیں ہے۔ اسے یہاں سے کھولا یا حذف نہیں کیا جا سکتا۔"
 }

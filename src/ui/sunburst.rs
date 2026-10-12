@@ -183,7 +183,7 @@ pub fn layout(tree: &Tree, view: View, geo: &Geometry, rings: usize, theme: &The
                 Kind::Mount | Kind::Link => theme.text_faint,
             };
             out.push(Seg { key: c as u64, node: c, kind: SegKind::Node(n.kind), a0: a, a1: a + ang, depth, color, size: n.size });
-            if n.kind == Kind::Dir && (depth as usize) < rings && ang > min_angle * 1.5 && n.first_child != NONE {
+            if tree.can_enter(c) && (depth as usize) < rings && ang > min_angle * 1.5 && n.first_child != NONE {
                 stack.push((tree.sorted_children(c), 0, n.size.max(1), a, ang, depth + 1));
             }
             a += ang;

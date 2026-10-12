@@ -114,7 +114,8 @@ impl Builder {
 /// The template tree for the demo startup disk, including hidden space.
 fn startup_disk(name: &str) -> Tree {
     let mut t = startup_disk_files(name);
-    t.add_child_sized(0, "Hidden space", Kind::Hidden, HIDDEN, 0);
+    let volume = |name: &str, gb: u64| (format!("{name}{}", crate::tree::HIDDEN_VOLUME_SUFFIX), gb * GB);
+    t.add_hidden(HIDDEN, vec![volume("Preboot", 5), volume("VM", 3), volume("Recovery", 1)]);
     t
 }
 
@@ -243,7 +244,7 @@ pub fn start(name: String, mount: String) -> ScanHandle {
                 for &id in chunk {
                     let n = src.get(id);
                     let parent = map[n.parent as usize];
-                    let leaf = n.kind != Kind::Dir;
+                    let leaf = n.kind != Kind::Dir && n.first_child == NONE;
                     let nid = if leaf {
                         let nid = tr.add_child_sized(parent, &n.name, n.kind, n.size, n.files);
                         p.bytes.fetch_add(n.size, Ordering::Relaxed);
@@ -251,7 +252,7 @@ pub fn start(name: String, mount: String) -> ScanHandle {
                         nid
                     } else {
                         p.dirs.fetch_add(1, Ordering::Relaxed);
-                        tr.add_child(parent, &n.name, Kind::Dir, 0, 0)
+                        tr.add_child(parent, &n.name, n.kind, 0, 0)
                     };
                     tr.get_mut(nid).flags = n.flags;
                     map[id as usize] = nid;

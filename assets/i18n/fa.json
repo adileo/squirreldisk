@@ -277,5 +277,9 @@
   "Scan folders from a terminal, without the window: {command}": "اسکن پوشه‌ها از ترمینال، بدون پنجره: {command}",
   "{path} already belongs to another program": "{path} از قبل متعلق به برنامه دیگری است",
   "Couldn't install the command: {error}": "نصب فرمان ممکن نشد: {error}",
-  "Not available in development builds": "در نسخه‌های توسعه در دسترس نیست"
+  "Not available in development builds": "در نسخه‌های توسعه در دسترس نیست",
+  "{name} (system volume)": "{name} (درایو سیستم)",
+  "Reserved by the file system": "رزروشده توسط سیستم فایل",
+  "Unreadable folders and file system data": "پوشه‌های غیرقابل خواندن و داده‌های سیستم فایل",
+  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "فضای استفاده‌شده روی دیسک که در فایل‌های خوانده‌شده توسط اسکن نیست. از اینجا نمی‌توان آن را باز یا حذف کرد."
 }

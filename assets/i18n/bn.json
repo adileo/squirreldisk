@@ -277,5 +277,9 @@
   "Scan folders from a terminal, without the window: {command}": "উইন্ডো ছাড়াই টার্মিনাল থেকে ফোল্ডার স্ক্যান করুন: {command}",
   "{path} already belongs to another program": "{path} ইতিমধ্যে অন্য একটি প্রোগ্রামের",
   "Couldn't install the command: {error}": "কমান্ড ইনস্টল করা যায়নি: {error}",
-  "Not available in development builds": "ডেভেলপমেন্ট বিল্ডে উপলব্ধ নয়"
+  "Not available in development builds": "ডেভেলপমেন্ট বিল্ডে উপলব্ধ নয়",
+  "{name} (system volume)": "{name} (সিস্টেম ভলিউম)",
+  "Reserved by the file system": "ফাইল সিস্টেমের জন্য সংরক্ষিত",
+  "Unreadable folders and file system data": "অপঠনযোগ্য ফোল্ডার ও ফাইল সিস্টেমের ডেটা",
+  "Space in use on the disk that is not in files the scan could read. It cannot be opened or deleted from here.": "ডিস্কে ব্যবহৃত এমন জায়গা যা স্ক্যানে পড়া ফাইলগুলোর মধ্যে নেই। এখান থেকে এটি খোলা বা মুছে ফেলা যায় না।"
 }

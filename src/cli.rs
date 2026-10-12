@@ -167,7 +167,7 @@ fn print_children(out: &mut impl Write, tree: &Tree, id: u32, o: &Options, depth
         let branch = if depth == 1 { "" } else if last { "└─ " } else { "├─ " };
         let pct = n.size as f64 * 100.0 / total as f64;
         let _ = writeln!(out, "{:>9} {:>4.0}%  {indent}{branch}{}", fmt_size(n.size), pct, label(tree, c));
-        if depth < o.depth && n.kind == Kind::Dir {
+        if depth < o.depth && tree.can_enter(c) {
             let next = if depth == 1 { String::new() } else { format!("{indent}{}", if last { "   " } else { "│  " }) };
             print_children(out, tree, c, o, depth + 1, &next, total);
         }
@@ -211,7 +211,7 @@ fn node_json(tree: &Tree, id: u32, o: &Options, depth: usize) -> JsonNode {
     };
     let name = if id == tree.root { tree.root_path.clone() } else { n.name.to_string() };
     let mut v = JsonNode { name, kind, size: n.size, files: n.files, denied: n.denied(), children: None, more: None };
-    if depth < o.depth && n.kind == Kind::Dir {
+    if depth < o.depth && tree.can_enter(id) {
         let (kids, more, more_size) = shown(tree, id, o.top);
         v.children = Some(kids.iter().map(|&c| node_json(tree, c, o, depth + 1)).collect());
         v.more = (more > 0).then_some(JsonMore { count: more, size: more_size });
