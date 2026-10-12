@@ -19,6 +19,9 @@ struct Ctx {
     allowed_devs: Vec<u64>,
     skip: Vec<PathBuf>,
     hardlinks: Mutex<HashSet<(u64, u64)>>,
+    /// APFS clones already counted, as (device, clone id).
+    #[cfg_attr(not(target_os = "macos"), allow(dead_code))]
+    clones: Mutex<HashSet<(u64, u64)>>,
     limits: ScanLimits,
     progress: Arc<Progress>,
 }
@@ -96,6 +99,12 @@ fn gather_bulk(path: &Path, ctx: &Ctx, out: &mut Listing, files: &mut Vec<(OsStr
                 let mut alloc = e.alloc;
                 if e.nlink > 1 && !ctx.hardlinks.lock().unwrap().insert((e.dev, e.ino)) {
                     alloc = 0;
+                } else if let Some(id) = e.clone {
+                    // clones share their blocks: the space is used once,
+                    // and counted on the first one met
+                    if !ctx.clones.lock().unwrap().insert((e.dev, id)) {
+                        alloc = 0;
+                    }
                 }
                 *nfiles += 1;
                 *bytes += alloc;
@@ -278,6 +287,7 @@ pub fn run(tree: SharedTree, root: &Path, progress: Arc<Progress>, limits: ScanL
         allowed_devs: platform::allowed_devices(root),
         skip: platform::skip_paths(root),
         hardlinks: Mutex::new(HashSet::new()),
+        clones: Mutex::new(HashSet::new()),
         limits,
         progress: progress.clone(),
     };
@@ -343,6 +353,7 @@ fn quiet_ctx(root: &Path) -> Ctx {
         allowed_devs: platform::allowed_devices(root),
         skip: Vec::new(),
         hardlinks: Mutex::new(HashSet::new()),
+        clones: Mutex::new(HashSet::new()),
         limits: ScanLimits::default(),
         progress: Arc::new(Progress::default()),
     }
@@ -470,6 +481,25 @@ mod tests {
         assert!(ok);
         assert!(t.find_child(a, "big.bin").is_some());
         assert!(t.find_child(a, "loop").is_none());
+        fs::remove_dir_all(&base).unwrap();
+    }
+    /// APFS clones share their blocks: two of them use the space of one.
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn counts_apfs_clones_once() {
+        use std::os::unix::ffi::OsStrExt;
+        let base = std::env::temp_dir().join(format!("sqd-test-clone-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&base);
+        fs::create_dir_all(&base).unwrap();
+        fs::write(base.join("one.bin"), vec![7u8; 1 << 20]).unwrap();
+        let c = |p: PathBuf| std::ffi::CString::new(p.as_os_str().as_bytes()).unwrap();
+        let (from, to) = (c(base.join("one.bin")), c(base.join("two.bin")));
+        // not every file system can clone (the temp folder is APFS on a stock Mac)
+        if unsafe { libc::clonefile(from.as_ptr(), to.as_ptr(), 0) } == 0 {
+            let t = scan_blocking(&base, ScanLimits::default(), Arc::new(Progress::default()));
+            assert_eq!(t.get(t.root).files, 2);
+            assert_eq!(t.get(t.root).size, 1 << 20);
+        }
         fs::remove_dir_all(&base).unwrap();
     }
 }
