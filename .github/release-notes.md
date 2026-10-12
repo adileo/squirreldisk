@@ -1,4 +1,14 @@
-## SquirrelDisk 2.5
+## SquirrelDisk 2.5.1
+
+- **See what's new before you update.** When a new version is ready, a window shows what changed, with "Restart now" or "Later". SquirrelDisk now checks for updates every hour while it's open; the ribbon at the top works as before.
+- **Hidden space, explained.** Click "Hidden space" to see what it is made of: on macOS the system volumes that share the disk (VM, Preboot and others), on Linux the blocks the file system keeps in reserve, and the rest that a scan can't read. It no longer offers "Open", which led nowhere. Thanks @schroef for asking!
+- **The command line asks the open app.** While SquirrelDisk is open, `squirreldisk scan <folder>` answers at once from a scan the app has already finished, instead of scanning again (macOS and Linux). Add `--fresh` to scan anyway. Thanks @paymog and @vladartym!
+- **macOS: cloned files count once.** Copies made with Finder's Duplicate, `cp -c` or by package managers share their space on disk. Each one was counted in full, so a disk could add up to more than its size. Thanks @paymog!
+- Fixed: on macOS the chart and the list were missing in full screen. Thanks @pshirali!
+- Fixed: Chinese, Japanese, Korean, Arabic, Thai and Indian text sat a few pixels above the Latin text next to it. Thanks @AoSankaku!
+- The sponsor list is now refreshed every hour while the app is open, and its request says which operating system and CPU type you use. The [privacy page](https://www.squirreldisk.com/privacy) has the details.
+
+### From 2.5
 
 - **Scan from the terminal.** `squirreldisk <folder>` opens SquirrelDisk on that folder, and `squirreldisk scan <folder>` prints the biggest items without opening a window: as a tree (`--depth`, `--top`) or as JSON (`--json`) for your scripts. The Windows installer adds the command for you; on macOS and Linux SquirrelDisk sets it up on first launch when it can, or from Settings → Command-line tool.
 - **"Scan with SquirrelDisk" on any folder.** Turn on Settings → Folder menu and right-click a folder: in Finder's Quick Actions on macOS, in Explorer on Windows (under "Show more options" on Windows 11), and in Dolphin, Nemo, Nautilus or "Open with" on Linux. It's off unless you turn it on.
