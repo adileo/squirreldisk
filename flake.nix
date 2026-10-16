@@ -9,11 +9,11 @@
       system = "x86_64-linux";
       pkgs = import nixpkgs { inherit system; };
       pname = "squirreldisk";
-      version = "2.5.0";
+      version = "2.5.1";
 
       src = pkgs.fetchurl {
         url = "https://github.com/adileo/squirreldisk/releases/download/v${version}/SquirrelDisk-x86_64.AppImage";
-        hash = "sha256-Aj4iYnXEZOwcS3ZCxAnYnkmPTsM4SaPgsn1CKzuWFhM=";
+        hash = "sha256-qcOtRW+zC9X8TUXmTnBKIN7ovfE7YvrZPF47ibjdsmc=";
       };
 
       appimageContents = pkgs.appimageTools.extract {
