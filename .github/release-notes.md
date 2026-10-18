@@ -1,4 +1,10 @@
-## SquirrelDisk 2.6.0
+## SquirrelDisk 2.6.1
+
+- **Windows is back.** 2.6.0 shipped for macOS and Linux only; this release brings the duplicate finder to Windows too.
+- Fixed: on Windows, a file reached through two overlapping places (a folder and a folder inside it) could be listed as a duplicate of itself. As an extra guard on every system, a copy is never removed if it turns out to be the same file as the copy kept.
+
+### From 2.6.0
+
 
 - **Find duplicates.** A new tool on the home screen finds identical files across folders, disks, servers over SSH and cloud storage, all compared together. Files are matched by content, not by name, so renamed copies are found too, and results show up while the scan runs, biggest savings first. Only files that share a size are ever read; big files are compared by samples spread over the whole file (turn on "Exact comparison" to read every byte), and fingerprints are remembered so comparing again is quick.
 - **Keep the right copy.** For every set, one copy is kept and the others are checked for removal: "Always keep" rules protect folders or patterns like `**/Archive/**`, otherwise the oldest, newest or shortest-path copy stays, and your own ticks always win. Files inside app libraries (Photos, Final Cut Pro…) are never removed.

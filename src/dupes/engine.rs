@@ -500,7 +500,7 @@ impl State {
             if !self.seen.insert((machine, f.dev, f.ino)) {
                 return None;
             }
-        } else if !self.seen_paths.insert((machine, f.path.clone())) {
+        } else if !self.seen_paths.insert((machine, path_key(&f.path, cfg!(windows) && machine == usize::MAX))) {
             return None;
         }
         let is_cloud = cloud.is_some();
@@ -674,6 +674,9 @@ fn list_place(place: usize, spec: &Spec, min_size: u64, inner: &Arc<Inner>, tx: 
     let counters = &inner.counters[place];
     match spec {
         Spec::Local(root) => {
+            // one spelling per folder (Windows also accepts `/`), so the same
+            // file reached through two places is recognised as one
+            let root = &PathBuf::from(if cfg!(windows) { root.to_string_lossy().replace('/', "\\") } else { root.to_string_lossy().into_owned() });
             if !root.is_dir() {
                 return Err(format!("{} is not available", root.display()));
             }
@@ -755,6 +758,16 @@ struct LsEntry {
     mod_time: String,
     #[serde(rename = "Hashes", default)]
     hashes: HashMap<String, String>,
+}
+
+/// What identifies a file when the system gives no inode (Windows): its
+/// path, with one kind of separator and no case (NTFS ignores case).
+fn path_key(path: &str, windows: bool) -> String {
+    if windows {
+        path.replace('/', "\\").to_lowercase()
+    } else {
+        path.to_string()
+    }
 }
 
 /// `remote:dir` + `a/b.jpg`
@@ -1074,6 +1087,12 @@ mod tests {
         // nothing new since
         assert!(f.changes_since(&mut seen).is_none());
         let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn windows_paths_are_one_file() {
+        assert_eq!(path_key("C:/Photos/a\\IMG.JPG", true), path_key("c:\\photos\\A\\img.jpg", true));
+        assert_ne!(path_key("/a/IMG.JPG", false), path_key("/a/img.jpg", false));
     }
 
     #[test]

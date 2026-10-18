@@ -94,6 +94,9 @@ fn run(batches: &[Batch], permanent: bool, p: &Progress) {
                 Err("protected system location".to_string())
             } else if t.at == Location::Local && !unchanged(&t.path, b.size, t.mtime) {
                 Err("changed since the comparison, left alone".to_string())
+            } else if t.at == Location::Local && local_keeps.iter().any(|k| same_file(&k.path, &t.path)) {
+                // two spellings of one path, or a hard link: it is the copy kept
+                Err("same file as the copy kept, left alone".to_string())
             } else {
                 remove(t, permanent)
             };
@@ -109,6 +112,21 @@ fn run(batches: &[Batch], permanent: bool, p: &Progress) {
             p.done.fetch_add(1, Ordering::Relaxed);
         }
     }
+}
+
+/// Two paths that lead to the same file on disk.
+fn same_file(a: &str, b: &str) -> bool {
+    if a == b {
+        return true;
+    }
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::MetadataExt;
+        if let (Ok(x), Ok(y)) = (std::fs::metadata(a), std::fs::metadata(b)) {
+            return x.dev() == y.dev() && x.ino() == y.ino();
+        }
+    }
+    matches!((std::fs::canonicalize(a), std::fs::canonicalize(b)), (Ok(x), Ok(y)) if x == y)
 }
 
 /// Still the file that was compared: same size, same modification time.
@@ -175,6 +193,12 @@ mod tests {
         assert!(a.exists());
         assert!(p.errors.lock().unwrap()[0].contains("changed"));
         assert!(unchanged(&a.to_string_lossy(), 4, None) && !unchanged(&a.to_string_lossy(), 5, None));
+        // the "copy" to remove is the kept file under another spelling
+        let same = Target { at: Location::Local, path: format!("{}/./b.jpg", dir.to_string_lossy()), frees: true, mtime: None };
+        let p = start(vec![Batch { size: 4, remove: vec![same], keep: vec![t(&b)] }], true);
+        wait(&p);
+        assert!(b.exists(), "the only copy survives");
+        assert!(p.errors.lock().unwrap()[0].contains("same file"));
         // for good: gone, and the kept copy stays
         let p = start(vec![Batch { size: 4, remove: vec![t(&a)], keep: vec![t(&b)] }], true);
         wait(&p);
