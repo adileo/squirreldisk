@@ -120,14 +120,14 @@ fn local_matches(target: &str) -> bool {
     os_ok && arch_ok
 }
 
-enum Method {
+pub(crate) enum Method {
     Agent,
     GnuFind,
     Du,
 }
 
 /// Prepares the remote host: installs the agent if possible, else picks a fallback.
-fn prepare_ssh(host: &str, progress: &Progress) -> Result<Method, String> {
+pub(crate) fn prepare_ssh(host: &str, progress: &Progress) -> Result<Method, String> {
     progress.set_status("Connecting");
     let agent = agent_path();
     let probe = format!(

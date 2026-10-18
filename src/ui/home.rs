@@ -127,6 +127,15 @@ impl App {
         }
         y += 118.0;
 
+        // --- tools
+        section_label(ui, Pos2::new(x0, y), tr("TOOLS"), &theme);
+        y += 22.0;
+        let rect = Rect::from_min_size(Pos2::new(x0, y), Vec2::new(w, 64.0));
+        if tool_card(ui, rect, Id::new("tool-dupes"), Icon::Copies, tr("Find duplicates"), tr("Photos, videos and projects copied in more than one place"), self.dupes.as_ref().map(|d| d.is_scanning()), &theme) {
+            self.open_dupes();
+        }
+        y += 76.0;
+
         let ad_rect = Rect::from_min_size(Pos2::new(x0, y), Vec2::new(w, 52.0));
         self.sponsor_banner(ui, ad_rect, "home");
         y += 64.0;
@@ -309,6 +318,32 @@ impl App {
 
 pub fn section_label(ui: &Ui, pos: Pos2, text: &str, theme: &super::theme::Theme) {
     ui.painter().text(pos, Align2::LEFT_TOP, text, bold(11.0), theme.text_faint);
+}
+
+/// A wide card that opens a tool; `running` is Some once the tool was opened.
+#[allow(clippy::too_many_arguments)]
+fn tool_card(ui: &mut Ui, rect: Rect, id: Id, icon: Icon, title: &str, sub: &str, running: Option<bool>, theme: &super::theme::Theme) -> bool {
+    let resp = ui.interact(rect, id, Sense::click());
+    let h = ui.ctx().animate_bool_with_time(id.with("h"), resp.hovered(), 0.15);
+    {
+        let p = ui.painter();
+        let r = rect;
+        p.rect_filled(r, cr(10.0), lerp_color(with_alpha(theme.surface, 0.8), theme.surface_hi, h * 0.6));
+        p.rect_stroke(r, cr(10.0), Stroke::new(1.0, lerp_color(with_alpha(theme.stroke, 0.6), theme.accent, h * 0.5)), egui::StrokeKind::Inside);
+        let tile = Rect::from_min_size(r.min + Vec2::new(12.0, 12.0), Vec2::splat(40.0));
+        widgets::rounded_hgradient(p, tile, 8.0, theme.accent, theme.accent2);
+        widgets::draw_icon(p, icon, tile.shrink(10.0), Color32::WHITE);
+        p.text(Pos2::new(tile.right() + 12.0, r.top() + 22.0), Align2::LEFT_CENTER, title, bold(14.0), theme.text);
+        let status = match running {
+            Some(true) => tr("Comparing…").to_string(),
+            _ => sub.to_string(),
+        };
+        let st = widgets::truncate(p, &status, &font(12.0), r.width() - 200.0);
+        p.text(Pos2::new(tile.right() + 12.0, r.top() + 42.0), Align2::LEFT_CENTER, st, font(12.0), theme.text_dim);
+    }
+    let btn = Rect::from_min_size(Pos2::new(rect.right() - 118.0, rect.center().y - 16.0), Vec2::new(104.0, 32.0));
+    let label = if running.is_some() { tr("View") } else { tr("Open") };
+    widgets::button(ui, btn, id.with("b"), label, Some(Icon::Copies), BtnStyle::Primary, theme).clicked() || resp.clicked()
 }
 
 fn source_card(ui: &mut Ui, rect: Rect, id: Id, icon: Icon, title: &str, sub: &str, theme: &super::theme::Theme) -> egui::Response {

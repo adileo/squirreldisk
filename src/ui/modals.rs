@@ -89,6 +89,8 @@ impl App {
             Modal::Error { title: t, message } => self.error_modal(ctx, t, message),
             Modal::SshAuth { host, path, secret, retry } => self.ssh_auth_modal(ctx, host, path, secret, retry),
             Modal::Update { scroll, content_h } => self.update_modal(ctx, scroll, content_h),
+            Modal::DupesConfirm { ack, permanent } => self.dupes_confirm_modal(ctx, ack, permanent),
+            Modal::DupesRemoving { finished_at } => self.dupes_removing_modal(ctx, finished_at),
         };
         // a modal may have opened another one
         if self.modal.is_none() {

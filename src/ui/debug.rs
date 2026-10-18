@@ -8,6 +8,11 @@
 //! * `SQD_COLLECT=2`         collect the N biggest children of the root
 //! * `SQD_QUIT=1`            quit after the last screenshot
 //! * `SQD_FULLSCREEN=1`      go full screen at launch
+//! * `SQD_ZOOM=2`           draw everything twice as big (sharp screenshots
+//!   on a 1x display, with `SQD_WINDOW` twice the usual size)
+//! * `SQD_SCREEN=dupes`      open the duplicate finder; `SQD_DUPES_PICK=1` shows
+//!   made-up results, opening the biggest set; `SQD_DUPES=<folder>,<folder>`
+//!   compares these, and `SQD_DUPES_SELECT=1` opens the biggest set once done
 //! * `SQD_UPDATE=available|downloading|ready` fake an update, to see the button
 //!   and the update window; `SQD_UPDATE_NOTES=<file>` gives its release notes
 
@@ -51,6 +56,27 @@ impl App {
         }
         if !self.debug.started {
             self.debug.started = true;
+            if let Some(z) = std::env::var("SQD_ZOOM").ok().and_then(|z| z.parse::<f32>().ok()) {
+                ctx.set_zoom_factor(z);
+            }
+            if std::env::var("SQD_SCREEN").as_deref() == Ok("dupes") {
+                if std::env::var_os("SQD_DUPES_PICK").is_some() {
+                    self.dupes = Some(super::dupes::DupesUi::mock());
+                }
+                self.open_dupes();
+                if let Some(d) = self.dupes.as_mut() {
+                    if std::env::var_os("SQD_DUPES_PICK").is_some() {
+                        d.debug_pick();
+                    }
+                    // SQD_DUPES=<folder>,<folder>: compare these
+                    if let Ok(list) = std::env::var("SQD_DUPES") {
+                        for p in list.split(',').filter(|p| !p.is_empty()) {
+                            d.add_place(super::dupes::place_for(&Target::Folder(PathBuf::from(p))));
+                        }
+                        d.start();
+                    }
+                }
+            }
             if std::env::var_os("SQD_FULLSCREEN").is_some() {
                 ctx.send_viewport_cmd(egui::ViewportCommand::Fullscreen(true));
             }
@@ -84,6 +110,11 @@ impl App {
                 self.debug.collect_done = true;
             }
         }
+        if std::env::var_os("SQD_DUPES_SELECT").is_some() {
+            if let Some(d) = self.dupes.as_mut().filter(|d| !d.is_scanning() && d.selected.is_none()) {
+                d.debug_pick();
+            }
+        }
         let Some(prefix) = self.debug.prefix.clone() else { return };
         if self.debug.modal_done && std::env::var("SQD_MODAL").as_deref() == Ok("settings-end") {
             self.settings_scroll = f32::MAX; // clamped to the end once the height is known
@@ -109,6 +140,12 @@ impl App {
                     // SQD_RCLONE_INSTALL=1 presses "Install rclone" right away
                     if std::env::var_os("SQD_RCLONE_INSTALL").is_some() {
                         self.rclone_install = Some(crate::rclone::install(ctx.clone()));
+                    }
+                }
+                Ok("dupes-delete") => self.open_modal(Modal::DupesConfirm { ack: false, permanent: true }),
+                Ok("dupes-menu") => {
+                    if let Some(d) = self.dupes.as_mut() {
+                        d.trash_menu = true;
                     }
                 }
                 Ok("delete") => {

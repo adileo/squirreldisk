@@ -41,6 +41,8 @@ pub struct DeleteProgress {
     pub phase: Mutex<String>,
     pub current: Mutex<String>,
     pub errors: Mutex<Vec<String>>,
+    /// The removal sound was played (once per job, not per item).
+    pub sounded: AtomicBool,
     /// Node ids whose deletion succeeded; drained by the UI.
     pub completed: Mutex<Vec<u32>>,
     pub finished: AtomicBool,
@@ -80,6 +82,20 @@ pub fn start(items: Vec<Item>, mode: Mode, source: Source, root_path: String) ->
         })
         .expect("spawn delete thread");
     p
+}
+
+/// Moves a file or folder to the Trash, silently. On macOS the Finder way
+/// (the crate's default) plays the trash sound for every single item and
+/// may ask for permission to control Finder; the system call does neither.
+pub fn to_trash(path: &str) -> Result<(), String> {
+    #[allow(unused_mut)]
+    let mut ctx = trash::TrashContext::default();
+    #[cfg(target_os = "macos")]
+    {
+        use trash::macos::{DeleteMethod, TrashContextExtMacos};
+        ctx.set_delete_method(DeleteMethod::NsFileManager);
+    }
+    ctx.delete(path).map_err(|e| e.to_string())
 }
 
 fn timestamp() -> String {
@@ -173,7 +189,7 @@ fn run(items: &[Item], mode: &Mode, source: &Source, root: &str, p: &DeleteProgr
             match (source, mode) {
                 (Source::Local, Mode::Trash) => {
                     p.set_phase("Moving to Trash");
-                    trash::delete(&item.path).map_err(|e| e.to_string())?;
+                    to_trash(&item.path)?;
                 }
                 (Source::Local, Mode::SecureErase) => {
                     p.set_phase("Securely erasing");

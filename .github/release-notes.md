@@ -1,4 +1,13 @@
-## SquirrelDisk 2.5.1
+## SquirrelDisk 2.6.0
+
+- **Find duplicates.** A new tool on the home screen finds identical files across folders, disks, servers over SSH and cloud storage, all compared together. Files are matched by content, not by name, so renamed copies are found too, and results show up while the scan runs, biggest savings first. Only files that share a size are ever read; big files are compared by samples spread over the whole file (turn on "Exact comparison" to read every byte), and fingerprints are remembered so comparing again is quick.
+- **Keep the right copy.** For every set, one copy is kept and the others are checked for removal: "Always keep" rules protect folders or patterns like `**/Archive/**`, otherwise the oldest, newest or shortest-path copy stays, and your own ticks always win. Files inside app libraries (Photos, Final Cut Pro…) are never removed.
+- **Previews and details.** Photos, RAW files and videos show a preview (Quick Look on macOS) with dimensions, duration and camera, plus the full path of every copy.
+- **Remove safely.** Move to the Trash or delete permanently. A copy of every file always stays, it's checked before anything is removed, and files changed since the scan are left alone. APFS clones and hard links are recognised, so the space you get back is real.
+- Moving things to the Trash no longer plays Finder's sound once per item, and no longer asks for permission to control Finder (macOS).
+
+### From 2.5.1
+
 
 - **See what's new before you update.** When a new version is ready, a window shows what changed, with "Restart now" or "Later". SquirrelDisk now checks for updates every hour while it's open; the ribbon at the top works as before.
 - **Hidden space, explained.** Click "Hidden space" to see what it is made of: on macOS the system volumes that share the disk (VM, Preboot and others), on Linux the blocks the file system keeps in reserve, and the rest that a scan can't read. It no longer offers "Open", which led nowhere. Thanks @schroef for asking!

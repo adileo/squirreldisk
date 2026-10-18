@@ -11,6 +11,7 @@ pub mod theme;
 pub mod view;
 pub mod widgets;
 pub mod debug;
+pub mod dupes;
 #[cfg(target_os = "macos")]
 pub mod macos;
 pub mod ads;

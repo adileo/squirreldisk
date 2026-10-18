@@ -223,6 +223,7 @@ impl Session {
 pub enum Screen {
     Home,
     Session(usize),
+    Dupes,
 }
 
 pub struct DeleteItem {
@@ -266,6 +267,9 @@ pub enum Modal {
     SshAuth { host: String, path: String, secret: String, retry: bool },
     /// A newer version: what is new, update or restart now, or later.
     Update { scroll: f32, content_h: f32 },
+    /// Duplicates: confirm removing the selected copies, then follow it.
+    DupesConfirm { ack: bool, permanent: bool },
+    DupesRemoving { finished_at: Option<Instant> },
 }
 
 /// Drives the animated Dock tile on macOS.
@@ -350,6 +354,8 @@ pub struct App {
     /// The finished scans `squirreldisk scan` can read (see [`crate::ipc`]).
     #[cfg(unix)]
     pub scans: Arc<Mutex<crate::ipc::Scans>>,
+    /// The duplicate finder, once opened.
+    pub dupes: Option<super::dupes::DupesUi>,
 }
 
 const INTER: &[u8] = include_bytes!("../../assets/fonts/Inter-Regular.ttf");
@@ -541,6 +547,7 @@ impl App {
             chrome: if cfg!(target_os = "macos") { (15.0, 68.0) } else { (22.0, 0.0) },
             #[cfg(unix)]
             scans,
+            dupes: None,
             settings,
         }
     }
@@ -582,7 +589,7 @@ impl App {
             let due = |every: u64, d: &DockState| d.last.is_none_or(|l| now.duration_since(l).as_millis() as u64 >= every);
             let focus = match self.screen {
                 Screen::Session(i) => self.sessions.get(i).filter(|s| s.is_scanning()),
-                Screen::Home => None,
+                Screen::Home | Screen::Dupes => None,
             };
             let scanning = focus.or_else(|| self.sessions.iter().find(|s| s.is_scanning()));
             let frame = if let Some(s) = scanning {
@@ -749,6 +756,14 @@ impl App {
     }
 
     pub fn start_session(&mut self, target: Target) {
+        // on the duplicates screen, what is picked becomes a place to compare
+        if self.screen == Screen::Dupes {
+            if let Some(d) = self.dupes.as_mut() {
+                d.add_place(super::dupes::place_for(&target));
+                self.sfx(Sfx::Blip);
+                return;
+            }
+        }
         if let Some(i) = self.sessions.iter().position(|s| s.target.same_place(&target)) {
             if self.sessions[i].is_scanning() {
                 self.screen = Screen::Session(i);
@@ -856,7 +871,10 @@ impl App {
                     }
                     drop(t);
                     s.collector.retain(|c| !done.contains(c));
-                    sounds.push(Sfx::Crunch);
+                    // once per job: completions arrive frame after frame
+                    if !d.sounded.swap(true, Ordering::Relaxed) {
+                        sounds.push(Sfx::Crunch);
+                    }
                 }
                 if d.finished.load(Ordering::Relaxed) && d.completed.lock().unwrap().is_empty() {
                     // keep the job around for the modal until it is closed
@@ -984,6 +1002,7 @@ impl eframe::App for App {
 
         match self.screen {
             Screen::Home => self.home_ui(ui, screen),
+            Screen::Dupes => self.dupes_ui(ui, screen),
             Screen::Session(i) => {
                 if i < self.sessions.len() {
                     self.session_ui(ui, screen, i)
@@ -1003,7 +1022,7 @@ impl eframe::App for App {
         // keyboard shortcuts
         // ⌘, (Ctrl+, elsewhere) opens Settings from anywhere, like every Mac app.
         let open_settings = ctx.input(|i| i.modifiers.command && i.key_pressed(egui::Key::Comma));
-        if open_settings && !matches!(self.modal, Some(Modal::Deleting { .. }) | Some(Modal::Settings)) {
+        if open_settings && !matches!(self.modal, Some(Modal::Deleting { .. } | Modal::DupesRemoving { .. }) | Some(Modal::Settings)) {
             self.ctx_menu = None;
             self.open_modal(Modal::Settings);
         }
@@ -1011,10 +1030,12 @@ impl eframe::App for App {
         if esc {
             if self.ctx_menu.is_some() {
                 self.ctx_menu = None;
-            } else if self.modal.as_ref().is_some_and(|m| !matches!(m, Modal::Deleting { .. })) {
+            } else if self.modal.as_ref().is_some_and(|m| !matches!(m, Modal::Deleting { .. } | Modal::DupesRemoving { .. })) {
                 self.modal = None;
             } else if self.drag.is_some() {
                 self.drag = None;
+            } else if self.screen == Screen::Dupes {
+                self.dupes_escape();
             } else if let Screen::Session(i) = self.screen {
                 if !self.sessions[i].go_up() {
                     self.screen = Screen::Home;
@@ -1039,6 +1060,7 @@ impl eframe::App for App {
             || match self.screen {
                 Screen::Session(i) => self.sessions.get(i).is_some_and(|s| if self.settings.chart_style == "treemap" { !s.treemap.settled } else { !s.anim.settled }),
                 Screen::Home => false,
+                Screen::Dupes => self.dupes.as_ref().is_some_and(|d| d.is_scanning()),
             };
         if animating || (self.settings.shader_fx && matches!(self.screen, Screen::Session(_))) {
             ctx.request_repaint();

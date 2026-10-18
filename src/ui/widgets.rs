@@ -290,6 +290,10 @@ pub fn choice_card(ui: &mut Ui, rect: Rect, id: Id, selected: bool, title: &str,
     let alpha = if enabled { 1.0 } else { 0.45 };
     let ic = Rect::from_center_size(Pos2::new(rect.left() + 26.0, rect.center().y), Vec2::splat(20.0));
     draw_icon(painter, icon, ic, with_alpha(lerp_color(theme.text_dim, theme.accent, s), alpha));
+    // keep clear of the radio dot on the right (long translations)
+    let room = rect.width() - 48.0 - 36.0;
+    let title = truncate(painter, title, &bold(13.5), room);
+    let subtitle = truncate(painter, subtitle, &font(11.5), room);
     painter.text(Pos2::new(rect.left() + 48.0, rect.center().y - 8.0), Align2::LEFT_CENTER, title, bold(13.5), with_alpha(theme.text, alpha));
     painter.text(Pos2::new(rect.left() + 48.0, rect.center().y + 9.0), Align2::LEFT_CENTER, subtitle, font(11.5), with_alpha(theme.text_dim, alpha));
     // radio dot
@@ -396,6 +400,12 @@ pub enum Icon {
     LinkOut,
     Plus,
     Pencil,
+    Search,
+    /// Two overlapping sheets: duplicates.
+    Copies,
+    Play,
+    /// Chevron pointing down.
+    Expand,
 }
 
 pub fn draw_icon(p: &Painter, icon: Icon, r: Rect, c: Color32) {
@@ -524,6 +534,20 @@ pub fn draw_icon(p: &Painter, icon: Icon, r: Rect, c: Color32) {
         }
         Icon::Bolt => {
             p.add(Shape::convex_polygon(vec![at(0.15, -0.9), at(-0.5, 0.1), at(0.0, 0.1), at(-0.15, 0.9), at(0.5, -0.1), at(0.0, -0.1)], c, Stroke::NONE));
+        }
+        Icon::Search => {
+            p.circle_stroke(at(-0.15, -0.15), s * 0.3, st);
+            p.line_segment([at(0.28, 0.28), at(0.72, 0.72)], Stroke::new(w * 1.2, c));
+        }
+        Icon::Copies => {
+            p.rect_stroke(Rect::from_min_max(at(-0.75, -0.35), at(0.3, 0.8)), cr(s * 0.08), st, StrokeKind::Middle);
+            p.line(vec![at(-0.35, -0.55), at(-0.35, -0.8), at(0.75, -0.8), at(0.75, 0.4), at(0.5, 0.4)], st);
+        }
+        Icon::Play => {
+            p.add(Shape::convex_polygon(vec![at(-0.4, -0.65), at(0.65, 0.0), at(-0.4, 0.65)], c, Stroke::NONE));
+        }
+        Icon::Expand => {
+            p.line(vec![at(-0.55, -0.25), at(0.0, 0.3), at(0.55, -0.25)], st);
         }
         Icon::Acorn => acorn(p, ctr, s, c, None),
     }

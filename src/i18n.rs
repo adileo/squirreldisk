@@ -300,6 +300,7 @@ mod tests {
         let english_keys: std::collections::HashSet<String> = {
             let src = [
                 include_str!("ui/home.rs"),
+                include_str!("ui/dupes.rs"),
                 include_str!("ui/view.rs"),
                 include_str!("ui/modals.rs"),
                 include_str!("ui/cloud.rs"),

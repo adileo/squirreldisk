@@ -16,6 +16,7 @@ mod tree;
 
 #[cfg(feature = "gui")]
 mod disks;
+mod dupes;
 #[cfg(feature = "gui")]
 mod i18n;
 #[cfg(feature = "gui")]

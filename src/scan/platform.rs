@@ -261,6 +261,12 @@ pub struct RawEntry {
     pub dev: u64,
     pub ino: u64,
     pub nlink: u32,
+    /// Logical length of a file's data, in bytes.
+    pub len: u64,
+    /// Last modification, in seconds since the epoch.
+    pub mtime: i64,
+    /// Cloud placeholder whose data is not on disk (reading it downloads it).
+    pub dataless: bool,
     /// APFS: id of the data shared with this file's exact clones, when it
     /// has any (`cp -c`, Finder duplicates, package manager caches).
     pub clone: Option<u64>,
@@ -312,12 +318,13 @@ pub fn list_bulk(path: &Path) -> std::io::Result<Vec<RawEntry>> {
             | libc::ATTR_CMN_NAME
             | libc::ATTR_CMN_DEVID
             | libc::ATTR_CMN_OBJTYPE
+            | libc::ATTR_CMN_MODTIME
             | libc::ATTR_CMN_FLAGS
             | libc::ATTR_CMN_FILEID
             | ATTR_CMN_ERROR,
         volattr: 0,
         dirattr: libc::ATTR_DIR_MOUNTSTATUS,
-        fileattr: libc::ATTR_FILE_LINKCOUNT | libc::ATTR_FILE_ALLOCSIZE,
+        fileattr: libc::ATTR_FILE_LINKCOUNT | libc::ATTR_FILE_ALLOCSIZE | libc::ATTR_FILE_DATALENGTH,
         forkattr: ATTR_CMNEXT_CLONEID | ATTR_CMNEXT_EXT_FLAGS,
     };
     let mut options = FSOPT_ATTR_CMN_EXTENDED;
@@ -377,6 +384,11 @@ pub fn list_bulk(path: &Path) -> std::io::Result<Vec<RawEntry>> {
                 objtype = rd_u32(e, p);
                 p += 4;
             }
+            let mut mtime = 0;
+            if returned_common & libc::ATTR_CMN_MODTIME != 0 {
+                mtime = rd_u64(e, p) as i64; // struct timespec: seconds, then nanoseconds
+                p += 16;
+            }
             let mut bsd_flags = 0;
             if returned_common & libc::ATTR_CMN_FLAGS != 0 {
                 bsd_flags = rd_u32(e, p);
@@ -405,6 +417,11 @@ pub fn list_bulk(path: &Path) -> std::io::Result<Vec<RawEntry>> {
             let mut alloc = 0;
             if returned_file & libc::ATTR_FILE_ALLOCSIZE != 0 && p + 8 <= e.len() {
                 alloc = rd_u64(e, p);
+                p += 8;
+            }
+            let mut data_len = 0;
+            if returned_file & libc::ATTR_FILE_DATALENGTH != 0 && p + 8 <= e.len() {
+                data_len = rd_u64(e, p);
                 p += 8;
             }
             let mut clone_id = 0;
@@ -448,6 +465,9 @@ pub fn list_bulk(path: &Path) -> std::io::Result<Vec<RawEntry>> {
                 dev,
                 ino,
                 nlink,
+                len: data_len,
+                mtime,
+                dataless,
                 clone,
             });
         }

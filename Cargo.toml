@@ -1,6 +1,6 @@
 [package]
 name = "squirreldisk"
-version = "2.5.1"
+version = "2.6.0"
 edition = "2021"
 description = "Fast, fun, cross-platform disk usage analyzer with an animated sunburst"
 license = "AGPL-3.0-only"
@@ -29,6 +29,9 @@ ring = { version = "0.17", optional = true, default-features = false }
 # the font reader egui itself uses: same version, so nothing extra is built
 skrifa = { version = "0.44", optional = true, default-features = false, features = ["std"] }
 tiny-skia = { version = "0.12", optional = true, default-features = false, features = ["std", "simd", "png-format"] }
+xxhash-rust = { version = "0.8.19", features = ["xxh3"] }
+md-5 = "0.11.0"
+sha1 = "0.11.0"
 
 [target.'cfg(windows)'.build-dependencies]
 embed-resource = "3"
