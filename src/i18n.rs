@@ -249,6 +249,12 @@ pub fn tr_reason(reason: &str) -> String {
     .to_string()
 }
 
+/// Fontconfig packs the named variation instance into the high 16 bits of FC_INDEX;
+/// skrifa/egui need only the font face index within the collection.
+fn fontconfig_collection_index(index: &str) -> u32 {
+    index.trim().parse::<u32>().map(|i| i & 0xFFFF).unwrap_or(0)
+}
+
 /// A system font that covers the script of `code`, as (bytes, index in collection).
 /// Loaded at runtime so the app doesn't have to ship tens of MB of fonts.
 pub fn system_font(code: &str) -> Option<(Vec<u8>, u32)> {
@@ -287,7 +293,7 @@ pub fn system_font(code: &str) -> Option<(Vec<u8>, u32)> {
     let text = String::from_utf8_lossy(&out.stdout);
     let mut lines = text.lines();
     let file = lines.next()?.trim().to_string();
-    let index = lines.next().and_then(|i| i.trim().parse().ok()).unwrap_or(0);
+    let index = lines.next().map(fontconfig_collection_index).unwrap_or(0);
     std::fs::read(&file).ok().map(|b| (b, index))
 }
 
@@ -354,6 +360,14 @@ mod tests {
     fn fallback_is_english() {
         assert_eq!(resolve("xx"), "en");
         assert_eq!(lang("it").native, "Italiano");
+    }
+
+    #[test]
+    fn fontconfig_named_instance_is_not_a_collection_index() {
+        assert_eq!(fontconfig_collection_index("262146"), 2);
+        assert_eq!(fontconfig_collection_index("262145"), 1);
+        assert_eq!(fontconfig_collection_index("2"), 2);
+        assert_eq!(fontconfig_collection_index("not-an-index"), 0);
     }
 
     #[test]
