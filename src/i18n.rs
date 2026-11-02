@@ -187,18 +187,132 @@ pub fn tr(key: &'static str) -> &'static str {
     }
 }
 
+/// Optional context, e.g. `Clear [collector]`; other languages keep `Clear`.
+pub fn trc(key: &'static str, context: &str) -> &'static str {
+    translation_variant(key, Some(context))
+}
+
+fn translation_variant(key: &'static str, variant: Option<&str>) -> &'static str {
+    let current = CURRENT.read().unwrap();
+    let Some(c) = current.as_ref() else { return key };
+    lookup_variant(&c.map, key, variant)
+}
+
+fn lookup_variant<'a>(map: &HashMap<&str, &'a str>, key: &'a str, variant: Option<&str>) -> &'a str {
+    variant.and_then(|v| map.get(format!("{key} [{v}]").as_str()).copied()).or_else(|| map.get(key).copied()).unwrap_or(key)
+}
+
+/// Russian cardinal forms. The unsuffixed entry is the many/default form;
+/// optional `[one]` and `[few]` entries keep existing language files valid.
+pub fn trn(key: &'static str, count: u64, args: &[(&str, &dyn std::fmt::Display)]) -> String {
+    fill(translation_variant(key, plural_variant(current(), count)), args)
+}
+
+fn plural_variant(code: &str, count: u64) -> Option<&'static str> {
+    if code != "ru" || (11..=14).contains(&(count % 100)) {
+        return None;
+    }
+    match count % 10 {
+        1 => Some("one"),
+        2..=4 => Some("few"),
+        _ => None,
+    }
+}
+
 /// Translates and fills `{name}` placeholders.
 pub fn trf(key: &'static str, args: &[(&str, &dyn std::fmt::Display)]) -> String {
-    let mut s = tr(key).to_string();
+    fill(tr(key), args)
+}
+
+fn fill(template: &str, args: &[(&str, &dyn std::fmt::Display)]) -> String {
+    let mut s = template.to_string();
     for (name, value) in args {
         s = s.replace(&format!("{{{name}}}"), &value.to_string());
     }
     s
 }
 
+/// UI-only formatting: CLI output and non-Russian locales keep their format.
+pub fn fmt_size(bytes: u64) -> String {
+    localized_size(bytes, current())
+}
+
+fn localized_size(bytes: u64, code: &str) -> String {
+    let text = crate::tree::fmt_size(bytes);
+    if code != "ru" {
+        return text;
+    }
+    let (number, unit) = text.split_once(' ').unwrap();
+    let unit = match unit {
+        "B" => "Б", "KB" => "КБ", "MB" => "МБ", "GB" => "ГБ", "TB" => "ТБ", "PB" => "ПБ", other => other,
+    };
+    format!("{}\u{a0}{unit}", number.replace('.', ","))
+}
+
+pub fn fmt_count(n: u64) -> String {
+    localized_count(n, current())
+}
+
+fn localized_count(n: u64, code: &str) -> String {
+    let text = crate::tree::fmt_count(n);
+    if code == "ru" { text.replace(',', "\u{a0}") } else { text }
+}
+
+pub fn fmt_count_compact(n: u64) -> String {
+    localized_compact(n, current())
+}
+
+fn localized_compact(n: u64, code: &str) -> String {
+    let text = crate::tree::fmt_count_compact(n);
+    if code == "ru" { text.replace('.', ",").replace('k', "\u{a0}тыс.").replace('M', "\u{a0}млн") } else { text }
+}
+
+pub fn fmt_seconds(seconds: f32) -> String {
+    let number = localized_decimal(&format!("{seconds:.1}"), current());
+    trf("{seconds} s", &[("seconds", &number)])
+}
+
+fn localized_decimal(number: &str, code: &str) -> String {
+    if code == "ru" { number.replace('.', ",") } else { number.to_string() }
+}
+
+pub fn fmt_date((y, m, d): (u16, u8, u8)) -> String {
+    localized_date((y, m, d), current())
+}
+
+fn localized_date((y, m, d): (u16, u8, u8), code: &str) -> String {
+    if code == "ru" { format!("{d:02}.{m:02}.{y:04}") } else { format!("{y}-{m:02}-{d:02}") }
+}
+
+/// Translate application-owned removal reasons, preserving the path and any
+/// external diagnostic text verbatim. Workers do not depend on the UI language.
+pub fn tr_error(error: &str) -> String {
+    translate_error(error, tr)
+}
+
+fn translate_error<'a>(error: &str, translate: impl Fn(&'static str) -> &'a str) -> String {
+    const REASONS: [&str; 5] = [
+        "the copy to keep is missing, nothing removed",
+        "protected system location",
+        "changed since the comparison, left alone",
+        "same file as the copy kept, left alone",
+        "rclone could not delete it",
+    ];
+    for reason in REASONS {
+        if error == reason {
+            return translate(reason).to_string();
+        }
+        if let Some(path) = error.strip_suffix(reason).and_then(|prefix| prefix.strip_suffix(": ")) {
+            return format!("{path}: {}", translate(reason));
+        }
+    }
+    error.to_string()
+}
+
 /// Translates the progress status strings set by the scanners.
 pub fn tr_status(status: &str) -> String {
     if let Some(secs) = status.strip_prefix("Scanned in ").and_then(|r| r.strip_suffix('s')) {
+        let secs = localized_decimal(secs, current());
         return trf("Scanned in {seconds}s", &[("seconds", &secs)]);
     }
     match status {
@@ -302,6 +416,7 @@ mod tests {
                 include_str!("ui/home.rs"),
                 include_str!("ui/dupes.rs"),
                 include_str!("ui/view.rs"),
+                include_str!("ui/treemap.rs"),
                 include_str!("ui/modals.rs"),
                 include_str!("ui/cloud.rs"),
                 include_str!("ui/fx.rs"),
@@ -311,15 +426,20 @@ mod tests {
                 include_str!("sponsor/interests.rs"),
                 include_str!("i18n.rs"),
             ]
-            .join("\n");
+            .iter().map(|s| s.split("\n#[cfg(test)]\nmod tests").next().unwrap()).collect::<Vec<_>>().join("\n");
             let mut keys = std::collections::HashSet::new();
             let bytes = src.as_bytes();
-            for (i, _) in src.match_indices("tr(\"").chain(src.match_indices("trf(\"")) {
+            for (i, call) in src.match_indices("tr(").chain(src.match_indices("trf(")).chain(src.match_indices("trn(")).chain(src.match_indices("trc(")) {
                 let prev_ok = i == 0 || !(bytes[i - 1].is_ascii_alphanumeric() || bytes[i - 1] == b'_');
                 if !prev_ok {
                     continue;
                 }
-                let start = src[i..].find('"').unwrap() + i + 1;
+                let rest = &src[i + call.len()..];
+                let trimmed = rest.trim_start();
+                if !trimmed.starts_with('"') {
+                    continue; // dynamic keys are checked through their dictionaries
+                }
+                let start = i + call.len() + rest.len() - trimmed.len() + 1;
                 let mut key = String::new();
                 let mut chars = src[start..].chars();
                 while let Some(c) = chars.next() {
@@ -346,8 +466,69 @@ mod tests {
                 }
             }
             let missing: Vec<&String> = english_keys.iter().filter(|k| !map.contains_key(*k)).collect();
+            if l.code == "ru" {
+                assert!(missing.is_empty(), "ru: missing translations: {missing:?}");
+                let placeholders = |s: &str| -> std::collections::HashSet<String> {
+                    s.split('{').skip(1).filter_map(|p| p.split_once('}').map(|(name, _)| name.to_string())).collect()
+                };
+                for (key, value) in &map {
+                    assert_eq!(placeholders(key), placeholders(value), "ru: placeholders differ for {key}");
+                }
+            }
             assert!(missing.len() <= english_keys.len() / 10, "{}: {} strings missing, e.g. {:?}", l.code, missing.len(), missing.iter().take(3).collect::<Vec<_>>());
         }
+    }
+
+    #[test]
+    fn russian_numbers_sizes_and_dates() {
+        assert_eq!(localized_size(0, "ru"), "0\u{a0}Б");
+        assert_eq!(localized_size(999, "ru"), "999\u{a0}Б");
+        assert_eq!(localized_size(1_000, "ru"), "1,0\u{a0}КБ");
+        assert_eq!(localized_size(17_400_000_000, "ru"), "17,4\u{a0}ГБ");
+        assert_eq!(localized_count(1_234_567, "ru"), "1\u{a0}234\u{a0}567");
+        assert_eq!(localized_compact(999, "ru"), "999");
+        assert_eq!(localized_compact(2_345, "ru"), "2\u{a0}тыс.");
+        assert_eq!(localized_compact(1_758_000, "ru"), "1,75\u{a0}млн");
+        assert_eq!(localized_decimal("3.5", "ru"), "3,5");
+        assert_eq!(localized_date((2026, 11, 2), "ru"), "02.11.2026");
+        // Changing the UI format must not change CLI or other locales.
+        for code in ["en", "de", "uk"] {
+            assert_eq!(localized_size(17_400_000_000, code), "17.4 GB");
+            assert_eq!(localized_count(1_234_567, code), "1,234,567");
+            assert_eq!(localized_compact(1_758_000, code), "1.75M");
+            assert_eq!(localized_date((2026, 11, 2), code), "2026-11-02");
+        }
+    }
+
+    #[test]
+    fn russian_plural_forms_and_context_use_the_dictionary() {
+        let owned: HashMap<String, String> = serde_json::from_str(include_str!("../assets/i18n/ru.json")).unwrap();
+        let map: HashMap<&str, &str> = owned.iter().map(|(k, v)| (k.as_str(), v.as_str())).collect();
+        for (n, expected) in [(0, "0 копий"), (1, "1 копия"), (2, "2 копии"), (5, "5 копий"), (11, "11 копий"), (12, "12 копий"), (14, "14 копий"), (21, "21 копия"), (22, "22 копии"), (25, "25 копий"), (101, "101 копия"), (111, "111 копий"), (112, "112 копий")] {
+            let template = lookup_variant(&map, "{n} copies", plural_variant("ru", n));
+            assert_eq!(fill(template, &[("n", &n)]), expected);
+        }
+        assert_eq!(lookup_variant(&map, "Clear", Some("collector")), "Очистить список");
+        assert_eq!(lookup_variant(&map, "Clear", Some("duplicates")), "Снять отметки");
+        assert_eq!(lookup_variant(&map, "Clear", Some("unknown")), "Очистить");
+        let english = HashMap::new();
+        assert_eq!(lookup_variant(&english, "Clear", Some("collector")), "Clear");
+        assert_eq!(plural_variant("en", 21), None);
+        // Existing language dictionaries still fall back to their base translation.
+        let french = HashMap::from([("{n} copies", "Copies : {n}")]);
+        assert_eq!(lookup_variant(&french, "{n} copies", Some("one")), "Copies : {n}");
+    }
+
+    #[test]
+    fn removal_reasons_are_translated_without_changing_paths_or_external_errors() {
+        let owned: HashMap<String, String> = serde_json::from_str(include_str!("../assets/i18n/ru.json")).unwrap();
+        let map: HashMap<&str, &str> = owned.iter().map(|(k, v)| (k.as_str(), v.as_str())).collect();
+        let translate = |key| map.get(key).copied().unwrap_or(key);
+        assert_eq!(translate_error("/Фото/a.jpg: the copy to keep is missing, nothing removed", translate), "/Фото/a.jpg: сохраняемая копия недоступна; удаление отменено");
+        assert_eq!(translate_error("C:\\Фото\\a.jpg: changed since the comparison, left alone", translate), "C:\\Фото\\a.jpg: файл изменился после сравнения и не был удалён");
+        assert_eq!(translate_error("remote:folder/a.jpg: same file as the copy kept, left alone", translate), "remote:folder/a.jpg: это сохраняемая копия; файл не был удалён");
+        assert_eq!(translate_error("/tmp/protected system location", translate), "/tmp/protected system location");
+        assert_eq!(translate_error("/Фото/a.jpg: Permission denied (os error 13)", translate), "/Фото/a.jpg: Permission denied (os error 13)");
     }
 
     #[test]

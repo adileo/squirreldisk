@@ -359,6 +359,7 @@ pub struct App {
 }
 
 const INTER: &[u8] = include_bytes!("../../assets/fonts/Inter-Regular.ttf");
+const INTER_SEMIBOLD: &[u8] = include_bytes!("../../assets/fonts/Inter-SemiBold.ttf");
 
 /// Where a font's baseline sits below the middle of its line box, in ems.
 /// Read the way egui reads it, so the two agree.
@@ -432,11 +433,11 @@ pub fn install_fonts(ctx: &egui::Context, lang: &str, all_scripts: bool) {
         }
     }
     fonts.font_data.insert("inter".into(), Arc::new(FontData::from_static(INTER)));
-    fonts.font_data.insert("inter-bold".into(), Arc::new(FontData::from_static(include_bytes!("../../assets/fonts/Inter-SemiBold.ttf"))));
+    fonts.font_data.insert("inter-bold".into(), Arc::new(FontData::from_static(INTER_SEMIBOLD)));
     fonts.font_data.insert("fredoka".into(), Arc::new(FontData::from_static(include_bytes!("../../assets/fonts/Fredoka-SemiBold.ttf"))));
     let mut fallback: Vec<String> = fonts.families.get(&FontFamily::Proportional).cloned().unwrap_or_default();
-    // after egui's defaults: they cover Cyrillic/Greek with proper metrics,
-    // the system fonts then fill in CJK, Arabic, Indic scripts and Thai
+    // Inter covers Latin, Cyrillic and Greek in both weights. Keep egui's
+    // defaults for symbols; system fonts fill in CJK, Arabic, Indic and Thai.
     fallback.extend(script_names);
     let mut prop = vec!["inter".to_string()];
     prop.extend(fallback.iter().cloned());
@@ -1131,6 +1132,19 @@ pub fn os_open(path: &str, reveal: bool) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn bundled_inter_covers_latin_and_cyrillic_in_both_weights() {
+        use skrifa::MetadataProvider;
+        for (name, bytes, weight) in [("Regular", INTER, 400.0), ("SemiBold", INTER_SEMIBOLD, 600.0)] {
+            let font = skrifa::FontRef::new(bytes).expect("valid bundled Inter font");
+            assert_eq!(font.attributes().weight.value(), weight, "Inter {name} has the wrong weight");
+            let cmap = font.charmap();
+            for ch in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюяІіЇїЄєҐґ0123456789\u{a0}«»—…".chars() {
+                assert!(cmap.map(ch).is_some_and(|glyph| glyph.to_u32() != 0), "Inter {name} is missing {ch}; the UI would fall back to a different font or weight");
+            }
+        }
+    }
 
     #[test]
     fn system_fonts_share_inters_baseline() {

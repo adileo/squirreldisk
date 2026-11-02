@@ -7,9 +7,9 @@ use super::sunburst::{group_key, view_children, SegKind, View, FREE_KEY};
 use super::theme::{lerp_color, lighten, with_alpha, Theme};
 use super::view::node_label;
 use super::widgets::{self, bold, cr, font};
-use crate::i18n::{tr, trf};
+use crate::i18n::{fmt_count, fmt_size, tr, trn};
 use crate::sound::Sfx;
-use crate::tree::{fmt_count, fmt_size, Kind, Tree, NONE};
+use crate::tree::{Kind, Tree, NONE};
 use eframe::egui::{self, Align2, Color32, Id, Pos2, Rect, Sense, Stroke, Ui, Vec2};
 use std::collections::HashMap;
 use std::time::Instant;
@@ -481,7 +481,7 @@ impl App {
             }
             // labels
             let label = match a.tile.kind {
-                SegKind::Group { count, .. } => trf("{count} smaller items", &[("count", &fmt_count(count as u64))]),
+                SegKind::Group { count, .. } => trn("{count} smaller items", count as u64, &[("count", &fmt_count(count as u64))]),
                 SegKind::Free => tr("Free space").to_string(),
                 _ if t.is_alive(a.tile.node) => node_label(&t, a.tile.node),
                 _ => String::new(),

@@ -9,9 +9,8 @@ use crate::dupes::engine::{Finder, FoundGroup, Options, Spec, Status};
 #[cfg(test)]
 use crate::dupes::engine::FoundFile;
 use crate::dupes::{apply_rules, mock, remove, ymd, Copy, Group, Media, Meta, Place, PlaceKind, Prefer, Rule, Scan};
-use crate::i18n::{tr, trf};
+use crate::i18n::{fmt_count, fmt_count_compact, fmt_size, tr, trc, trf, trn};
 use crate::sound::Sfx;
-use crate::tree::{fmt_count, fmt_count_compact, fmt_size};
 use eframe::egui::{self, epaint::RectShape, Align2, Color32, Id, Painter, Pos2, Rect, Sense, Stroke, Ui, Vec2};
 use std::collections::{HashMap, HashSet};
 use std::sync::atomic::Ordering;
@@ -1197,12 +1196,14 @@ impl App {
                     let freed = g.freed();
                     let size_txt = if freed > 0 { fmt_size(freed) } else { "—".into() };
                     let sw = lp.layout_no_wrap(size_txt.clone(), bold(13.0), theme.text).size().x.max(64.0);
-                    let warn_w = if g.none_kept() { 120.0 } else { 0.0 };
+                    let warn_label = tr("no copy kept");
+                    let warn_text_w = lp.layout_no_wrap(warn_label.to_string(), bold(11.5), theme.danger).size().x;
+                    let warn_w = if g.none_kept() { warn_text_w + 28.0 } else { 0.0 };
                     let tx = thumb.right() + 12.0;
                     let room = rr.right() - 16.0 - sw - 16.0 - warn_w - tx;
                     let name = widgets::truncate(&lp, &g.name, &bold(13.5), room);
                     lp.text(Pos2::new(tx, rr.center().y - 9.0), Align2::LEFT_CENTER, name, bold(13.5), with_alpha(theme.text, a));
-                    let mut sub = trf("{n} copies", &[("n", &g.copies.len())]);
+                    let mut sub = trn("{n} copies", g.copies.len() as u64, &[("n", &fmt_count(g.copies.len() as u64))]);
                     sub += &format!(" · {}", g.ext);
                     if let Some((w, h)) = g.meta.dims {
                         sub += &format!(" · {w}×{h}");
@@ -1216,8 +1217,8 @@ impl App {
                     lp.text(Pos2::new(rr.right() - 16.0, rr.center().y + 10.0), Align2::RIGHT_CENTER, trf("{size} each", &[("size", &fmt_size(g.size))]), font(11.5), with_alpha(theme.text_faint, a));
                     if g.none_kept() {
                         let wx = rr.right() - 16.0 - sw - 16.0;
-                        lp.text(Pos2::new(wx, rr.center().y), Align2::RIGHT_CENTER, tr("no copy kept"), bold(11.5), theme.danger);
-                        widgets::draw_icon(&lp, Icon::Warning, Rect::from_center_size(Pos2::new(wx - 92.0, rr.center().y), Vec2::splat(13.0)), theme.danger);
+                        lp.text(Pos2::new(wx, rr.center().y), Align2::RIGHT_CENTER, warn_label, bold(11.5), theme.danger);
+                        widgets::draw_icon(&lp, Icon::Warning, Rect::from_center_size(Pos2::new(wx - warn_text_w - 12.0, rr.center().y), Vec2::splat(13.0)), theme.danger);
                     }
                     if cb_resp.clicked() {
                         click = Some((*l, 1));
@@ -1345,7 +1346,9 @@ impl App {
             p.text(Pos2::new(x, r.center().y + 10.0), Align2::LEFT_CENTER, sub.0, font(12.0), sub.1);
         }
         let trash = Rect::from_min_size(Pos2::new(r.right() - 14.0 - 206.0, r.center().y - 17.0), Vec2::new(206.0, 34.0));
-        let clear = Rect::from_min_size(Pos2::new(trash.left() - 10.0 - 84.0, trash.top()), Vec2::new(84.0, 34.0));
+        let clear_label = trc("Clear", "duplicates");
+        let clear_w = p.layout_no_wrap(clear_label.to_string(), bold(13.0), theme.text).size().x.max(60.0) + 24.0;
+        let clear = Rect::from_min_size(Pos2::new(trash.left() - 10.0 - clear_w, trash.top()), Vec2::new(clear_w, 34.0));
         let auto = Rect::from_min_size(Pos2::new(clear.left() - 8.0 - 136.0, trash.top()), Vec2::new(136.0, 34.0));
         if r.width() > 620.0 {
             if widgets::button(ui, auto, Id::new("dupes-auto"), tr("Auto-select"), Some(Icon::Bolt), BtnStyle::Ghost, &theme).clicked() {
@@ -1355,7 +1358,7 @@ impl App {
                 d.reapply();
                 self.sfx(Sfx::Blip);
             }
-            if widgets::button(ui, clear, Id::new("dupes-clear"), tr("Clear"), None, BtnStyle::Ghost, &theme).clicked() {
+            if widgets::button(ui, clear, Id::new("dupes-clear"), clear_label, None, BtnStyle::Ghost, &theme).clicked() {
                 for g in d.groups.iter_mut() {
                     g.manual = true;
                     g.copies.iter_mut().for_each(|c| c.marked = false);
@@ -1537,16 +1540,17 @@ fn dupes_rules(ui: &mut Ui, r: Rect, d: &mut DupesUi, theme: &Theme) -> f32 {
     let otherwise = tr("Otherwise keep");
     let ow = p.layout_no_wrap(otherwise.to_string(), font(12.0), Color32::WHITE).size().x;
     let pw = p.layout_no_wrap(prefer_label.to_string(), bold(12.5), Color32::WHITE).size().x + 34.0;
-    let pref = Rect::from_min_size(Pos2::new(r.right() - pw, r.top()), Vec2::new(pw, chip_h));
-    let right_limit = pref.left() - ow - 20.0;
-
-    let start_x = r.left() + 22.0 + p.layout_no_wrap(tr("Always keep").to_string(), bold(12.5), Color32::WHITE).size().x + 12.0;
-    let (mut x, mut y) = (start_x, r.top());
+    let heading_w = 22.0 + p.layout_no_wrap(tr("Always keep").to_string(), bold(12.5), Color32::WHITE).size().x;
+    let pref_y = if heading_w + ow + pw + 28.0 > r.width() { r.top() + chip_h + 6.0 } else { r.top() };
+    let pref = Rect::from_min_size(Pos2::new(r.right() - pw, pref_y), Vec2::new(pw, chip_h));
+    // Rules start below the labels and preference control, including the first
+    // rule: a long path must never paint over the translated preference text.
+    let start_x = r.left() + 22.0;
+    let (mut x, mut y) = (start_x, pref.bottom() + 6.0);
     let mut toggle = None;
     let mut remove = None;
     let place = |x: &mut f32, y: &mut f32, w: f32| -> Rect {
-        let limit = if *y == r.top() { right_limit } else { r.right() };
-        if *x + w > limit && *x > start_x {
+        if *x + w > r.right() && *x > start_x {
             *x = start_x;
             *y += chip_h + 6.0;
         }
@@ -1747,7 +1751,7 @@ fn dupes_preview(ui: &mut Ui, panel: Rect, d: &mut DupesUi, theme: &Theme) {
         Media::Audio => tr("Audio"),
         Media::Other => tr("File"),
     };
-    p.text(Pos2::new(inner.left(), y), Align2::LEFT_TOP, trf("{kind} · {n} identical copies", &[("kind", &kind), ("n", &g.copies.len())]), font(12.0), theme.text_faint);
+    p.text(Pos2::new(inner.left(), y), Align2::LEFT_TOP, trn("{kind} · {n} identical copies", g.copies.len() as u64, &[("kind", &kind), ("n", &fmt_count(g.copies.len() as u64))]), font(12.0), theme.text_faint);
     y += 26.0;
 
     // facts
@@ -2023,13 +2027,13 @@ fn truncate_middle(p: &Painter, text: &str, font: &egui::FontId, max_w: f32) -> 
 }
 
 fn fmt_date((y, m, d): (u16, u8, u8)) -> String {
-    format!("{y}-{m:02}-{d:02}")
+    crate::i18n::fmt_date((y, m, d))
 }
 
 fn fmt_elapsed(d: Duration) -> String {
     let s = d.as_secs_f32();
     if s < 60.0 {
-        format!("{s:.1} s")
+        crate::i18n::fmt_seconds(s)
     } else {
         fmt_duration(s as u32)
     }
@@ -2110,7 +2114,7 @@ impl App {
         let h = 290.0 + per.len().min(6) as f32 * 30.0 + if needs_ack { 40.0 } else { 0.0 } + if remote && !permanent { 24.0 } else { 0.0 };
         let bd = super::modals::modal_frame(ctx, self.modal_opened, Vec2::new(600.0, h), &theme, |ui, card| {
             let sub = trf("{size} will be freed", &[("size", &fmt_size(bytes))]);
-            super::modals::title(ui, card, &trf("Remove {n} copies?", &[("n", &fmt_count(count as u64))]), Some(&sub), &theme);
+            super::modals::title(ui, card, &trn("Remove {n} copies?", count as u64, &[("n", &fmt_count(count as u64))]), Some(&sub), &theme);
             close |= super::modals::close_button(ui, card, &theme);
             let x0 = card.left() + 28.0;
             let w = card.width() - 56.0;
@@ -2119,7 +2123,7 @@ impl App {
             for (label, kind, n, b) in per.iter().take(6) {
                 widgets::draw_icon(p, place_icon(*kind), Rect::from_center_size(Pos2::new(x0 + 8.0, y + 10.0), Vec2::splat(14.0)), theme.text_dim);
                 p.text(Pos2::new(x0 + 26.0, y + 10.0), Align2::LEFT_CENTER, label, bold(13.0), theme.text);
-                p.text(Pos2::new(x0 + w, y + 10.0), Align2::RIGHT_CENTER, format!("{} · {}", trf("{n} copies", &[("n", n)]), fmt_size(*b)), font(12.5), theme.text_dim);
+                p.text(Pos2::new(x0 + w, y + 10.0), Align2::RIGHT_CENTER, format!("{} · {}", trn("{n} copies", *n as u64, &[("n", &fmt_count(*n as u64))]), fmt_size(*b)), font(12.5), theme.text_dim);
                 y += 30.0;
             }
             y += 8.0;
@@ -2187,7 +2191,7 @@ impl App {
             if finished && !errors.is_empty() {
                 let mut text = trf("{n} could not be removed:", &[("n", &errors.len())]);
                 for e in errors.iter().take(3) {
-                    text += &format!("\n{e}");
+                    text += &format!("\n{}", crate::i18n::tr_error(e));
                 }
                 super::modals::wrapped(ui, Pos2::new(x0, bar.bottom() + 36.0), w, &text, font(11.5), theme.warn);
             }
