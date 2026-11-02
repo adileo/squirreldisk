@@ -137,6 +137,13 @@ fn unchanged(path: &str, size: u64, mtime: Option<i64>) -> bool {
 }
 
 fn remove(t: &Target, permanent: bool) -> Result<(), String> {
+    #[cfg(windows)]
+    if t.at == Location::Local {
+        if permanent {
+            return Err("Permanent deletion is disabled for local Windows duplicates; use the Recycle Bin".into());
+        }
+        return super::windows::recycle(&t.path);
+    }
     match &t.at {
         Location::Local if permanent => std::fs::remove_file(&t.path).map_err(|e| e.to_string()),
         // to the Trash: a mistake can be undone
@@ -160,6 +167,20 @@ fn remove(t: &Target, permanent: bool) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(windows)]
+    #[test]
+    fn windows_removal_rechecks_protected_files() {
+        let dir = super::super::test_dir(&format!("sqd-protected-remove-{}", std::process::id()));
+        std::fs::create_dir_all(dir.join("ProgramData/App")).unwrap();
+        for path in [dir.join("library.DLL"), dir.join("ProgramData/App/user.dat")] {
+            std::fs::write(&path, b"keep").unwrap();
+            let t = Target { at: Location::Local, path: path.to_string_lossy().into_owned(), frees: true, mtime: None };
+            assert!(remove(&t, false).unwrap_err().contains("protected Windows"));
+            assert_eq!(std::fs::read(&path).unwrap(), b"keep");
+        }
+        std::fs::remove_dir_all(dir).unwrap();
+    }
     use std::time::{Duration, Instant};
 
     fn wait(p: &Progress) {
@@ -172,7 +193,7 @@ mod tests {
 
     #[test]
     fn keeps_a_copy() {
-        let dir = std::env::temp_dir().join(format!("sqd-remove-{}", std::process::id()));
+        let dir = super::super::test_dir(&format!("sqd-remove-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).unwrap();
         let (a, b) = (dir.join("a.jpg"), dir.join("b.jpg"));
@@ -202,10 +223,20 @@ mod tests {
         // for good: gone, and the kept copy stays
         let p = start(vec![Batch { size: 4, remove: vec![t(&a)], keep: vec![t(&b)] }], true);
         wait(&p);
+        #[cfg(not(windows))]
+        {
         assert!(!a.exists() && b.exists());
         assert_eq!(p.freed.load(Ordering::Relaxed), 4);
+        }
+        #[cfg(windows)]
+        {
+            assert!(a.exists() && b.exists());
+            assert_eq!(p.freed.load(Ordering::Relaxed), 0);
+            assert!(p.errors.lock().unwrap()[0].contains("Permanent deletion is disabled"));
+        }
         // the kept copy is there: the other goes (to the Trash)
         if std::env::var_os("SQD_TEST_TRASH").is_some() {
+            std::fs::write(&a, b"same").unwrap();
             let p = start(vec![Batch { size: 4, remove: vec![t(&a)], keep: vec![t(&b)] }], false);
             wait(&p);
             assert!(!a.exists() && b.exists());

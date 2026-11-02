@@ -8,6 +8,20 @@ pub mod engine;
 pub mod hash;
 pub mod remove;
 pub mod walk;
+#[cfg(windows)]
+pub mod windows;
+
+#[cfg(test)]
+pub fn test_dir(name: &str) -> std::path::PathBuf {
+    let temp = std::env::temp_dir();
+    #[cfg(windows)]
+    let temp = if windows::protected(&temp) {
+        // Tests exercise the real protection rules; do not put fixtures in
+        // AppData/Temp, which is deliberately excluded from duplicate scans.
+        std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("target/test-fixtures")
+    } else { temp };
+    temp.join(name)
+}
 
 use std::time::{Duration, Instant};
 

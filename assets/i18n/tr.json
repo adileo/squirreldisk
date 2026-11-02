@@ -324,6 +324,8 @@
   "{n} copies selected": "{n} kopya seçildi",
   "{n} files would lose every copy": "{n} dosyanın tüm kopyaları gider",
   "Auto-select": "Otomatik seç",
+  "Select all": "Hepsini seç",
+  "Select all removable copies. One copy of each file is kept.": "Kaldırılabilir tüm kopyaları seçer. Her dosyanın bir kopyası korunur.",
   "Available once the comparison is over": "Karşılaştırma bitince kullanılabilir",
   "More ways to remove": "Diğer kaldırma yolları",
   "Move to Trash…": "Çöp Kutusu’na taşı…",
@@ -376,5 +378,14 @@
   "{n} could not be removed:": "{n} kaldırılamadı:",
   "TOOLS": "ARAÇLAR",
   "Photos, videos and projects copied in more than one place": "Birden fazla yere kopyalanmış fotoğraflar, videolar ve projeler",
-  "Comparing…": "Karşılaştırılıyor…"
+  "Comparing…": "Karşılaştırılıyor…",
+  "File size": "Dosya boyutu",
+  "System folders and application files are excluded": "Sistem klasörleri ve uygulama dosyaları arama dışında",
+  "All sizes": "Tüm boyutlar",
+  "Small (64 KB – 1 MB)": "Küçük (64 KB – 1 MB)",
+  "Medium (>1 MB – 128 MB)": "Orta (>1 MB – 128 MB)",
+  "Large (>128 MB – 1 GB)": "Büyük (>128 MB – 1 GB)",
+  "Huge (>1 GB – 4 GB)": "Çok büyük (>1 GB – 4 GB)",
+  "Gigantic (>4 GB)": "Devasa (>4 GB)",
+  "Applies to each file, not the total size of its copies. Empty files are ignored. Changing the size restarts the comparison.": "Her dosyanın kendi boyutuna uygulanır. Boş dosyalar atlanır. Boyut seçimi değiştiğinde karşılaştırma yeniden başlar."
 }

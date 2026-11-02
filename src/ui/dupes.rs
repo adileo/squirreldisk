@@ -37,6 +37,49 @@ impl Filter {
     }
 }
 
+/// Windows size presets. Bounds are inclusive, with no overlap between presets.
+#[cfg(windows)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+enum SizeFilter {
+    #[default]
+    All,
+    Small,
+    Medium,
+    Large,
+    Huge,
+    Gigantic,
+}
+
+#[cfg(windows)]
+impl SizeFilter {
+    const ALL: [Self; 6] = [Self::All, Self::Small, Self::Medium, Self::Large, Self::Huge, Self::Gigantic];
+
+    fn label(self) -> &'static str {
+        tr(match self {
+            Self::All => "All sizes",
+            Self::Small => "Small (64 KB – 1 MB)",
+            Self::Medium => "Medium (>1 MB – 128 MB)",
+            Self::Large => "Large (>128 MB – 1 GB)",
+            Self::Huge => "Huge (>1 GB – 4 GB)",
+            Self::Gigantic => "Gigantic (>4 GB)",
+        })
+    }
+
+    fn bounds(self) -> (u64, Option<u64>) {
+        const KB: u64 = 1024;
+        const MB: u64 = 1024 * KB;
+        const GB: u64 = 1024 * MB;
+        match self {
+            Self::All => (1, None),
+            Self::Small => (64 * KB, Some(MB)),
+            Self::Medium => (MB + 1, Some(128 * MB)),
+            Self::Large => (128 * MB + 1, Some(GB)),
+            Self::Huge => (GB + 1, Some(4 * GB)),
+            Self::Gigantic => (4 * GB + 1, None),
+        }
+    }
+}
+
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Sort {
     Size,
@@ -74,6 +117,10 @@ pub struct DupesUi {
     pub filter: Filter,
     pub sort: Sort,
     pub search: String,
+    #[cfg(windows)]
+    size_filter: SizeFilter,
+    #[cfg(windows)]
+    size_menu: bool,
     pub expanded: HashSet<u32>,
     /// (group id, copy index)
     pub selected: Option<(u32, usize)>,
@@ -139,6 +186,10 @@ impl DupesUi {
             filter: Filter::All,
             sort: Sort::Size,
             search: String::new(),
+            #[cfg(windows)]
+            size_filter: SizeFilter::default(),
+            #[cfg(windows)]
+            size_menu: false,
             expanded: HashSet::new(),
             selected: None,
             scroll: 0.0,
@@ -181,6 +232,35 @@ impl DupesUi {
         matches!(self.run, Run::Mock(_))
     }
 
+    fn accepts_size(&self, size: u64) -> bool {
+        #[cfg(windows)]
+        {
+            let (min, max) = self.size_filter.bounds();
+            size >= min && max.is_none_or(|max| size <= max)
+        }
+        #[cfg(not(windows))]
+        {
+            let _ = size;
+            true
+        }
+    }
+
+    #[cfg(windows)]
+    fn set_size_filter(&mut self, size: SizeFilter) {
+        if size == self.size_filter {
+            return;
+        }
+        self.size_filter = size;
+        if !matches!(self.run, Run::Idle) {
+            self.stop();
+            self.start();
+        }
+        self.expanded.clear();
+        self.selected = None;
+        self.scroll = 0.0;
+        self.touch();
+    }
+
     pub fn is_scanning(&self) -> bool {
         match &self.run {
             Run::Idle => false,
@@ -209,7 +289,13 @@ impl DupesUi {
         }
         let specs: Vec<Spec> = self.places.iter().filter_map(|p| p.spec.clone()).collect();
         self.touch();
-        self.run = if specs.is_empty() { Run::Idle } else { Run::Real { finder: Finder::start(specs, Options { exact: self.exact, ..Options::default() }), seen: 0, status: Status::default() } };
+        let options = Options { exact: self.exact, ..Options::default() };
+        #[cfg(windows)]
+        let options = {
+            let (min_size, max_size) = self.size_filter.bounds();
+            Options { min_size, max_size, ..options }
+        };
+        self.run = if specs.is_empty() { Run::Idle } else { Run::Real { finder: Finder::start(specs, options), seen: 0, status: Status::default() } };
         self.groups.clear();
     }
 
@@ -335,7 +421,7 @@ impl DupesUi {
             let g = &self.groups;
             let mut v = View { key: Some(key), ..Default::default() };
             for (i, x) in g.iter().enumerate() {
-                if x.found_at > frac {
+                if x.found_at > frac || !self.accepts_size(x.size) {
                     continue;
                 }
                 v.any = true;
@@ -363,7 +449,7 @@ impl DupesUi {
 
     fn found(&self) -> impl Iterator<Item = &Group> {
         let f = self.visible_frac();
-        self.groups.iter().filter(move |g| g.found_at <= f)
+        self.groups.iter().filter(move |g| g.found_at <= f && self.accepts_size(g.size))
     }
 
     /// The groups shown, in order.
@@ -704,6 +790,13 @@ impl App {
 
     /// Esc on the duplicates screen: closes what is open on it first.
     pub fn dupes_escape(&mut self) {
+        #[cfg(windows)]
+        if let Some(d) = self.dupes.as_mut() {
+            if d.size_menu {
+                d.size_menu = false;
+                return;
+            }
+        }
         match self.dupes.as_mut() {
             Some(d) if d.add_menu.is_some() => d.add_menu = None,
             Some(d) if d.trash_menu => d.trash_menu = false,
@@ -753,6 +846,12 @@ impl App {
         let tools = Rect::from_min_size(Pos2::new(left.left(), places.bottom() + 14.0), Vec2::new(left.width(), 34.0));
         dupes_toolbar(ui, tools, &mut d, &theme);
         let rules_top = tools.bottom() + 10.0;
+        #[cfg(windows)]
+        let rules_top = {
+            let size_row = Rect::from_min_size(Pos2::new(left.left(), rules_top), Vec2::new(left.width(), 30.0));
+            dupes_size_filter(ui, size_row, &mut d, &theme);
+            size_row.bottom() + 10.0
+        };
         let rules_h = dupes_rules(ui, Rect::from_min_size(Pos2::new(left.left(), rules_top), Vec2::new(left.width(), 30.0)), &mut d, &theme);
         let actions = Rect::from_min_max(Pos2::new(left.left(), left.bottom() - 58.0), left.max);
         let list = Rect::from_min_max(Pos2::new(left.left(), rules_top + rules_h + 10.0), Pos2::new(left.right(), actions.top() - 10.0));
@@ -1348,7 +1447,9 @@ impl App {
         let clear = Rect::from_min_size(Pos2::new(trash.left() - 10.0 - 84.0, trash.top()), Vec2::new(84.0, 34.0));
         let auto = Rect::from_min_size(Pos2::new(clear.left() - 8.0 - 136.0, trash.top()), Vec2::new(136.0, 34.0));
         if r.width() > 620.0 {
-            if widgets::button(ui, auto, Id::new("dupes-auto"), tr("Auto-select"), Some(Icon::Bolt), BtnStyle::Ghost, &theme).clicked() {
+            let select_label = if cfg!(windows) { tr("Select all") } else { tr("Auto-select") };
+            if widgets::button(ui, auto, Id::new("dupes-auto"), select_label, Some(Icon::Bolt), BtnStyle::Ghost, &theme)
+                .on_hover_text(tr("Select all removable copies. One copy of each file is kept.")).clicked() {
                 for g in d.groups.iter_mut() {
                     g.manual = false;
                 }
@@ -1366,21 +1467,23 @@ impl App {
         }
         let ready = n > 0 && unsafe_groups == 0 && !d.is_scanning() && d.removing.is_none();
         // split button: the Trash, and a menu with "Delete permanently"
-        let main = Rect::from_min_max(trash.min, Pos2::new(trash.right() - 31.0, trash.bottom()));
+        let main = if cfg!(windows) { trash } else { Rect::from_min_max(trash.min, Pos2::new(trash.right() - 31.0, trash.bottom())) };
         let more = Rect::from_min_max(Pos2::new(trash.right() - 30.0, trash.top()), trash.max);
-        let left_r = egui::CornerRadius { nw: 7, sw: 7, ne: 0, se: 0 };
+        let left_r = if cfg!(windows) { cr(7.0) } else { egui::CornerRadius { nw: 7, sw: 7, ne: 0, se: 0 } };
         let right_r = egui::CornerRadius { nw: 0, sw: 0, ne: 7, se: 7 };
         let resp = widgets::button_shaped(ui, main, Id::new("dupes-trash"), tr("Move to Trash"), Some(Icon::Trash), BtnStyle::Danger, &theme, ready, left_r);
         let resp = if n > 0 && d.is_scanning() { resp.on_hover_text(tr("Available once the comparison is over")) } else { resp };
-        let more_resp = widgets::button_shaped(ui, more, Id::new("dupes-trash-more"), "", Some(Icon::Expand), BtnStyle::Danger, &theme, ready, right_r).on_hover_text(tr("More ways to remove"));
         let mut open = None;
         if resp.clicked() {
             open = Some(false);
         }
-        if more_resp.clicked() {
-            d.trash_menu = !d.trash_menu;
+        if !cfg!(windows) {
+            let more_resp = widgets::button_shaped(ui, more, Id::new("dupes-trash-more"), "", Some(Icon::Expand), BtnStyle::Danger, &theme, ready, right_r).on_hover_text(tr("More ways to remove"));
+            if more_resp.clicked() {
+                d.trash_menu = !d.trash_menu;
+            }
         }
-        if d.trash_menu {
+        if !cfg!(windows) && d.trash_menu {
             // opens upwards: the bar is at the bottom of the window
             let items = [(Icon::Trash, tr("Move to Trash…"), false), (Icon::Warning, tr("Delete permanently…"), true)];
             let mw = 230.0;
@@ -1425,6 +1528,62 @@ impl App {
             }
         }
     }
+}
+
+#[cfg(windows)]
+fn dupes_size_filter(ui: &mut Ui, r: Rect, d: &mut DupesUi, theme: &Theme) {
+    let p = ui.painter().clone();
+    let label = tr("File size");
+    let lw = p.layout_no_wrap(label.into(), font(12.0), theme.text_dim).size().x;
+    p.text(Pos2::new(r.left(), r.center().y), Align2::LEFT_CENTER, label, font(12.0), theme.text_dim);
+    // Explicit 18 px label gap; match the hand-drawn controls elsewhere.
+    let button = Rect::from_min_max(Pos2::new(r.left() + lw + 18.0, r.top()), Pos2::new((r.left() + lw + 18.0 + 260.0).min(r.right()), r.bottom()));
+    let enabled = d.removing.is_none();
+    let response = widgets::button_ex(ui, button, Id::new("dupes-size"), d.size_filter.label(), None, BtnStyle::Subtle, theme, enabled)
+        .on_hover_text(tr("Applies to each file, not the total size of its copies. Empty files are ignored. Changing the size restarts the comparison."));
+    widgets::draw_icon(&p, Icon::Expand, Rect::from_center_size(Pos2::new(button.right() - 15.0, button.center().y), Vec2::splat(10.0)), theme.text_dim);
+    if response.clicked() { d.size_menu = !d.size_menu; }
+    if !enabled { d.size_menu = false; }
+    let hint_x = button.right() + 18.0;
+    let hint = tr("System folders and application files are excluded");
+    if r.right() - hint_x > 240.0 {
+        widgets::draw_icon(&p, Icon::Shield, Rect::from_center_size(Pos2::new(hint_x + 7.0, r.center().y), Vec2::splat(13.0)), theme.ok);
+        let text = widgets::truncate(&p, hint, &font(11.5), r.right() - hint_x - 24.0);
+        p.text(Pos2::new(hint_x + 22.0, r.center().y), Align2::LEFT_CENTER, text, font(11.5), theme.text_dim);
+    }
+    if !d.size_menu { return; }
+    let width = button.width().max(280.0);
+    let height = SizeFilter::ALL.len() as f32 * 34.0 + 12.0;
+    let screen = ui.ctx().content_rect();
+    let x = button.left().min(screen.right() - width - 8.0).max(screen.left() + 8.0);
+    let y = if button.bottom() + height + 8.0 <= screen.bottom() { button.bottom() + 6.0 } else { (button.top() - height - 6.0).max(screen.top() + 8.0) };
+    let mut bounds = Rect::NOTHING;
+    let mut picked = None;
+    egui::Area::new(Id::new("dupes-size-menu")).order(egui::Order::Foreground).fixed_pos(Pos2::new(x, y)).show(ui.ctx(), |ui| {
+        let (rect, _) = ui.allocate_exact_size(Vec2::new(width, height), Sense::click());
+        bounds = rect;
+        let p = ui.painter().clone();
+        widgets::shadow(&p, rect, 12.0, 1.0, theme);
+        p.rect_filled(rect, cr(12.0), theme.surface_hi);
+        p.rect_stroke(rect, cr(12.0), Stroke::new(1.0, theme.stroke), egui::StrokeKind::Inside);
+        for (k, size) in SizeFilter::ALL.into_iter().enumerate() {
+            let row = Rect::from_min_size(rect.min + Vec2::new(6.0, 6.0 + k as f32 * 34.0), Vec2::new(width - 12.0, 32.0));
+            let id = Id::new(("dupes-size-item", k));
+            let resp = ui.interact(row, id, Sense::click());
+            let hover = ui.ctx().animate_bool_with_time(id, resp.hovered(), 0.08);
+            let selected = size == d.size_filter;
+            p.rect_filled(row, cr(8.0), with_alpha(theme.accent, (if selected { 0.16 } else { 0.0 }) + 0.65 * hover));
+            if selected {
+                widgets::draw_icon(&p, Icon::Check, Rect::from_center_size(Pos2::new(row.left() + 16.0, row.center().y), Vec2::splat(12.0)), theme.accent);
+            }
+            p.text(Pos2::new(row.left() + 32.0, row.center().y), Align2::LEFT_CENTER, size.label(), bold(12.5), lerp_color(theme.text, Color32::WHITE, hover));
+            if resp.hovered() { ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand); }
+            if resp.clicked() { picked = Some(size); }
+        }
+    });
+    let outside = ui.input(|i| i.pointer.any_pressed() && i.pointer.interact_pos().is_some_and(|p| !bounds.contains(p) && !button.contains(p)));
+    if let Some(size) = picked { d.set_size_filter(size); }
+    if outside || picked.is_some() { d.size_menu = false; }
 }
 
 fn dupes_toolbar(ui: &mut Ui, r: Rect, d: &mut DupesUi, theme: &Theme) {
@@ -2091,6 +2250,7 @@ fn fake_photo(seed: u32, w: usize, h: usize) -> egui::ColorImage {
 impl App {
     /// "Remove N copies?": what goes where, and how.
     pub(super) fn dupes_confirm_modal(&mut self, ctx: &egui::Context, mut ack: bool, mut permanent: bool) -> Option<Modal> {
+        if cfg!(windows) { permanent = false; }
         let theme = self.theme.clone();
         let d = self.dupes.as_ref()?;
         let batches = d.removal();
@@ -2124,13 +2284,13 @@ impl App {
             }
             y += 8.0;
             // how: to the Trash, or for good
-            let cw = (w - 10.0) / 2.0;
+            let cw = if cfg!(windows) { w } else { (w - 10.0) / 2.0 };
             let a = Rect::from_min_size(Pos2::new(x0, y), Vec2::new(cw, 54.0));
             let b2 = Rect::from_min_size(Pos2::new(x0 + cw + 10.0, y), Vec2::new(cw, 54.0));
             if widgets::choice_card(ui, a, Id::new("dupes-mode-trash"), !permanent, tr("Move to Trash"), tr("Can be recovered"), Icon::Trash, &theme, true).clicked() {
                 permanent = false;
             }
-            if widgets::choice_card(ui, b2, Id::new("dupes-mode-perm"), permanent, tr("Delete permanently"), tr("Cannot be recovered"), Icon::Warning, &theme, true).clicked() {
+            if !cfg!(windows) && widgets::choice_card(ui, b2, Id::new("dupes-mode-perm"), permanent, tr("Delete permanently"), tr("Cannot be recovered"), Icon::Warning, &theme, true).clicked() {
                 permanent = true;
             }
             y += 66.0;
@@ -2224,6 +2384,44 @@ fn modal_frame_static(ctx: &egui::Context, opened: Instant, size: Vec2, theme: &
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(windows)]
+    #[test]
+    fn named_size_presets_start_at_64_kb_without_overlaps() {
+        let presets = &SizeFilter::ALL[1..];
+        assert_eq!(SizeFilter::Small.bounds(), (64 * 1024, Some(1024 * 1024)));
+        assert_eq!(SizeFilter::All.bounds(), (1, None));
+        for size in [0, 1, 64 * 1024 - 1, 64 * 1024, 64 * 1024 + 1, 1024 * 1024, 1024 * 1024 + 1,
+            128 * 1024 * 1024, 128 * 1024 * 1024 + 1, 1024 * 1024 * 1024,
+            1024 * 1024 * 1024 + 1, 4 * 1024 * 1024 * 1024, 4 * 1024 * 1024 * 1024 + 1, u64::MAX] {
+            let hits = presets.iter().filter(|p| {
+                let (min, max) = p.bounds();
+                size >= min && max.is_none_or(|max| size <= max)
+            }).count();
+            assert_eq!(hits, usize::from(size >= 64 * 1024), "size: {size}");
+        }
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn size_change_invalidates_results_and_combines_with_search() {
+        let mut d = DupesUi::mock();
+        d.debug_pick();
+        assert!(!d.view().order.is_empty());
+        d.set_size_filter(SizeFilter::Small);
+        assert!(d.selected.is_none());
+        assert!(d.expanded.is_empty());
+        d.debug_pick();
+        let shown = d.view().order.clone();
+        let expected = d.groups.iter().filter(|g| (64 * 1024..=1024 * 1024).contains(&g.size)).count();
+        assert_eq!(shown.len(), expected);
+        assert!(shown.iter().all(|&i| (64 * 1024..=1024 * 1024).contains(&d.groups[i].size)));
+        d.set_size_filter(SizeFilter::All);
+        d.debug_pick();
+        assert!(!d.view().order.is_empty());
+        d.search = "no-file-matches-this-size-filter-test".into();
+        assert!(d.view().order.is_empty());
+    }
 
     #[test]
     fn removal_keeps_one_copy_and_libraries() {

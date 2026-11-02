@@ -142,6 +142,28 @@ Interested? Head to [squirreldisk.com/sponsors](https://squirreldisk.com/sponsor
 - Chat with us on [Discord](https://discord.gg/Xp8QtMM65w)
 - Report bugs and suggest ideas in [issues](https://github.com/adileo/squirreldisk/issues)
 
+## Windows duplicate file size filter
+
+On Windows, **Find duplicates → File size** limits the comparison to each file's
+size. Choose All sizes, Small (64 KB–1 MB), Medium
+(>1 MB–128 MB), Large (>128 MB–1 GB), Huge (>1 GB–4 GB), or Gigantic (>4 GB).
+KB, MB and GB use multiples of 1024. Empty files are ignored. All sizes includes
+nonempty files below the previous 64 KB minimum. Changing the size restarts an
+existing comparison and clears its selections; name and media filters still apply.
+The size control is available only in the Windows desktop app.
+
+Windows duplicate search skips OS folders, installed applications and their data
+(including Windows, Program Files, ProgramData and AppData on any drive), system
+files, junctions/symlinks and binary components such as DLL and SYS files.
+EXE and MSI files outside protected locations (for example, downloaded installers)
+are included; the running SquirrelDisk executable itself is excluded.
+Custom OS and application-data locations reported by Windows environment variables
+are also excluded. These checks apply even when a protected folder is chosen
+directly, and local targets are checked again before removal. Local Windows
+duplicates can only be moved to the Recycle Bin: permanent deletion is disabled,
+and recycling errors have no permanent-delete fallback. Remote/cloud copies
+still have no Recycle Bin and require the existing irreversible-removal warning.
+
 ## Build from source
 
 With [Rust](https://rustup.rs) installed:
