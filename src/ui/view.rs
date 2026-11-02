@@ -6,11 +6,11 @@ use super::shader;
 use super::sunburst::{self, Geometry, SegKind, SegStyle, View};
 use super::theme::{lerp_color, lighten, with_alpha, Theme};
 use super::widgets::{self, bold, cr, display, font, BtnStyle, Icon};
-use crate::i18n::{tr, tr_status, trf};
+use crate::i18n::{fmt_count, fmt_size, tr, tr_status, trc, trf, trn};
 use crate::safety::{Os, Rules};
 use crate::scan::local::expand_small;
 use crate::sound::Sfx;
-use crate::tree::{fmt_count, fmt_size, Kind, Tree, F_EXPANDABLE, HIDDEN_RESERVED, HIDDEN_REST, HIDDEN_VOLUME_SUFFIX, NONE};
+use crate::tree::{Kind, Tree, F_EXPANDABLE, HIDDEN_RESERVED, HIDDEN_REST, HIDDEN_VOLUME_SUFFIX, NONE};
 use eframe::egui::{self, Align2, Color32, Id, Pos2, Rect, Sense, Shape, Stroke, Ui, Vec2};
 use std::f32::consts::TAU;
 use std::sync::atomic::Ordering;
@@ -20,7 +20,7 @@ use std::time::Instant;
 pub fn node_label(t: &Tree, id: u32) -> String {
     let n = t.get(id);
     match n.kind {
-        Kind::SmallFiles => trf("{count} smaller files", &[("count", &fmt_count(n.files as u64))]),
+        Kind::SmallFiles => trn("{count} smaller files", n.files as u64, &[("count", &fmt_count(n.files as u64))]),
         Kind::Mount => trf("{name} (other volume)", &[("name", &n.name)]),
         // the item itself, or one of its parts (see `Tree::add_hidden`)
         Kind::Hidden => match &*n.name {
@@ -38,7 +38,7 @@ pub fn node_label(t: &Tree, id: u32) -> String {
 fn view_label(t: &Tree, v: View) -> String {
     if v.skip > 0 {
         let n = t.child_count(v.node).saturating_sub(v.skip);
-        trf("{count} smaller items", &[("count", &fmt_count(n as u64))])
+        trn("{count} smaller items", n as u64, &[("count", &fmt_count(n as u64))])
     } else {
         node_label(t, v.node)
     }
@@ -380,7 +380,7 @@ impl App {
         let center_label = view_label(&t, view);
         let center_size = sunburst::view_size(&t, view);
         let hovered_label = hovered_anim.as_ref().map(|a| match a.kind {
-            SegKind::Group { count, .. } => (trf("{count} smaller items", &[("count", &fmt_count(count as u64))]), a.size),
+            SegKind::Group { count, .. } => (trn("{count} smaller items", count as u64, &[("count", &fmt_count(count as u64))]), a.size),
             SegKind::Free => (tr("Free space").to_string(), a.size),
             _ => (if t.is_alive(a.node) { node_label(&t, a.node) } else { String::new() }, a.size),
         });
@@ -453,8 +453,8 @@ impl App {
         let files = pr.files.load(Ordering::Relaxed);
         let bytes = pr.bytes.load(Ordering::Relaxed);
         let txt = match frac {
-            Some(f) => trf("{status} · {percent}% · {files} files · {size}", &[("status", &tr_status(&status)), ("percent", &format!("{:.0}", f * 100.0)), ("files", &crate::tree::fmt_count_compact(files)), ("size", &fmt_size(bytes))]),
-            None => trf("{status} · {files} files · {size}", &[("status", &tr_status(&status)), ("files", &crate::tree::fmt_count_compact(files)), ("size", &fmt_size(bytes))]),
+            Some(f) => trf("{status} · {percent}% · {files} files · {size}", &[("status", &tr_status(&status)), ("percent", &format!("{:.0}", f * 100.0)), ("files", &crate::i18n::fmt_count_compact(files)), ("size", &fmt_size(bytes))]),
+            None => trf("{status} · {files} files · {size}", &[("status", &tr_status(&status)), ("files", &crate::i18n::fmt_count_compact(files)), ("size", &fmt_size(bytes))]),
         };
         let g = p.layout_no_wrap(txt.clone(), bold(12.0), theme.text);
         let pill = Rect::from_center_size(Pos2::new(chart.center().x, chart.top() + 18.0), Vec2::new(g.size().x + 40.0, 30.0));
@@ -559,7 +559,7 @@ impl App {
         p.text(inner.left_top() + Vec2::new(0.0, 2.0), Align2::LEFT_TOP, tt, display(20.0), theme.text);
         p.galley(Pos2::new(inner.right() - sg.size().x, inner.top() + 1.0), sg, theme.text);
         // live counts change fast: keep them compact until the scan is done
-        let count = |n: u64| if s.is_scanning() { crate::tree::fmt_count_compact(n) } else { fmt_count(n) };
+        let count = |n: u64| if s.is_scanning() { crate::i18n::fmt_count_compact(n) } else { fmt_count(n) };
         let sub = trf("{files} files · {items} items", &[("files", &count(files as u64)), ("items", &count(kids.len() as u64))]);
         p.text(inner.left_top() + Vec2::new(0.0, 32.0), Align2::LEFT_TOP, sub, font(12.0), theme.text_faint);
 
@@ -669,7 +669,7 @@ impl App {
             let h = ui.ctx().animate_bool_with_time(id.with("h"), resp.hovered(), 0.1);
             let p = ui.painter();
             p.rect_filled(rr, cr(8.0), with_alpha(theme.surface_hi, h));
-            p.text(Pos2::new(rr.left() + 30.0, rr.center().y), Align2::LEFT_CENTER, trf("{count} more items…", &[("count", &fmt_count(n as u64))]), font(13.0), theme.text_dim);
+            p.text(Pos2::new(rr.left() + 30.0, rr.center().y), Align2::LEFT_CENTER, trn("{count} more items…", n as u64, &[("count", &fmt_count(n as u64))]), font(13.0), theme.text_dim);
             p.text(Pos2::new(rr.right() - 12.0, rr.center().y), Align2::RIGHT_CENTER, fmt_size(rest), bold(12.5), theme.text_dim);
             if resp.clicked() {
                 self.sessions[si].navigate(v);
@@ -759,7 +759,7 @@ impl App {
             p.text(Pos2::new(tx, r.center().y), Align2::LEFT_CENTER, m, font(12.5), if dragging { theme.warn } else { theme.text_dim });
         } else {
             p.text(Pos2::new(tx, r.center().y - 8.0), Align2::LEFT_CENTER, fmt_size(size), display(16.0), theme.text);
-            p.text(Pos2::new(tx, r.center().y + 11.0), Align2::LEFT_CENTER, if count == 1 { tr("collected · 1 item").to_string() } else { trf("collected · {count} items", &[("count", &count)]) }, font(11.5), theme.text_dim);
+            p.text(Pos2::new(tx, r.center().y + 11.0), Align2::LEFT_CENTER, if count == 1 { tr("collected · 1 item").to_string() } else { trn("collected · {count} items", count as u64, &[("count", &fmt_count(count as u64))]) }, font(11.5), theme.text_dim);
         }
         let btn = Rect::from_min_size(Pos2::new(r.right() - 112.0, r.center().y - 16.0), Vec2::new(100.0, 32.0));
         let del = widgets::button_ex(ui, btn, id.with("del"), tr("Delete"), Some(Icon::Trash), BtnStyle::Danger, &theme, count > 0 && !deleting);
@@ -798,8 +798,10 @@ impl App {
             p.rect_filled(resp_rect, cr(16.0), theme.surface_hi);
             p.rect_stroke(resp_rect, cr(16.0), Stroke::new(1.0, theme.stroke), egui::StrokeKind::Inside);
             p.text(resp_rect.left_top() + Vec2::new(16.0, 18.0), Align2::LEFT_CENTER, tr("Collected for deletion"), bold(13.0), theme.text);
-            let clear = Rect::from_min_size(Pos2::new(resp_rect.right() - 86.0, resp_rect.top() + 6.0), Vec2::new(74.0, 24.0));
-            if widgets::button(ui, clear, Id::new("clear-bin"), tr("Clear"), None, BtnStyle::Ghost, &theme).clicked() {
+            let clear_label = trc("Clear", "collector");
+            let clear_w = p.layout_no_wrap(clear_label.to_string(), bold(12.5), theme.text).size().x + 24.0;
+            let clear = Rect::from_min_size(Pos2::new(resp_rect.right() - clear_w - 12.0, resp_rect.top() + 6.0), Vec2::new(clear_w, 24.0));
+            if widgets::button(ui, clear, Id::new("clear-bin"), clear_label, None, BtnStyle::Ghost, &theme).clicked() {
                 close = true;
             }
             for (k, (node, label, size, path)) in items.iter().take(8).enumerate() {

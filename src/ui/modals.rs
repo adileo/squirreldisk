@@ -4,10 +4,9 @@ use super::app::{App, Modal, Target};
 use super::theme::{lerp_color, with_alpha, Theme};
 use super::widgets::{self, bold, cr, display, font, BtnStyle, Icon};
 use crate::delete::Mode;
-use crate::i18n::{tr, tr_phase, tr_reason, trf};
+use crate::i18n::{fmt_size, tr, tr_phase, tr_reason, trf};
 use crate::safety::Verdict;
 use crate::sound::Sfx;
-use crate::tree::fmt_size;
 use crate::update::State as UpState;
 use eframe::egui::{self, Align2, Color32, Id, Pos2, Rect, Sense, Shape, Stroke, Ui, Vec2};
 use std::f32::consts::TAU;
@@ -372,7 +371,7 @@ impl App {
                     let r = Rect::from_min_size(Pos2::new(x0, y), Vec2::new(w, 44.0));
                     let p = ui.painter();
                     p.text(Pos2::new(r.left(), r.top() + 12.0), Align2::LEFT_CENTER, label, bold(13.5), theme.text);
-                    p.text(Pos2::new(r.left(), r.top() + 30.0), Align2::LEFT_CENTER, sub, font(11.5), theme.text_dim);
+                    let sub_h = wrapped(ui, Pos2::new(r.left(), r.top() + 22.0), w - 60.0, sub, font(11.5), theme.text_dim);
                     let tgl = Rect::from_center_size(Pos2::new(r.right() - 22.0, r.center().y), Vec2::new(44.0, 26.0));
                     let v = match k {
                         0 => &mut s.sound,
@@ -384,7 +383,7 @@ impl App {
                         _ => &mut s.sponsor_measurement,
                     };
                     widgets::toggle(ui, tgl, Id::new(("set-toggle", k)), v, &theme);
-                    y += 46.0;
+                    y += (22.0 + sub_h + 8.0).max(46.0);
                 }
                 // Transparency: exactly what the sponsor feature knows, all local.
                 let sig = self.sponsors.signals();
@@ -494,11 +493,12 @@ impl App {
                 line = format!("{line}  ·  {}", trf("CPU renderer ({reason})", &[("reason", e)]));
             }
             // the button grows with its (translated) label
-            let bw = (p.layout_no_wrap(tr("Check for updates").to_string(), bold(13.0), theme.text).size().x + 52.0).clamp(160.0, w * 0.55);
+            let check_label = crate::i18n::trc("Check for updates", "action");
+            let bw = (p.layout_no_wrap(check_label.to_string(), bold(13.0), theme.text).size().x + 52.0).clamp(160.0, w * 0.55);
             let line = widgets::truncate(p, &line, &font(12.0), w - bw - 12.0);
             p.text(Pos2::new(x0, y + 26.0), Align2::LEFT_CENTER, line, font(12.0), theme.text_dim);
             let b = Rect::from_min_size(Pos2::new(x0 + w - bw, y + 10.0), Vec2::new(bw, 32.0));
-            check_now = widgets::button(ui, b, Id::new("check-upd"), tr("Check for updates"), Some(Icon::Refresh), BtnStyle::Subtle, &theme).clicked();
+            check_now = widgets::button(ui, b, Id::new("check-upd"), check_label, Some(Icon::Refresh), BtnStyle::Subtle, &theme).clicked();
             if picker {
                 // grid of languages drawn over the settings card
                 let cols = 3;
@@ -699,8 +699,9 @@ impl App {
         let height = 330.0 + list_rows as f32 * 44.0 + if caution { 36.0 } else { 0.0 } + if mode >= 2 { 52.0 } else { 0.0 } + if show_secure { 58.0 } else { 0.0 };
         let bd = modal_frame(ctx, self.modal_opened, Vec2::new(640.0, height), &theme, |ui, card| {
             let n = ok_items.len();
-            let t = if n == 1 { tr("Delete 1 item?").to_string() } else { trf("Delete {count} items?", &[("count", &n)]) };
-            title(ui, card, &t, Some(&trf("{size} will be freed", &[("size", &fmt_size(total))])), &theme);
+            let t = if n == 0 { tr("Nothing can be deleted").to_string() } else if n == 1 { tr("Delete 1 item?").to_string() } else { crate::i18n::trn("Delete {count} items?", n as u64, &[("count", &crate::i18n::fmt_count(n as u64))]) };
+            let sub = if n == 0 { tr("Nothing will be deleted").to_string() } else { trf("{size} will be freed", &[("size", &fmt_size(total))]) };
+            title(ui, card, &t, Some(&sub), &theme);
             close = close_button(ui, card, &theme);
             let x0 = card.left() + 28.0;
             let w = card.width() - 56.0;
@@ -894,7 +895,7 @@ impl App {
                 p.rect_filled(r, cr(10.0), with_alpha(theme.danger, 0.12));
                 p.text(r.left_top() + Vec2::new(12.0, 14.0), Align2::LEFT_CENTER, if errors.len() == 1 { tr("1 problem").to_string() } else { trf("{count} problems", &[("count", &errors.len())]) }, bold(12.0), theme.danger);
                 for (k, e) in errors.iter().take(3).enumerate() {
-                    let e = widgets::truncate(p, e, &font(11.0), r.width() - 24.0);
+                    let e = widgets::truncate(p, &crate::i18n::tr_error(e), &font(11.0), r.width() - 24.0);
                     p.text(r.left_top() + Vec2::new(12.0, 32.0 + k as f32 * 15.0), Align2::LEFT_CENTER, e, font(11.0), theme.text_dim);
                 }
             }
@@ -961,7 +962,7 @@ fn theme_swatch(ui: &mut Ui, r: Rect, t: &Theme, selected: bool, time: f64) -> e
         let y = rr.top() + 18.0 + k as f32 * 10.0;
         p.rect_filled(Rect::from_min_size(Pos2::new(rr.left() + 62.0, y), Vec2::new(rr.width() - 76.0 - k as f32 * 8.0, 4.0)), cr(2.0), with_alpha(t.text_dim, 0.5));
     }
-    p.text(Pos2::new(rr.left() + 10.0, rr.bottom() - 13.0), Align2::LEFT_CENTER, t.name, bold(11.5), t.text);
+    p.text(Pos2::new(rr.left() + 10.0, rr.bottom() - 13.0), Align2::LEFT_CENTER, tr(t.name), bold(11.5), t.text);
     p.rect_stroke(rr, cr(12.0), Stroke::new(1.0 + 1.5 * s, lerp_color(with_alpha(t.stroke, 0.8), t.accent, s.max(h * 0.5))), egui::StrokeKind::Inside);
     resp
 }

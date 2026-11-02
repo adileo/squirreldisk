@@ -10,6 +10,7 @@ rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN" "$APP/Contents/MacOS/SquirrelDisk"
 cp assets/icon/SquirrelDisk.icns "$APP/Contents/Resources/SquirrelDisk.icns"
+cp assets/fonts/LICENSE-Inter.txt "$APP/Contents/Resources/Inter-LICENSE.txt"
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">

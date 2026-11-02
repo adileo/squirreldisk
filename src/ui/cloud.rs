@@ -5,9 +5,8 @@ use super::app::{refresh_rclone, App, Modal, RcloneState, Target};
 use super::modals::{close_button, mark, modal_frame, title, wrapped};
 use super::theme::{lerp_color, with_alpha, Theme};
 use super::widgets::{self, bold, cr, font, BtnStyle, Icon};
-use crate::i18n::{tr, trf};
+use crate::i18n::{fmt_size, tr, trf};
 use crate::rclone::{self, Remote, Task};
-use crate::tree::fmt_size;
 use eframe::egui::{self, Align2, Id, Pos2, Rect, Sense, Stroke, Ui, Vec2};
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
@@ -626,7 +625,7 @@ impl App {
                         ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
                     }
                     let (label, sub, icon) = match p {
-                        Some(p) => (p.label, if p.oauth { tr("Sign in with your browser") } else { tr("Keys or password") }, p.icon),
+                        Some(p) => (tr(p.label), if p.oauth { tr("Sign in with your browser") } else { tr("Keys or password") }, p.icon),
                         None => (tr("Something else"), tr("70+ more, in the terminal"), Icon::LinkOut),
                     };
                     let pn = ui.painter();
@@ -652,7 +651,7 @@ impl App {
             // --- form
             let heading = match (&form.original, form.provider) {
                 (Some(n), _) => trf("Edit {name}", &[("name", n)]),
-                (None, Some(i)) => PROVIDERS[i].label.to_string(),
+                (None, Some(i)) => tr(PROVIDERS[i].label).to_string(),
                 _ => String::new(),
             };
             let sub = match (&form.original, oauth) {

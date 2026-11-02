@@ -3,8 +3,7 @@
 use super::app::{App, Modal, RcloneState, Screen, Target};
 use super::theme::{lerp_color, lighten, with_alpha};
 use super::widgets::{self, bold, cr, font, BtnStyle, Icon};
-use crate::i18n::{tr, tr_status, trf};
-use crate::tree::fmt_size;
+use crate::i18n::{fmt_size, tr, tr_status, trf};
 use crate::update::State as UpState;
 use eframe::egui::{self, Align2, Color32, Id, Pos2, Rect, Sense, Stroke, Ui, Vec2};
 use std::sync::atomic::Ordering;
@@ -200,6 +199,13 @@ impl App {
         let h = ui.ctx().animate_bool_with_time(id.with("h"), resp.hovered(), 0.15);
         let session = self.sessions.iter().position(|s| matches!(&s.target, Target::Volume(x) if x.mount == v.mount));
         let r = rect;
+        let btn_w = [tr("Scan"), tr("Watch"), tr("View")].iter().map(|label| {
+            ui.painter().layout_no_wrap((*label).to_string(), bold(13.0), theme.text).size().x + 46.0
+        }).fold(104.0, f32::max);
+        let free_text = trf("{size} free", &[("size", &fmt_size(v.available))]);
+        let used_text = trf("{size} used", &[("size", &fmt_size(v.used()))]);
+        let bar_w = (ui.painter().layout_no_wrap(used_text.clone(), font(11.5), theme.text_faint).size().x
+            + ui.painter().layout_no_wrap(free_text.clone(), bold(12.0), theme.text).size().x + 16.0).max(190.0);
         {
             let p = ui.painter();
             widgets::shadow(p, r, 10.0, 0.5, &theme);
@@ -214,14 +220,14 @@ impl App {
             p.text(Pos2::new(tile.right() + 14.0, r.top() + 26.0), Align2::LEFT_CENTER, &v.name, bold(15.0), theme.text);
             let kind = if v.is_boot { tr("startup disk") } else if v.removable { tr("removable") } else { tr("volume") };
             let sub = format!("{} · {} · {} · {}", fmt_size(v.total), kind, v.fs, v.mount);
-            let sub = widgets::truncate(p, &sub, &font(12.0), r.width() - 480.0);
+            let sub = widgets::truncate(p, &sub, &font(12.0), r.width() - 480.0 - (btn_w - 104.0) - (bar_w - 190.0));
             p.text(Pos2::new(tile.right() + 14.0, r.top() + 48.0), Align2::LEFT_CENTER, sub, font(12.0), theme.text_dim);
         }
 
         // right side: bar + button(s)
-        let btn = Rect::from_min_size(Pos2::new(r.right() - 118.0, r.center().y - 16.0), Vec2::new(104.0, 32.0));
+        let btn = Rect::from_min_size(Pos2::new(r.right() - btn_w - 14.0, r.center().y - 16.0), Vec2::new(btn_w, 32.0));
         // leave room for the small refresh / cancel button that sits left of `btn`
-        let bar = Rect::from_min_size(Pos2::new(btn.left() - 48.0 - 190.0, r.center().y - 10.0), Vec2::new(190.0, 8.0));
+        let bar = Rect::from_min_size(Pos2::new(btn.left() - 48.0 - bar_w, r.center().y - 10.0), Vec2::new(bar_w, 8.0));
         let p = ui.painter().clone();
         match session.map(|s| &self.sessions[s]) {
             Some(s) if s.is_scanning() => {
@@ -229,8 +235,8 @@ impl App {
                 widgets::progress_bar(&p, bar, frac, &theme, self.time, None);
                 let files = s.progress.files.load(Ordering::Relaxed);
                 let txt = match frac {
-                    Some(f) => trf("scanning · {percent}% · {files} files", &[("percent", &format!("{:.0}", f * 100.0)), ("files", &crate::tree::fmt_count_compact(files))]),
-                    None => trf("scanning · {files} files", &[("files", &crate::tree::fmt_count_compact(files))]),
+                    Some(f) => trf("scanning · {percent}% · {files} files", &[("percent", &format!("{:.0}", f * 100.0)), ("files", &crate::i18n::fmt_count_compact(files))]),
+                    None => trf("scanning · {files} files", &[("files", &crate::i18n::fmt_count_compact(files))]),
                 };
                 p.text(Pos2::new(bar.left(), bar.bottom() + 12.0), Align2::LEFT_CENTER, txt, font(11.5), theme.text_dim);
                 if widgets::button(ui, btn, id.with("view"), tr("Watch"), Some(Icon::Eye), BtnStyle::Subtle, &theme).clicked() {
@@ -245,8 +251,8 @@ impl App {
                 let used = v.used_frac();
                 let col = if used > 0.9 { theme.danger } else if used > 0.75 { theme.warn } else { theme.ok };
                 widgets::progress_bar(&p, bar, Some(used), &theme, 0.25, Some(col));
-                p.text(Pos2::new(bar.right(), bar.bottom() + 12.0), Align2::RIGHT_CENTER, trf("{size} free", &[("size", &fmt_size(v.available))]), bold(12.0), col);
-                p.text(Pos2::new(bar.left(), bar.bottom() + 12.0), Align2::LEFT_CENTER, trf("{size} used", &[("size", &fmt_size(v.used()))]), font(11.5), theme.text_faint);
+                p.text(Pos2::new(bar.right(), bar.bottom() + 12.0), Align2::RIGHT_CENTER, &free_text, bold(12.0), col);
+                p.text(Pos2::new(bar.left(), bar.bottom() + 12.0), Align2::LEFT_CENTER, &used_text, font(11.5), theme.text_faint);
                 if other.is_some() {
                     if widgets::button(ui, btn, id.with("view"), tr("View"), Some(Icon::Eye), BtnStyle::Primary, &theme).clicked() || resp.clicked() {
                         self.screen = Screen::Session(session.unwrap());
@@ -287,7 +293,7 @@ impl App {
             trf("failed: {error}", &[("error", &e)])
         } else if s.is_scanning() {
             let st = s.progress.status.lock().unwrap().clone();
-            trf("{status}… {files} files", &[("status", &tr_status(&st)), ("files", &crate::tree::fmt_count_compact(s.progress.files.load(Ordering::Relaxed)))])
+            trf("{status}… {files} files", &[("status", &tr_status(&st)), ("files", &crate::i18n::fmt_count_compact(s.progress.files.load(Ordering::Relaxed)))])
         } else {
             format!("{} · {}", kind, fmt_size(size))
         };
