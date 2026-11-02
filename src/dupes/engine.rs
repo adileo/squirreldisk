@@ -44,13 +44,15 @@ pub enum Spec {
 pub struct Options {
     /// Smaller files are ignored.
     pub min_size: u64,
+    /// Larger files are ignored before fingerprinting. None means no upper limit.
+    pub max_size: Option<u64>,
     /// Read every byte of big files instead of samples.
     pub exact: bool,
 }
 
 impl Default for Options {
     fn default() -> Self {
-        Options { min_size: 64 * 1024, exact: false }
+        Options { min_size: 64 * 1024, max_size: None, exact: false }
     }
 }
 
@@ -415,6 +417,9 @@ fn coordinate(inner: Arc<Inner>, specs: Vec<Spec>, opts: Options) {
         for m in first.into_iter().chain(std::iter::from_fn(|| rx.try_recv().ok()).take(20_000)) {
             match m {
                 Msg::Found { place, f, cloud } => {
+                    if f.size < opts.min_size.max(1) || opts.max_size.is_some_and(|max| f.size > max) {
+                        continue;
+                    }
                     if let Some(size) = st.add(place, place_exec[place], f, cloud) {
                         dirty.insert(size);
                     }
@@ -674,6 +679,10 @@ fn list_place(place: usize, spec: &Spec, min_size: u64, inner: &Arc<Inner>, tx: 
     let counters = &inner.counters[place];
     match spec {
         Spec::Local(root) => {
+            #[cfg(windows)]
+            if !super::windows::allowed_root(root) {
+                return Err("Protected or unavailable Windows location: excluded from duplicate search".into());
+            }
             // one spelling per folder (Windows also accepts `/`), so the same
             // file reached through two places is recognised as one
             let root = &PathBuf::from(if cfg!(windows) { root.to_string_lossy().replace('/', "\\") } else { root.to_string_lossy().into_owned() });
@@ -1045,7 +1054,7 @@ mod tests {
 
     #[test]
     fn finds_duplicates_across_places() {
-        let dir = std::env::temp_dir().join(format!("sqd-dupes-{}", std::process::id()));
+        let dir = super::super::test_dir(&format!("sqd-dupes-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         for d in ["a/sub", "b", "c"] {
             std::fs::create_dir_all(dir.join(d)).unwrap();
@@ -1064,7 +1073,7 @@ mod tests {
         #[cfg(unix)]
         std::fs::hard_link(dir.join("a/s1"), dir.join("c/hardlink")).unwrap();
         let specs = vec![Spec::Local(dir.join("a")), Spec::Local(dir.join("b")), Spec::Local(dir.join("c")), Spec::Local(dir.join("a/sub"))];
-        let f = Finder::start(specs.clone(), Options { min_size: 1000, exact: false });
+        let f = Finder::start(specs.clone(), Options { min_size: 1000, exact: false, ..Options::default() });
         wait(&f);
         let mut seen = 0;
         let mut groups: Vec<FoundGroup> = f.changes_since(&mut seen).unwrap().into_iter().flat_map(|(_, g)| g).collect();
@@ -1080,13 +1089,66 @@ mod tests {
         assert!(st.done && !st.walking);
         assert_eq!(st.places.iter().filter(|p| p.error.is_some()).count(), 0);
         // exact mode finds the same
-        let f = Finder::start(specs, Options { min_size: 1000, exact: true });
+        let f = Finder::start(specs, Options { min_size: 1000, exact: true, ..Options::default() });
         wait(&f);
         let mut seen = 0;
         assert_eq!(f.changes_since(&mut seen).unwrap().into_iter().flat_map(|(_, g)| g).count(), 2);
         // nothing new since
         assert!(f.changes_since(&mut seen).is_none());
         let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn size_range_is_applied_before_hashing() {
+        let dir = super::super::test_dir(&format!("sqd-dupes-size-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        // Identical pairs below, at and above both inclusive boundaries.
+        for size in [0, 1, 1023, 1024, 2048, 2049] {
+            for copy in 0..2 {
+                std::fs::write(dir.join(format!("{size}-{copy}")), vec![7u8; size]).unwrap();
+            }
+        }
+        let specs = vec![Spec::Local(dir.clone())];
+        let f = Finder::start(specs.clone(), Options { min_size: 1024, max_size: Some(2048), exact: true });
+        wait(&f);
+        let mut seen = 0;
+        let mut sizes: Vec<_> = f.changes_since(&mut seen).unwrap().into_iter().flat_map(|(_, g)| g).map(|g| g.size).collect();
+        sizes.sort_unstable();
+        assert_eq!(sizes, [1024, 2048]);
+        assert_eq!(f.status().candidates, 4, "out-of-range files must not be hashed");
+
+        let f = Finder::start(specs, Options { min_size: 1, max_size: None, exact: false });
+        wait(&f);
+        let mut seen = 0;
+        let mut sizes: Vec<_> = f.changes_since(&mut seen).unwrap().into_iter().flat_map(|(_, g)| g).map(|g| g.size).collect();
+        sizes.sort_unstable();
+        assert_eq!(sizes, [1, 1023, 1024, 2048, 2049], "all sizes includes tiny files, but excludes empty files");
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn windows_finds_downloaded_installers_but_excludes_installed_components() {
+        let dir = super::super::test_dir(&format!("sqd-installers-{}", std::process::id()));
+        for folder in ["Downloads/a", "Downloads/b", "Program Files/App", "Windows/System32"] {
+            std::fs::create_dir_all(dir.join(folder)).unwrap();
+            for (name, byte) in [("setup.exe", 1), ("setup.msi", 2), ("library.dll", 3)] {
+                std::fs::write(dir.join(folder).join(name), vec![byte; 64 * 1024]).unwrap();
+            }
+        }
+        let finder = Finder::start(vec![Spec::Local(dir.clone())], Options { min_size: 64 * 1024, exact: true, ..Options::default() });
+        wait(&finder);
+        let mut seen = 0;
+        let groups: Vec<_> = finder.changes_since(&mut seen).unwrap().into_iter().flat_map(|(_, g)| g).collect();
+        assert_eq!(groups.len(), 2, "only EXE and MSI download pairs are offered");
+        for group in groups {
+            assert_eq!(group.files.len(), 2, "protected installed copies must not be offered");
+            for file in group.files {
+                assert!(file.path.contains("Downloads"));
+                assert!(super::super::windows::check_removal(Path::new(&file.path)).is_ok());
+            }
+        }
+        std::fs::remove_dir_all(dir).unwrap();
     }
 
     #[test]

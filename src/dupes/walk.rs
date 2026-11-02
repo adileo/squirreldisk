@@ -30,7 +30,7 @@ const SKIP_DIRS: &[&str] = &[
 const SKIP_PACKAGES: &[&str] = &[".app", ".framework", ".bundle", ".plugin", ".kext", ".appex", ".xpc", ".dSYM", ".xcarchive", ".pkg"];
 
 fn skip_dir(name: &str) -> bool {
-    SKIP_DIRS.contains(&name) || SKIP_PACKAGES.iter().any(|ext| name.len() > ext.len() && name.to_ascii_lowercase().ends_with(&ext.to_ascii_lowercase()))
+    SKIP_DIRS.iter().any(|skip| if cfg!(windows) { skip.eq_ignore_ascii_case(name) } else { *skip == name }) || SKIP_PACKAGES.iter().any(|ext| name.len() > ext.len() && name.to_ascii_lowercase().ends_with(&ext.to_ascii_lowercase()))
 }
 
 pub struct Counters {
@@ -49,6 +49,10 @@ impl Default for Counters {
 /// for each regular file of at least `min_size` bytes. Stays on the device
 /// of `root` and never follows links.
 pub fn walk(root: &Path, min_size: u64, threads: usize, cancel: &AtomicBool, counters: &Counters, emit: &(dyn Fn(Found) + Sync)) {
+    #[cfg(windows)]
+    if !super::windows::allowed_root(root) {
+        return;
+    }
     let root_dev = platform::device_of(root);
     let queue: Mutex<(VecDeque<PathBuf>, usize)> = Mutex::new((VecDeque::from([root.to_path_buf()]), 0));
     let cv = Condvar::new();
@@ -113,7 +117,11 @@ fn list(dir: &Path, root_dev: Option<u64>, min_size: u64, counters: &Counters, e
     }
     let Ok(rd) = std::fs::read_dir(dir) else { return false };
     for e in rd.flatten() {
+        #[cfg(windows)]
+        if super::windows::protected(&e.path()) { continue; }
         let Ok(md) = e.path().symlink_metadata() else { continue };
+        #[cfg(windows)]
+        if super::windows::special(&md) { continue; }
         let name = e.file_name();
         if md.is_dir() {
             let same_dev = match (root_dev, id_of(&md)) {
@@ -155,9 +163,44 @@ fn id_of(_: &std::fs::Metadata) -> Option<(u64, u64, u32)> {
 mod tests {
     use super::*;
 
+    #[cfg(windows)]
+    #[test]
+    fn windows_excludes_system_app_data_and_junctions_before_listing() {
+        let root = super::super::test_dir(&format!("sqd-protected-walk-{}", std::process::id()));
+        std::fs::create_dir_all(&root).unwrap();
+        for folder in ["Windows/System32", "Program Files/App", "ProgramData/App", "user/AppData/Local/App", "System Volume Information", "$recycle.bin", "documents"] {
+            std::fs::create_dir_all(root.join(folder)).unwrap();
+            std::fs::write(root.join(folder).join("same.jpg"), b"data").unwrap();
+        }
+        for file in ["documents/lib.DLL", "documents/app.ExE", "documents/driver.sys", "documents/plugin.ocx", "documents/setup.msi"] {
+            std::fs::write(root.join(file), b"data").unwrap();
+        }
+        let out = Mutex::new(Vec::new());
+        walk(&root, 1, 2, &AtomicBool::new(false), &Counters::default(), &|f| out.lock().unwrap().push(f));
+        let found = out.lock().unwrap();
+        let mut names: Vec<_> = found.iter().map(|f| Path::new(&f.path).file_name().unwrap().to_string_lossy().into_owned()).collect();
+        names.sort();
+        assert_eq!(names, ["app.ExE", "same.jpg", "setup.msi"], "installers outside protected locations remain candidates");
+        drop(found);
+        out.lock().unwrap().clear();
+        // Selecting a protected folder directly must not bypass traversal rules.
+        walk(&root.join("Windows/System32"), 1, 2, &AtomicBool::new(false), &Counters::default(), &|f| out.lock().unwrap().push(f));
+        assert!(out.lock().unwrap().is_empty());
+        let link = root.join("link");
+        let result = std::process::Command::new("cmd").args(["/C", "mklink", "/J"])
+            .arg(link.to_string_lossy().replace('/', "\\"))
+            .arg(root.join("documents").to_string_lossy().replace('/', "\\"))
+            .output().unwrap();
+        assert!(result.status.success(), "{:?}", result);
+        assert!(!super::super::windows::allowed_root(&link));
+        walk(&root, 1, 2, &AtomicBool::new(false), &Counters::default(), &|f| out.lock().unwrap().push(f));
+        assert_eq!(out.lock().unwrap().len(), 3, "junction must not list the same files twice");
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
     #[test]
     fn lists_files_with_sizes_and_times() {
-        let dir = std::env::temp_dir().join(format!("sqd-walk-{}", std::process::id()));
+        let dir = super::super::test_dir(&format!("sqd-walk-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(dir.join("a/b")).unwrap();
         std::fs::create_dir_all(dir.join("node_modules/x")).unwrap();
