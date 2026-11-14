@@ -16,7 +16,10 @@ fn target() -> Option<PathBuf> {
         return Some(p);
     }
     let exe = std::env::current_exe().ok()?;
-    Some(std::fs::canonicalize(&exe).unwrap_or(exe))
+    // Links resolved, and on Windows without the `\\?\` prefix `canonicalize`
+    // adds: Explorer refuses to run a menu entry's command line that carries
+    // it ("access denied"), and this path goes into those.
+    Some(crate::cli::absolute(&exe))
 }
 
 /// `…/SquirrelDisk.app` when running from a bundle.
@@ -381,5 +384,17 @@ mod tests {
         assert!(!data.join("applications/squirreldisk-folder.desktop").exists());
         assert!(!data.join("nautilus/scripts/Scan with SquirrelDisk").exists());
         let _ = std::fs::remove_dir_all(data);
+    }
+}
+
+#[cfg(all(test, windows))]
+mod windows_tests {
+    #[test]
+    fn target_has_no_extended_length_prefix() {
+        // Explorer refuses to run a menu entry whose command starts with `\\?\`
+        let t = super::target().unwrap();
+        let s = t.to_string_lossy();
+        assert!(!s.starts_with(r"\\?\"), "{s}");
+        assert!(t.is_file(), "{s}");
     }
 }
