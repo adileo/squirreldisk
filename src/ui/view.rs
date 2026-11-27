@@ -17,6 +17,18 @@ use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use std::time::Instant;
 
+/// Icon column and the insets on both sides of an item label
+const CTX_LABEL_INSET: f32 = 56.0;
+/// The menu never gets narrower than this, so short menus keep their usual look
+const CTX_MIN_W: f32 = 230.0;
+/// Nor wider than this: what still does not fit is ellipsized
+const CTX_MAX_W: f32 = 380.0;
+
+/// Width of the context menu that fits a label of `widest` pixels
+fn ctx_menu_width(widest: f32) -> f32 {
+    (widest + CTX_LABEL_INSET).clamp(CTX_MIN_W, CTX_MAX_W)
+}
+
 pub fn node_label(t: &Tree, id: u32) -> String {
     let n = t.get(id);
     match n.kind {
@@ -898,7 +910,16 @@ impl App {
             self.ctx_menu = None;
             return;
         }
-        let w = 230.0;
+        // widen the menu so the longest label fits on one line, but keep it bounded
+        let item_font = font(13.0);
+        let widest = items
+            .iter()
+            .map(|(label, _, _)| {
+                ctx.fonts_mut(|f| f.layout_no_wrap(label.to_string(), item_font.clone(), Color32::WHITE).size().x)
+            })
+            .fold(0.0_f32, f32::max);
+        let w = ctx_menu_width(widest);
+        let item_w = w - CTX_LABEL_INSET;
         let h = items.len() as f32 * 32.0 + 44.0;
         let screen = ctx.content_rect();
         let mut origin = pos;
@@ -924,7 +945,9 @@ impl App {
                 let p = ui.painter();
                 p.rect_filled(rr, cr(8.0), with_alpha(theme.accent, 0.85 * hh));
                 widgets::draw_icon(p, *icon, Rect::from_center_size(Pos2::new(rr.left() + 16.0, rr.center().y), Vec2::splat(14.0)), lerp_color(theme.text_dim, Color32::WHITE, hh));
-                p.text(Pos2::new(rr.left() + 34.0, rr.center().y), Align2::LEFT_CENTER, *label, font(13.0), lerp_color(theme.text, Color32::WHITE, hh));
+                let label = widgets::truncate(p, label, &item_font, item_w);
+                let color = lerp_color(theme.text, Color32::WHITE, hh);
+                p.text(Pos2::new(rr.left() + 34.0, rr.center().y), Align2::LEFT_CENTER, label, item_font.clone(), color);
                 if resp.clicked() {
                     chosen = Some(*act);
                 }
@@ -984,3 +1007,19 @@ fn cpu_mesh(painter: &egui::Painter, verts: &[f32], idx: &[u32]) {
 
 #[allow(dead_code)]
 fn _unused(_: &Theme) {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn context_menu_width_fits_the_longest_label() {
+        // short labels keep the menu at its usual width
+        assert_eq!(ctx_menu_width(0.0), CTX_MIN_W);
+        assert_eq!(ctx_menu_width(100.0), CTX_MIN_W);
+        // the Russian "Show in file manager" needs this much
+        assert!((ctx_menu_width(216.0) - 272.0).abs() < 0.01);
+        // very long labels stop at the maximum, the rest is ellipsized
+        assert_eq!(ctx_menu_width(1000.0), CTX_MAX_W);
+    }
+}
